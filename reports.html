@@ -1574,6 +1574,41 @@ Doanh thu: 45000000</pre>
                 }
             };
         }
+        function processTelegramUpdateList(list,cfg){
+            var imported=0;
+            var importedCurrent=0;
+            var importedOtherMonth=0;
+            var chatMatched=0;
+            var parsedCount=0;
+            var currentTouched=false;
+            var maxUpdate=0;
+            (Array.isArray(list)?list:[]).forEach(function(upd){
+                if(upd&&upd.update_id>=maxUpdate){maxUpdate=upd.update_id+1;}
+                var msg=(upd&&upd.message)||(upd&&upd.edited_message)||(upd&&upd.channel_post)||(upd&&upd.edited_channel_post);
+                if(!msg||!msg.chat){return;}
+                if(!chatIdMatches(cfg.chatId,msg.chat.id)){return;}
+                chatMatched+=1;
+                var incomingText=msg.text||msg.caption||'';
+                if(!incomingText){return;}
+                var parsed=parseTelegramReportText(incomingText);
+                if(!parsed){return;}
+                parsedCount+=1;
+                if(parsed.year<2020||parsed.year>2099||parsed.month<1||parsed.month>12||parsed.day<1||parsed.day>31){return;}
+                var touched=applyTelegramReport(parsed);
+                imported+=1;
+                if(touched){importedCurrent+=1;}else{importedOtherMonth+=1;}
+                currentTouched=currentTouched||touched;
+            });
+            return {
+                imported: imported,
+                importedCurrent: importedCurrent,
+                importedOtherMonth: importedOtherMonth,
+                chatMatched: chatMatched,
+                parsedCount: parsedCount,
+                currentTouched: currentTouched,
+                maxUpdate: maxUpdate
+            };
+        }
         function applyTelegramReport(parsed){
             if(!parsed||!parsed.reporter||!parsed.day){return false;}
             ensureReporterExists(parsed.reporter);
@@ -1617,31 +1652,30 @@ Doanh thu: 45000000</pre>
                     return;
                 }
                 var list=Array.isArray(data.result)?data.result:[];
-                var imported=0;
-                var importedCurrent=0;
-                var importedOtherMonth=0;
-                var chatMatched=0;
-                var parsedCount=0;
-                var currentTouched=false;
-                var maxUpdate=offset;
-                list.forEach(function(upd){
-                    if(upd&&upd.update_id>=maxUpdate){maxUpdate=upd.update_id+1;}
-                    var msg=(upd&&upd.message)||(upd&&upd.edited_message)||(upd&&upd.channel_post)||(upd&&upd.edited_channel_post);
-                    if(!msg||!msg.chat){return;}
-                    if(!chatIdMatches(cfg.chatId,msg.chat.id)){return;}
-                    chatMatched+=1;
-                    var incomingText=msg.text||msg.caption||'';
-                    if(!incomingText){return;}
-                    var parsed=parseTelegramReportText(incomingText);
-                    if(!parsed){return;}
-                    parsedCount+=1;
-                    if(parsed.year<2020||parsed.year>2099||parsed.month<1||parsed.month>12||parsed.day<1||parsed.day>31){return;}
-                    var touched=applyTelegramReport(parsed);
-                    imported+=1;
-                    if(touched){importedCurrent+=1;}else{importedOtherMonth+=1;}
-                    currentTouched=currentTouched||touched;
-                });
-                if(imported>0&&maxUpdate>offset){localStorage.setItem(TG_OFFSET_KEY,String(maxUpdate));}
+                var scan=processTelegramUpdateList(list,cfg);
+                var imported=scan.imported;
+                var importedCurrent=scan.importedCurrent;
+                var importedOtherMonth=scan.importedOtherMonth;
+                var chatMatched=scan.chatMatched;
+                var parsedCount=scan.parsedCount;
+                var currentTouched=scan.currentTouched;
+                var maxUpdate=Math.max(offset,scan.maxUpdate||0);
+                if(imported===0){
+                    var retryUrl=buildTelegramUrl(cfg.botToken,'getUpdates')+'?limit=100&timeout=0';
+                    var retryRes=await fetch(retryUrl);
+                    var retryData=await retryRes.json().catch(function(){return{};});
+                    if(retryRes.ok&&retryData.ok){
+                        var retryScan=processTelegramUpdateList(retryData.result,cfg);
+                        imported=retryScan.imported;
+                        importedCurrent=retryScan.importedCurrent;
+                        importedOtherMonth=retryScan.importedOtherMonth;
+                        chatMatched=retryScan.chatMatched;
+                        parsedCount=retryScan.parsedCount;
+                        currentTouched=retryScan.currentTouched;
+                        maxUpdate=Math.max(maxUpdate,retryScan.maxUpdate||0);
+                    }
+                }
+                if(maxUpdate>offset){localStorage.setItem(TG_OFFSET_KEY,String(maxUpdate));}
                 if(currentTouched){gen();}
                 if(imported>0){
                     var msg='Đồng bộ thành công '+imported+' báo cáo';
