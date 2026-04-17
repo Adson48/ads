@@ -1465,6 +1465,17 @@ Doanh thu: 45000000</pre>
             if(m){return {y:parseInt(m[1],10),m:parseInt(m[2],10),d:parseInt(m[3],10)};}
             m=text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
             if(m){return {y:parseInt(m[3],10),m:parseInt(m[2],10),d:parseInt(m[1],10)};}
+            m=text.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+            if(m){return {y:parseInt(m[1],10),m:parseInt(m[2],10),d:parseInt(m[3],10)};}
+            m=text.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+            if(m){return {y:parseInt(m[3],10),m:parseInt(m[2],10),d:parseInt(m[1],10)};}
+            m=text.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+            if(m){return {y:parseInt(m[3],10),m:parseInt(m[2],10),d:parseInt(m[1],10)};}
+            m=text.match(/^(\d{1,2})$/);
+            if(m){
+                var mv=getMY();
+                return {y:mv.y,m:mv.m,d:parseInt(m[1],10)};
+            }
             return null;
         }
         function stripAccents(input){
@@ -1503,7 +1514,7 @@ Doanh thu: 45000000</pre>
                 if(k&&v){map[k]=v;}
             });
             var reporter = map.nv || map.nhanvien || map.tennv || map.ten || map.reporter;
-            var dateRaw = map.ngay || map.date;
+            var dateRaw = map.ngay || map.ngaybaocao || map.ngaychay || map.ngaylamviec || map.ngayreport || map.date;
             if(!reporter || !dateRaw){return null;}
             var dt=parseReportDate(dateRaw);
             if(!dt){return null;}
