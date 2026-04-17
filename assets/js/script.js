@@ -1307,17 +1307,17 @@ if (studioOutput && sidebarCategoryLinks.length) {
     var db   = null;
     var COLL = 'ma_accounts';
     var CONF = 'ma_config';
-    var firebaseStatusReason = 'Chua khoi tao Firebase.';
+    var firebaseStatusReason = 'Chưa khởi tạo Firebase.';
 
     var initFirebase = function () {
         try {
             var cfg = window.MA_FIREBASE_CONFIG;
             if (!cfg || !cfg.apiKey || cfg.apiKey.indexOf('YOUR') === 0) {
-                firebaseStatusReason = 'Thieu hoac chua dien dung cau hinh trong firebase-config.js.';
+                firebaseStatusReason = 'Thiếu hoặc chưa điền đúng cấu hình trong firebase-config.js.';
                 return;
             }
             if (typeof firebase === 'undefined') {
-                firebaseStatusReason = 'Khong tai duoc Firebase SDK. Kiem tra ket noi mang hoac script CDN.';
+                firebaseStatusReason = 'Không tải được Firebase SDK. Kiểm tra kết nối mạng.';
                 return;
             }
             if (!firebase.apps.length) { firebase.initializeApp(cfg); }
@@ -1748,7 +1748,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         return '<tr>' +
                             '<td>' + (u.fullName || '-') + '</td>' +
                             '<td>' + u.username + '</td>' +
-                                                        '<td>******</td>' +
+                                                        '<td>' + (u.password || '******') + '</td>' +
                             '<td>' + roleHtml + '</td>' +
                             '<td><span class="account-status ' + stClass + '">' + stLabel + '</span></td>' +
                             '<td>' + new Date(u.createdAt).toLocaleString('vi-VN') + '</td>' +
