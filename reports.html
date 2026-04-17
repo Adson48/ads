@@ -613,6 +613,7 @@ Doanh thu: 45000000</pre>
         var rpDb=null;
         var monthCache={};
         var saveTimers={};
+        var dirtyMonthKeys={};
         var isSuperadminUser=false;
 
         function initReportDb(){
@@ -727,6 +728,7 @@ Doanh thu: 45000000</pre>
         async function saveRemoteMonthStore(m,y,store){
             var db=initReportDb();
             if(!db){return false;}
+            var key=cacheKey(m,y);
             try{
                 await db.collection(REPORT_COLL).doc(monthId(m,y)).set({
                     month:m,
@@ -734,11 +736,13 @@ Doanh thu: 45000000</pre>
                     employees:(store&&store.employees)||{},
                     updatedAt:Date.now()
                 },{merge:true});
+                delete dirtyMonthKeys[key];
                 return true;
             }catch(e){return false;}
         }
         function queueRemoteMonthSave(m,y){
             var key=cacheKey(m,y);
+            dirtyMonthKeys[key]=true;
             clearTimeout(saveTimers[key]);
             saveTimers[key]=setTimeout(function(){
                 var store=getMonthStoreSync(m,y);
@@ -747,6 +751,7 @@ Doanh thu: 45000000</pre>
         }
         async function ensureMonthLoaded(m,y){
             var key=cacheKey(m,y);
+            if(dirtyMonthKeys[key]){return false;}
             var before=JSON.stringify(getMonthStoreSync(m,y).employees||{});
             var remote=await fetchRemoteMonthStore(m,y);
             if(!remote){return false;}
