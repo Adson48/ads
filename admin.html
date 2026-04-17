@@ -1,0 +1,61 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Ads - Quản Trị Tài Khoản</title>
+    <link rel="stylesheet" href="./assets/css/style.css?v=20260416-01">
+    <style>
+        .account-page { max-width: 1180px; margin: 0 auto; padding: 90px 1rem 2rem; }
+        .account-card { background:#fff; border-radius:16px; box-shadow:0 6px 20px rgba(94,33,61,.1); padding:1rem 1.1rem; margin-bottom:1rem; }
+        .account-title { margin:0 0 .7rem; color:#7a2e45; font-size:1.25rem; font-weight:800; }
+        .account-sub { margin:0 0 1rem; color:#7c6a72; font-size:.92rem; }
+        .account-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:.7rem; }
+        .account-input { width:100%; border:1px solid #e8cbd7; border-radius:10px; padding:.6rem .7rem; font-size:.92rem; font-family:inherit; outline:none; }
+        .account-input:focus { border-color:#c7517c; box-shadow:0 0 0 3px rgba(199,81,124,.15); }
+        .account-btn { border:none; border-radius:10px; padding:.6rem .9rem; font-weight:700; cursor:pointer; }
+        .account-btn.primary { background:linear-gradient(135deg,#c7517c,#a93c63); color:#fff; }
+        .account-btn.warn { background:#fff4f4; color:#d7263d; border:1px solid #f7b6be; }
+        .account-btn.gray { background:#f6f3f5; color:#6f5b63; border:1px solid #e8dde1; }
+        .account-table-wrap { overflow-x:auto; }
+        .account-table { width:100%; border-collapse:collapse; min-width:900px; font-size:.9rem; }
+        .account-table th,.account-table td { border:1px solid #f0e2e8; padding:.5rem .55rem; text-align:left; }
+        .account-table th { background:#fff5f8; color:#7a2e45; }
+        .account-status.active { color:#15803d; font-weight:700; }
+        .account-status.deleted { color:#b91c1c; font-weight:700; }
+        .account-actions { display:flex; gap:.35rem; flex-wrap:wrap; }
+        .account-empty { color:#8f7d85; padding:.7rem 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Marketing Ads</div>
+            <ul class="nav-links">
+                <li><a href="./index.html">Trang Chủ</a></li>
+                <li><a href="./reports.html">Báo Cáo</a></li>
+                <li><a href="./notifications.html">Thông Báo</a></li>
+                <li><a href="./ideas.html">Ý Tưởng</a></li>
+                <li><a href="./content.html">Nội Dung</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="account-page">
+        <section class="account-card">
+            <h1 class="account-title">Quản Trị Tài Khoản Nhân Sự</h1>
+            <p class="account-sub">Tài khoản quyền cao nhất có thể thêm, xóa, khôi phục tài khoản và khôi phục dữ liệu tài khoản.</p>
+            <div id="accountManagerRoot"></div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Marketing Ads. Tất cả quyền được bảo lưu.</p>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="./assets/js/firebase-config.js"></script>
+    <script src="./assets/js/script.js?v=20260416-02"></script>
+</body>
+</html>

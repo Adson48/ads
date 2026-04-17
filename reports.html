@@ -1,0 +1,582 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Ads - Báo Cáo Tháng</title>
+    <link rel="stylesheet" href="./assets/css/style.css?v=20260416-01">
+    <style>
+        body { background: #f4f6fb; }
+        .rp-page { max-width:100%; padding:80px 1rem 3rem; min-height:100vh; }
+
+        /* TOP BAR */
+        .rp-topbar { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; background:#fff; border-radius:16px; padding:.85rem 1.2rem; box-shadow:0 2px 12px rgba(94,33,61,.08); margin-bottom:1rem; }
+        .rp-title { display:flex; align-items:center; gap:.6rem; font-size:1.25rem; font-weight:800; color:var(--ink); }
+        .rp-title span { color:var(--brand); }
+        .rp-controls { display:flex; align-items:center; gap:.5rem; flex-wrap:wrap; }
+        .rp-select,.rp-year { padding:.42rem .75rem; border:1.5px solid var(--line); border-radius:9px; font-size:.93rem; font-weight:600; color:var(--ink); background:#fff; cursor:pointer; outline:none; font-family:inherit; }
+        .rp-year { width:82px; text-align:center; }
+        .rp-select:focus,.rp-year:focus { border-color:var(--brand); }
+        .rp-name-inp { padding:.42rem .75rem; border:1.5px solid var(--line); border-radius:9px; font-size:.93rem; font-weight:700; color:var(--ink); background:#fff8fc; outline:none; font-family:inherit; min-width:130px; }
+        .rp-name-inp:focus { border-color:var(--brand); background:#fff; }
+        .rp-name-label { font-size:.8rem; font-weight:700; color:#888; white-space:nowrap; }
+        .rp-btn { padding:.46rem 1rem; border:none; border-radius:9px; font-size:.88rem; font-weight:700; cursor:pointer; font-family:inherit; transition:transform .12s,box-shadow .12s; white-space:nowrap; }
+        .rp-btn:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(169,60,99,.22); }
+        .rp-btn-gen    { background:linear-gradient(135deg,#c7517c,#a93c63); color:#fff; }
+        .rp-btn-save   { background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; }
+        .rp-btn-export { background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; }
+        .rp-btn-clear  { background:#fff0f0; color:#dc2626; border:1.5px solid #fca5a5; }
+
+        /* KPI BAR */
+        .rp-kpi-bar { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:.65rem; margin-bottom:1rem; }
+        .rp-kpi { background:#fff; border-radius:13px; padding:.7rem .9rem; box-shadow:0 2px 10px rgba(94,33,61,.07); border-left:4px solid transparent; }
+        .rp-kpi.kpi-cost  { border-color:#ef5e7a; } .rp-kpi.kpi-rev  { border-color:#22c55e; }
+        .rp-kpi.kpi-roas  { border-color:#f59e0b; } .rp-kpi.kpi-mess { border-color:#8b5cf6; }
+        .rp-kpi.kpi-sdt   { border-color:#3b82f6; } .rp-kpi.kpi-lich { border-color:#ec4899; }
+        .rp-kpi.kpi-hd    { border-color:#10b981; } .rp-kpi.kpi-coc  { border-color:#f97316; }
+        .rp-kpi-label { font-size:.72rem; font-weight:700; color:#888; text-transform:uppercase; letter-spacing:.05em; margin-bottom:.25rem; }
+        .rp-kpi-value { font-size:1.08rem; font-weight:800; color:var(--ink); line-height:1.2; }
+        .rp-kpi-value.good { color:#16a34a; } .rp-kpi-value.warn { color:#d97706; } .rp-kpi-value.bad { color:#dc2626; }
+
+        /* TABLE */
+        .rp-table-wrap { background:#fff; border-radius:16px; box-shadow:0 2px 16px rgba(94,33,61,.08); overflow:hidden; }
+        .rp-scroll { overflow-x:auto; overflow-y:auto; max-height:calc(100vh - 300px); }
+        .rp-table { width:100%; border-collapse:collapse; font-size:.83rem; min-width:1460px; }
+
+        /* Banner row */
+        .rp-table thead tr.rh-banner td { background:#f5d315; color:#1a1a1a; font-weight:900; font-size:1rem; text-align:center; padding:.55rem; border:1px solid #d4b800; }
+
+        /* Column headers sticky */
+        .rp-table thead tr.rh-cols th { position:sticky; top:0; z-index:10; background:#c7517c; color:#fff; font-weight:700; padding:.6rem .4rem; text-align:center; border:1px solid #a93c63; white-space:nowrap; font-size:.78rem; }
+        .rp-table thead tr.rh-cols th.col-e { background:#a93c63; }
+        .rp-table thead tr.rh-cols th.col-f { background:#7c2d56; }
+        .rp-table thead tr.rh-cols th.col-day { position:sticky; left:0; z-index:11; background:#b03070; }
+
+        /* Total sticky row */
+        .rp-table thead tr.rh-total th { position:sticky; top:38px; z-index:9; background:#fff8e1; color:#7c5700; font-weight:800; padding:.5rem .4rem; text-align:center; border:1px solid #ffe082; font-size:.82rem; white-space:nowrap; }
+        .rp-table thead tr.rh-total th.tl { text-align:left; padding-left:.6rem; background:#fff3cd; position:sticky; left:0; z-index:11; }
+        .rp-table thead tr.rh-total th.tv.good { color:#16a34a; } .rp-table thead tr.rh-total th.tv.warn { color:#d97706; } .rp-table thead tr.rh-total th.tv.bad { color:#dc2626; }
+
+        /* Data rows */
+        .rp-table tbody tr.rd { border-bottom:1px solid #f0e0e8; transition:background .12s; }
+        .rp-table tbody tr.rd:hover { background:#fef4f7 !important; }
+        .rp-table tbody tr.rd:nth-child(even) { background:#fffafb; }
+        .rp-table tbody tr.rd.is-wknd { background:#fffbf8; }
+        .rp-table tbody tr.rd.is-wknd:hover { background:#fef4f7 !important; }
+
+        /* Day cell sticky */
+        .cell-day { position:sticky; left:0; z-index:5; background:#fef0f5; border-right:2px solid #f0c8d8; border-top:1px solid #f0e0e8; padding:.38rem .55rem; font-weight:700; font-size:.82rem; color:#7a2e4a; white-space:nowrap; min-width:88px; }
+        .rp-table tbody tr.rd:hover .cell-day { background:#fde8f0; }
+        .rp-table tbody tr.rd.is-wknd .cell-day { background:#fff0e6; color:#b84f1a; border-right-color:#f8c49a; }
+
+        /* Input cells */
+        .cell-cost-wrap { padding:0; border:1px solid #f0e0e8; min-width:115px; vertical-align:middle; }
+        .cell-cost-inp { width:100%; border:none; outline:none; background:transparent; text-align:right; padding:.3rem .5rem .08rem; font-size:.82rem; font-family:inherit; color:var(--ink); display:block; }
+        .cell-cost-inp:focus { background:#fce8f0; }
+
+        .cell-num { padding:0; border:1px solid #f0e0e8; vertical-align:middle; }
+        .rp-inp { width:100%; border:none; outline:none; background:transparent; text-align:right; padding:.42rem .5rem; font-size:.82rem; font-family:inherit; color:var(--ink); min-width:68px; display:block; }
+        .rp-inp:focus { background:#fce8f0; }
+        .cell-rev { padding:0; border:1px solid #f0e0e8; min-width:115px; vertical-align:middle; }
+        .rp-inp-rev { width:100%; border:none; outline:none; background:transparent; text-align:right; padding:.42rem .5rem; font-size:.82rem; font-family:inherit; color:#16a34a; font-weight:700; display:block; }
+        .rp-inp-rev:focus { background:#f0fdf4; }
+
+        /* Formula cells */
+        td.rp-fc { border:1px solid #f0e0e8; text-align:right; padding:.42rem .55rem; font-size:.82rem; font-weight:600; white-space:nowrap; }
+        td.rp-fc.fc-num { color:#1d4ed8; background:#fafafe; }
+        td.rp-fc.fc-pct-good { color:#16a34a; background:#f0fdf4; text-align:center; }
+        td.rp-fc.fc-pct-warn { color:#d97706; background:#fffbeb; text-align:center; }
+        td.rp-fc.fc-pct-bad  { color:#dc2626; background:#fef2f2; text-align:center; }
+        td.rp-fc.fc-empty    { color:transparent; background:#fafafe; }
+
+
+
+        /* Bottom total row */
+        .rp-table tbody tr.rd-btotal td { background:#fff8e1; border:1px solid #ffe082; font-weight:800; color:#7c5700; text-align:center; padding:.5rem .55rem; font-size:.82rem; white-space:nowrap; }
+        .rp-table tbody tr.rd-btotal td.bt-lbl { text-align:center; font-size:.88rem; background:#fff3cd; font-weight:900; letter-spacing:.05em; position:sticky; left:0; border-right:2px solid #ffe082; }
+        .rp-table tbody tr.rd-btotal td.bt-good { color:#16a34a; }
+        .rp-table tbody tr.rd-btotal td.bt-warn { color:#d97706; }
+        .rp-table tbody tr.rd-btotal td.bt-bad  { color:#dc2626; }
+
+        /* Filter bar (premium) */
+        .rp-filterbar {
+            display:flex; align-items:center; gap:.55rem; flex-wrap:wrap;
+            background:linear-gradient(135deg,rgba(255,255,255,.95),rgba(255,247,251,.95));
+            border:1px solid #f3d7e4; border-radius:16px; padding:.7rem 1rem;
+            box-shadow:0 8px 24px rgba(94,33,61,.09), inset 0 1px 0 rgba(255,255,255,.8);
+            margin-bottom:.9rem;
+        }
+        .rp-filterbar label { font-size:.78rem; font-weight:800; color:#8d7280; letter-spacing:.03em; text-transform:uppercase; white-space:nowrap; }
+        .rp-filter-select {
+            padding:.38rem .7rem; border:1.5px solid #e9c9d9; border-radius:10px; font-size:.85rem;
+            font-weight:700; color:#5a3e4b; background:#fff; outline:none; font-family:inherit;
+            box-shadow:inset 0 1px 2px rgba(94,33,61,.06);
+        }
+        .rp-filter-select:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(199,81,124,.14); }
+        .rp-filter-chip {
+            padding:.36rem .82rem; border:1px solid #eccfdd; border-radius:999px; font-size:.79rem; font-weight:800;
+            cursor:pointer; background:linear-gradient(180deg,#fff,#fff7fb); color:#8d7280; transition:all .18s;
+            box-shadow:0 2px 8px rgba(94,33,61,.08);
+        }
+        .rp-filter-chip:hover { transform:translateY(-1px); border-color:#dca8bf; color:#6d4a5b; }
+        .rp-filter-chip.active {
+            background:linear-gradient(135deg,#c7517c,#a93c63); color:#fff; border-color:#a93c63;
+            box-shadow:0 6px 16px rgba(169,60,99,.32);
+        }
+        .rp-filter-chip.rp-chip-primary {
+            background:linear-gradient(135deg,#c7517c,#a93c63); color:#fff; border-color:#a93c63;
+            box-shadow:0 6px 16px rgba(169,60,99,.24);
+        }
+        .rp-filter-sep { width:1px; height:22px; background:linear-gradient(#f8eaf1,#eccfdd,#f8eaf1); margin:0 .25rem; }
+
+        /* History panel (premium) */
+        .rp-history-wrap {
+            background:linear-gradient(155deg,#fff,#fff7fb);
+            border:1px solid #f1d6e3; border-radius:18px;
+            box-shadow:0 10px 28px rgba(94,33,61,.1), inset 0 1px 0 rgba(255,255,255,.9);
+            padding:1rem 1.15rem; margin-top:1rem;
+        }
+        .rp-history-title {
+            font-size:1rem; font-weight:900; color:#5a3e4b; margin-bottom:.75rem;
+            display:flex; align-items:center; justify-content:space-between; gap:.8rem;
+        }
+        .rp-history-title span { color:var(--brand); font-size:1.05rem; }
+        .rp-hist-clear {
+            font-size:.75rem; padding:.28rem .72rem; background:#fff0f0; color:#dc2626;
+            border:1px solid #fca5a5; border-radius:8px; cursor:pointer; font-weight:800;
+            transition:all .15s;
+        }
+        .rp-hist-clear:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+        .rp-history-list { list-style:none; padding:0; margin:0; max-height:280px; overflow-y:auto; }
+        .rp-history-item {
+            display:flex; align-items:center; gap:.7rem; padding:.58rem .65rem; border-radius:12px;
+            transition:all .15s; border:1px solid transparent; margin-bottom:.3rem;
+            background:rgba(255,255,255,.72);
+        }
+        .rp-history-item:hover { background:#fff; border-color:#f0c8d8; box-shadow:0 6px 14px rgba(94,33,61,.09); }
+        .rp-history-item:last-child { margin-bottom:0; }
+        .rp-hist-time {
+            font-size:.73rem; color:#987f8c; white-space:nowrap; min-width:120px; text-align:center;
+            background:#fff6fa; border:1px solid #f1d6e3; border-radius:8px; padding:.22rem .4rem;
+        }
+        .rp-hist-info { font-size:.83rem; color:#5a3e4b; flex:1; }
+        .rp-hist-info strong { color:#a93c63; }
+        .rp-hist-restore {
+            font-size:.74rem; padding:.26rem .62rem; background:#fff0f5; color:#a93c63;
+            border:1px solid #f0c8d8; border-radius:8px; cursor:pointer; font-weight:800; white-space:nowrap;
+        }
+        .rp-hist-restore:hover { background:#a93c63; color:#fff; border-color:#a93c63; }
+        .rp-hist-del {
+            font-size:.75rem; padding:.26rem .52rem; background:#fff0f0; color:#dc2626;
+            border:1px solid #fca5a5; border-radius:8px; cursor:pointer; font-weight:800;
+        }
+        .rp-hist-del:hover { background:#dc2626; color:#fff; border-color:#dc2626; }
+        .rp-history-empty {
+            font-size:.86rem; color:#9d8692; text-align:center; padding:1.1rem;
+            background:#fff9fc; border:1px dashed #efcfde; border-radius:10px;
+        }
+        tr.rd.rp-hidden { display:none; }
+
+        @media(max-width:640px) {
+            .rp-kpi-bar { grid-template-columns:repeat(2,1fr); }
+            .rp-filterbar { padding:.65rem .7rem; }
+            .rp-history-wrap { padding:.8rem .75rem; }
+            .rp-hist-time { min-width:92px; font-size:.69rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Marketing Ads</div>
+            <ul class="nav-links">
+                <li><a href="./index.html">Trang Chủ</a></li>
+                <li><a href="./reports.html" class="active">Báo Cáo</a></li>
+                <li><a href="./notifications.html">Thông Báo</a></li>
+                <li><a href="./ideas.html">Ý Tưởng</a></li>
+                <li><a href="./content.html">Nội Dung</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="rp-page">
+        <div class="rp-topbar">
+            <div class="rp-title">&#128202; <span>Báo Cáo</span> Tháng</div>
+            <div class="rp-controls">
+                <span class="rp-name-label">Người báo cáo:</span>
+                <input id="rpReporter" class="rp-name-inp" type="text" placeholder="Nhập tên nhân viên..." maxlength="40">
+                <select id="rpMonth" class="rp-select">
+                    <option value="1">Tháng 1</option><option value="2">Tháng 2</option>
+                    <option value="3">Tháng 3</option><option value="4">Tháng 4</option>
+                    <option value="5">Tháng 5</option><option value="6">Tháng 6</option>
+                    <option value="7">Tháng 7</option><option value="8">Tháng 8</option>
+                    <option value="9">Tháng 9</option><option value="10">Tháng 10</option>
+                    <option value="11">Tháng 11</option><option value="12">Tháng 12</option>
+                </select>
+                <input id="rpYear" class="rp-year" type="number" value="2026" min="2020" max="2099">
+                <button class="rp-btn rp-btn-gen"    id="rpBtnGen">Tạo Bảng</button>
+                <button class="rp-btn rp-btn-save"   id="rpBtnSave">Lưu</button>
+                <button class="rp-btn rp-btn-export" id="rpBtnExport">Xuất CSV</button>
+                <button class="rp-btn rp-btn-clear"  id="rpBtnClear">Xóa Tháng</button>
+            </div>
+        </div>
+
+        <div class="rp-filterbar">
+            <label>Bộ lọc:</label>
+            <button class="rp-filter-chip active" data-filter="all">Tất cả</button>
+            <button class="rp-filter-chip" data-filter="has-data">Có dữ liệu</button>
+            <button class="rp-filter-chip" data-filter="weekend">Cuối tuần</button>
+            <button class="rp-filter-chip" data-filter="weekday">Ngày thường</button>
+            <div class="rp-filter-sep"></div>
+            <label>Từ ngày:</label>
+            <input id="rpFilterFrom" class="rp-filter-select" type="number" min="1" max="31" placeholder="1" style="width:62px;">
+            <label>Đến ngày:</label>
+            <input id="rpFilterTo" class="rp-filter-select" type="number" min="1" max="31" placeholder="31" style="width:62px;">
+            <button class="rp-filter-chip rp-chip-primary" id="rpFilterApply">Áp dụng</button>
+            <button class="rp-filter-chip" id="rpFilterReset">Đặt lại</button>
+        </div>
+
+        <div class="rp-kpi-bar">
+            <div class="rp-kpi kpi-cost"><div class="rp-kpi-label">Tổng Chi Phí</div><div class="rp-kpi-value" id="kpiCost">0 đ</div></div>
+            <div class="rp-kpi kpi-rev"> <div class="rp-kpi-label">Tổng Doanh Thu</div><div class="rp-kpi-value good" id="kpiRev">0 đ</div></div>
+            <div class="rp-kpi kpi-roas"><div class="rp-kpi-label">ROAS</div><div class="rp-kpi-value" id="kpiRoas">-</div></div>
+            <div class="rp-kpi kpi-mess"><div class="rp-kpi-label">Tổng MESS</div><div class="rp-kpi-value" id="kpiMess">0</div></div>
+            <div class="rp-kpi kpi-sdt"> <div class="rp-kpi-label">Tổng SĐT</div><div class="rp-kpi-value" id="kpiSdt">0</div></div>
+            <div class="rp-kpi kpi-lich"><div class="rp-kpi-label">Tổng Lịch Hẹn</div><div class="rp-kpi-value" id="kpiLich">0</div></div>
+            <div class="rp-kpi kpi-hd">  <div class="rp-kpi-label">Tổng Hợp Đồng</div><div class="rp-kpi-value" id="kpiHd">0</div></div>
+            <div class="rp-kpi kpi-coc"> <div class="rp-kpi-label">Tổng Cọc</div><div class="rp-kpi-value good" id="kpiCoc">0 đ</div></div>
+        </div>
+
+        <div class="rp-table-wrap">
+            <div class="rp-scroll">
+                <table class="rp-table" id="rpTable">
+                    <thead>
+                        <tr class="rh-banner"><td colspan="14" id="rpTableTitle">THÁNG 4/2026</td></tr>
+                        <tr class="rh-cols">
+                            <th class="col-day">Ngày</th>
+                            <th class="col-e">Chi Phí (đ)</th>
+                            <th class="col-e">MESS</th>
+                            <th class="col-e">SDT</th>
+                            <th class="col-e">ĐẶT LỊCH</th>
+                            <th class="col-e">HOÀN HỦY</th>
+                            <th class="col-e">SỐ HĐ</th>
+                            <th class="col-f">TỈ LỆ KÝ</th>
+                            <th class="col-f">TỈ LỆ XIN SỐ</th>
+                            <th class="col-f">CP/MESS</th>
+                            <th class="col-f">CP/SDT</th>
+                            <th class="col-f">CP/LICH</th>
+                            <th class="col-e">DOANH THU</th>
+                            <th class="col-f">% CP/DT</th>
+                        </tr>
+                        <tr class="rh-total" id="rpTotalRow">
+                            <th class="tl">TỔNG</th>
+                            <th class="tv" id="tCost">-</th>
+                            <th class="tv" id="tMess">-</th><th class="tv" id="tSdt">-</th>
+                            <th class="tv" id="tLich">-</th><th class="tv" id="tHoanHuy">-</th><th class="tv" id="tHd">-</th>
+                            <th class="tv" id="tTiLeKy">-</th><th class="tv" id="tTiLeXs">-</th>
+                            <th class="tv" id="tCpMess">-</th><th class="tv" id="tCpSdt">-</th><th class="tv" id="tCpLich">-</th>
+                            <th class="tv good" id="tRev">-</th><th class="tv" id="tCpDt">-</th>
+                        </tr>
+                    </thead>
+                    <tbody id="rpBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="rp-toast" id="rpToast">Đã lưu!</div>
+
+    <div class="rp-history-wrap">
+        <div class="rp-history-title"><span>&#128338;</span>&nbsp;Lịch sử chỉnh sửa <button id="rpHistClearAll" class="rp-hist-clear">Xóa tất cả</button></div>
+        <ul class="rp-history-list" id="rpHistoryList"><li class="rp-history-empty">Chưa có lịch sử nào.</li></ul>
+    </div>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="./assets/js/firebase-config.js"></script>
+    <script src="./assets/js/script.js?v=20260416-02"></script>
+    <script>
+    (function(){
+        var SK='rpData3',HIST_KEY='rpEditHistory';
+        var MAX_HIST=30;
+        function pushHistory(m,y,data){
+            var hist=[];try{hist=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}catch(e){}
+            var snap={ts:Date.now(),month:m,year:y,reporter:getReporter()||'Chưa nhập',data:JSON.stringify(data)};
+            hist.unshift(snap);if(hist.length>MAX_HIST)hist=hist.slice(0,MAX_HIST);
+            localStorage.setItem(HIST_KEY,JSON.stringify(hist));
+            renderHistory();
+        }
+        function renderHistory(){
+            var list=document.getElementById('rpHistoryList');if(!list)return;
+            var hist=[];try{hist=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}catch(e){}
+            if(!hist.length){list.innerHTML='<li class="rp-history-empty">Chưa có lịch sử nào.</li>';return;}
+            var mn=['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+            list.innerHTML=hist.map(function(h,i){
+                var d=new Date(h.ts);var ts=d.toLocaleDateString('vi-VN')+' '+d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
+                return '<li class="rp-history-item">'+'<span class="rp-hist-time">'+ts+'</span>'+'<span class="rp-hist-info"><strong>'+h.reporter+'</strong> - '+mn[h.month]+'/'+h.year+'</span>'+'<button class="rp-hist-restore" data-i="'+i+'">Khôi phục</button>'+'<button class="rp-hist-del" data-i="'+i+'">&times;</button>'+'</li>';
+            }).join('');
+            list.querySelectorAll('.rp-hist-restore').forEach(function(btn){
+                btn.addEventListener('click',function(){
+                    var h=hist[parseInt(this.dataset.i)];if(!h)return;
+                    if(!confirm('Khôi phục dữ liệu '+mn[h.month]+'/'+h.year+' của '+h.reporter+'?'))return;
+                    var mv=getMY();
+                    localStorage.setItem(skey(h.month,h.year),h.data);
+                    if(h.month===mv.m&&h.year===mv.y)gen();
+                    toast('Đã khôi phục!');
+                });
+            });
+            list.querySelectorAll('.rp-hist-del').forEach(function(btn){
+                btn.addEventListener('click',function(){
+                    hist.splice(parseInt(this.dataset.i),1);
+                    localStorage.setItem(HIST_KEY,JSON.stringify(hist));
+                    renderHistory();
+                });
+            });
+        }
+        renderHistory();
+        (function(){
+            var now=new Date();
+            var sel=document.getElementById('rpMonth');if(sel)sel.value=String(now.getMonth()+1);
+            var yr=document.getElementById('rpYear');if(yr)yr.value=String(now.getFullYear());
+            var ri=document.getElementById('rpReporter');if(ri)ri.value='';
+        }());
+        function getReporter(){var ri=document.getElementById('rpReporter');return(ri&&ri.value.trim())||'';}
+        function vnd(n){if(!n)return'0 đ';return Number(n).toLocaleString('vi-VN')+' đ';}
+        function sh(n){if(!n)return'-';if(n>=1e9)return(n/1e9).toFixed(2)+' tỷ';if(n>=1e6)return(n/1e6).toFixed(1)+' tr';return Number(n).toLocaleString('vi-VN');}
+        function fn(n){if(!n&&n!==0)return'-';return Number(n).toLocaleString('vi-VN');}
+        function pf(v){
+            // Accept flexible user input (letters, separators, currency text) and keep only digits.
+            var raw=String(v||'').trim();
+            if(!raw)return 0;
+            var cleaned=raw.replace(/[^0-9]/g,'');
+            return cleaned?parseInt(cleaned,10):0;
+        }
+        function dim(m,y){return new Date(y,m,0).getDate();}
+        function dlbl(d,m,y){var ns=['CN','T2','T3','T4','T5','T6','T7'],dw=new Date(y,m-1,d).getDay();return d+'/'+m+' ('+ns[dw]+')';}
+        function iswk(d,m,y){var dw=new Date(y,m-1,d).getDay();return dw===0||dw===6;}
+        function skey(m,y){return SK+'_'+y+'_'+m;}
+        function load(m,y){try{return JSON.parse(localStorage.getItem(skey(m,y))||'null')||{};}catch(e){return{};}}
+        function save(m,y){
+            var days=dim(m,y),data={};
+            for(var d=1;d<=days;d++){
+                var row=document.querySelector('.rd[data-day="'+d+'"]');if(!row)continue;
+                var inp=row.querySelectorAll('.rpf');
+                data['d'+d]={cost:inp[0]?inp[0].value:'',mess:inp[1]?inp[1].value:'',sdt:inp[2]?inp[2].value:'',lich:inp[3]?inp[3].value:'',hh:inp[4]?inp[4].value:'',hd:inp[5]?inp[5].value:'',rev:inp[6]?inp[6].value:''};
+            }
+            // no coc field anymore
+            localStorage.setItem(skey(m,y),JSON.stringify(data));
+        }
+        var tt;function toast(msg){var t=document.getElementById('rpToast');if(!t)return;t.textContent=msg||'Đã lưu!';t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show');},2200);}
+        var rt;function sched(){clearTimeout(rt);rt=setTimeout(recalc,60);}
+
+        function recalc(){
+            var rows=document.querySelectorAll('.rd[data-day]');
+            var sc=0,sm=0,ss=0,sl=0,shh=0,shd=0,sr=0;
+            rows.forEach(function(row){
+                var inp=row.querySelectorAll('.rpf');
+                var cost=pf(inp[0]&&inp[0].value),mess=pf(inp[1]&&inp[1].value),sdt=pf(inp[2]&&inp[2].value),lich=pf(inp[3]&&inp[3].value),hh=pf(inp[4]&&inp[4].value),hd=pf(inp[5]&&inp[5].value),rev=pf(inp[6]&&inp[6].value);
+                var hasData=cost||mess||sdt||lich||hd||rev;
+                sc+=cost;sm+=mess;ss+=sdt;sl+=lich;shh+=hh;shd+=hd;sr+=rev;
+                /* formula cells */
+                var fc=row.querySelectorAll('.rp-fc');
+                rpct(fc[0],hd,lich,hasData,true);rpct(fc[1],sdt,mess,hasData,false);
+                rcp(fc[2],cost,mess,hasData);rcp(fc[3],cost,sdt,hasData);rcp(fc[4],cost,lich,hasData);
+                rcpdt(fc[5],cost,rev,hasData);
+            });
+            /* totals */
+            sth('tCost',sc?sh(sc):'-');sth('tMess',sm?fn(sm):'-');sth('tSdt',ss?fn(ss):'-');sth('tLich',sl?fn(sl):'-');sth('tHoanHuy',shh?fn(shh):'-');sth('tHd',shd?fn(shd):'-');sth('tRev',sr?sh(sr):'-');
+            rtpct('tTiLeKy',shd,sl,true);rtpct('tTiLeXs',ss,sm,false);rtcp('tCpMess',sc,sm);rtcp('tCpSdt',sc,ss);rtcp('tCpLich',sc,sl);rtcpdt('tCpDt',sc,sr);
+            /* bottom total row */
+            sth('btCost',sc?sh(sc):'-');sth('btMess',sm?fn(sm):'-');sth('btSdt',ss?fn(ss):'-');sth('btLich',sl?fn(sl):'-');sth('btHoanHuy',shh?fn(shh):'-');sth('btHd',shd?fn(shd):'-');sth('btRev',sr?sh(sr):'-');
+            rbtpct('btTiLeKy',shd,sl,true);rbtpct('btTiLeXs',ss,sm,false);rbtcp('btCpMess',sc,sm);rbtcp('btCpSdt',sc,ss);rbtcp('btCpLich',sc,sl);rbtcpdt('btCpDt',sc,sr);
+            /* kpi */
+            sel('kpiCost',vnd(Math.round(sc)));sel('kpiRev',vnd(Math.round(sr)));
+            sel('kpiMess',sm||'0');sel('kpiSdt',ss||'0');sel('kpiLich',sl||'0');sel('kpiHd',shd||'0');
+            var re=document.getElementById('kpiRoas');
+            if(sc&&sr){var roas=sr/sc;re.textContent=roas.toFixed(2);re.className='rp-kpi-value '+(roas>=2?'good':roas>=1?'warn':'bad');}
+            else{re.textContent='-';re.className='rp-kpi-value';}
+            sel('kpiCoc','0 d');
+        }
+
+        function rpct(td,num,den,hasData,isSign){
+            if(!td)return;
+            if(!hasData||!den){td.className='rp-fc fc-empty';td.textContent='';return;}
+            var v=num/den*100;
+            var c=isSign?(v>=50?'good':v>=25?'warn':'bad'):(v>=30?'good':v>=15?'warn':'bad');
+            td.className='rp-fc fc-pct-'+c;td.textContent=v.toFixed(2)+'%';
+        }
+        function rcp(td,cost,cnt,hasData){
+            if(!td)return;
+            if(!hasData||!cnt){td.className='rp-fc fc-empty';td.textContent='';return;}
+            td.className='rp-fc fc-num';td.textContent=vnd(Math.round(cost/cnt));
+        }
+        function rcpdt(td,cost,rev,hasData){
+            if(!td)return;
+            if(!hasData||!rev){td.className='rp-fc fc-empty';td.textContent='';return;}
+            var v=cost/rev*100;var c=v<=30?'good':v<=60?'warn':'bad';
+            td.className='rp-fc fc-pct-'+c;td.textContent=v.toFixed(2)+'%';
+        }
+        function rbtpct(id,num,den,isSign){
+            var th=document.getElementById(id);if(!th)return;
+            if(!den||!num){th.textContent='-';th.className='';return;}
+            var v=num/den*100;var c=isSign?(v>=50?'bt-good':v>=25?'bt-warn':'bt-bad'):(v>=30?'bt-good':v>=15?'bt-warn':'bt-bad');
+            th.textContent=v.toFixed(2)+'%';th.className=c;
+        }
+        function rbtcp(id,cost,cnt){
+            var th=document.getElementById(id);if(!th)return;
+            if(!cnt){th.textContent='-';th.className='';return;}
+            th.textContent=sh(Math.round(cost/cnt));th.className='';
+        }
+        function rbtcpdt(id,cost,rev){
+            var th=document.getElementById(id);if(!th)return;
+            if(!rev){th.textContent='-';th.className='';return;}
+            var v=cost/rev*100;var c=v<=30?'bt-good':v<=60?'bt-warn':'bt-bad';
+            th.textContent=v.toFixed(2)+'%';th.className=c;
+        }
+        function rtpct(id,num,den,isSign){
+            var th=document.getElementById(id);if(!th)return;
+            if(!den||!num){th.textContent='-';th.className='tv';return;}
+            var v=num/den*100;var c=isSign?(v>=50?'good':v>=25?'warn':'bad'):(v>=30?'good':v>=15?'warn':'bad');
+            th.textContent=v.toFixed(2)+'%';th.className='tv '+c;
+        }
+        function rtcp(id,cost,cnt){
+            var th=document.getElementById(id);if(!th)return;
+            if(!cnt){th.textContent='-';th.className='tv';return;}
+            th.textContent=sh(Math.round(cost/cnt));th.className='tv';
+        }
+        function rtcpdt(id,cost,rev){
+            var th=document.getElementById(id);if(!th)return;
+            if(!rev){th.textContent='-';th.className='tv';return;}
+            var v=cost/rev*100;var c=v<=30?'good':v<=60?'warn':'bad';
+            th.textContent=v.toFixed(2)+'%';th.className='tv '+c;
+        }
+        function sth(id,val){var e=document.getElementById(id);if(e)e.textContent=val;}
+        function sel(id,val){var e=document.getElementById(id);if(e)e.textContent=val;}
+
+        function getMY(){return{m:parseInt(document.getElementById('rpMonth').value),y:parseInt(document.getElementById('rpYear').value)};}
+
+        function buildTable(m,y,data){
+            var days=dim(m,y),body=document.getElementById('rpBody');
+            body.innerHTML='';
+            var mn=['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+            var rp=getReporter();
+            document.getElementById('rpTableTitle').textContent=(rp?rp.toUpperCase()+' - ':'')+mn[m]+'/'+y;
+
+            function minp(val,ph,cls,type){
+                var i=document.createElement('input');i.type=type||'text';
+                i.inputMode='numeric';
+                i.className='rpf '+(cls||'rp-inp');i.placeholder=ph||'';i.value=val||'';
+                i.addEventListener('input',sched);return i;
+            }
+
+            for(var d=1;d<=days;d++){
+                var sv=(data&&data['d'+d])||{};
+                // migrate old data: if pct field exists, ignore it
+                var tr=document.createElement('tr');tr.className='rd'+(iswk(d,m,y)?' is-wknd':'');tr.dataset.day=d;
+
+                /* Day */
+                var tdD=document.createElement('td');tdD.className='cell-day';tdD.textContent=dlbl(d,m,y);tr.appendChild(tdD);
+
+                /* Cost cell */
+                var tdC=document.createElement('td');tdC.className='cell-cost-wrap';
+                var ic=minp(sv.cost,'','cell-cost-inp rpf');
+                tdC.appendChild(ic);tr.appendChild(tdC);
+
+                /* MESS SĐT LỊCH HH HD */
+                [{v:sv.mess},{v:sv.sdt},{v:sv.lich},{v:sv.hh},{v:sv.hd}].forEach(function(f){
+                    var td=document.createElement('td');td.className='cell-num';
+                    td.appendChild(minp(f.v,''));tr.appendChild(td);
+                });
+
+                /* 6 formula cells */
+                for(var i=0;i<6;i++){var tf=document.createElement('td');tf.className='rp-fc fc-empty';tr.appendChild(tf);}
+
+                /* Revenue */
+                var tdR=document.createElement('td');tdR.className='cell-rev';
+                tdR.appendChild(minp(sv.rev,'','rp-inp-rev rpf'));tr.appendChild(tdR);
+
+                body.appendChild(tr);
+            }
+
+            /* Bottom total row */
+            var bt=document.createElement('tr');bt.className='rd-btotal';bt.id='rpBtotal';
+            var btIds=['btCost','btMess','btSdt','btLich','btHoanHuy','btHd','btTiLeKy','btTiLeXs','btCpMess','btCpSdt','btCpLich','btRev','btCpDt'];
+            var lbl=document.createElement('td');lbl.className='bt-lbl';lbl.textContent='TỔNG CỘNG';bt.appendChild(lbl);
+            btIds.forEach(function(id){var td=document.createElement('td');td.id=id;td.textContent='-';bt.appendChild(td);});
+            body.appendChild(bt);
+
+            setTimeout(recalc,15);
+        }
+
+        function gen(){var mv=getMY();buildTable(mv.m,mv.y,load(mv.m,mv.y));}
+        gen();
+        document.getElementById('rpMonth').addEventListener('change',gen);
+        document.getElementById('rpYear').addEventListener('change',gen);
+        document.getElementById('rpBtnGen').addEventListener('click',gen);
+        document.getElementById('rpReporter').addEventListener('input',function(){
+            var mv=getMY(),mn=['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+            var rp=getReporter();
+            var t=document.getElementById('rpTableTitle');if(t)t.textContent=(rp?rp.toUpperCase()+' - ':'')+mn[mv.m]+'/'+mv.y;
+        });
+        document.getElementById('rpBtnSave').addEventListener('click',function(){
+            var mv=getMY();save(mv.m,mv.y);
+            pushHistory(mv.m,mv.y,JSON.parse(localStorage.getItem(skey(mv.m,mv.y))||'{}'));
+            toast('Đã lưu!');
+        });
+        document.getElementById('rpBtnClear').addEventListener('click',function(){if(!confirm('Xóa toàn bộ dữ liệu tháng này?'))return;var mv=getMY();localStorage.removeItem(skey(mv.m,mv.y));gen();toast('Đã xóa!');});
+        document.getElementById('rpBtnExport').addEventListener('click',function(){
+            var mv=getMY(),rows=document.querySelectorAll('.rd[data-day]');
+            var csv='Ngày,Chi Phí,MESS,SĐT,ĐẶT LỊCH,HOÀN HỦY,SỐ HĐ,TỈ LỆ KÝ,TỈ LỆ XIN SỐ,CP/MESS,CP/SĐT,CP/LỊCH,DOANH THU,% CP/DT\n';
+            rows.forEach(function(row){
+                var day=row.querySelector('.cell-day').textContent;
+                var inp=row.querySelectorAll('.rpf');
+                var fc=row.querySelectorAll('.rp-fc');
+                var vals=[day];
+                Array.from(inp).forEach(function(i){vals.push(i.value);});
+                Array.from(fc).forEach(function(td){vals.push(td.textContent);});
+                csv+=vals.join(',')+'\n';
+            });
+            var ce=document.getElementById('rpCoc');csv+='COC,'+(ce?ce.value:'')+'\n';
+            var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='bao-cao-'+mv.m+'-'+mv.y+'.csv';a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);
+        });
+        document.getElementById('rpHistClearAll').addEventListener('click',function(){
+            if(!confirm('Xóa toàn bộ lịch sử chỉnh sửa?'))return;
+            localStorage.removeItem(HIST_KEY);renderHistory();toast('Đã xóa lịch sử!');
+        });
+        /* Filter chips */
+        var curFilter='all';
+        document.querySelectorAll('.rp-filter-chip[data-filter]').forEach(function(btn){
+            btn.addEventListener('click',function(){
+                document.querySelectorAll('.rp-filter-chip[data-filter]').forEach(function(b){b.classList.remove('active');});
+                this.classList.add('active');curFilter=this.dataset.filter;
+                applyFilter();
+            });
+        });
+        document.getElementById('rpFilterApply').addEventListener('click',function(){applyFilter();});
+        document.getElementById('rpFilterReset').addEventListener('click',function(){
+            document.getElementById('rpFilterFrom').value='';
+            document.getElementById('rpFilterTo').value='';
+            curFilter='all';
+            document.querySelectorAll('.rp-filter-chip[data-filter]').forEach(function(b){b.classList.remove('active');});
+            document.querySelector('.rp-filter-chip[data-filter="all"]').classList.add('active');
+            applyFilter();
+        });
+        function applyFilter(){
+            var from=parseInt(document.getElementById('rpFilterFrom').value)||1;
+            var to=parseInt(document.getElementById('rpFilterTo').value)||31;
+            document.querySelectorAll('.rd[data-day]').forEach(function(row){
+                var d=parseInt(row.dataset.day);
+                var inRange=(d>=from&&d<=to);
+                var hasData=Array.from(row.querySelectorAll('.rpf')).some(function(i){return i.value&&i.value!=='0';});
+                var isWknd=row.classList.contains('is-wknd');
+                var show=inRange;
+                if(curFilter==='has-data')show=show&&hasData;
+                else if(curFilter==='weekend')show=show&&isWknd;
+                else if(curFilter==='weekday')show=show&&!isWknd;
+                row.classList.toggle('rp-hidden',!show);
+            });
+        }
+        setInterval(function(){var mv=getMY();save(mv.m,mv.y);},40000);
+    }());
+    </script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Ads - Ý Tưởng</title>
+    <link rel="stylesheet" href="./assets/css/style.css?v=20260416-01">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Marketing Ads</div>
+            <ul class="nav-links">
+                <li><a href="./index.html">Trang Chủ</a></li>
+                <li><a href="./reports.html">Báo Cáo</a></li>
+                <li><a href="./notifications.html">Thông Báo</a></li>
+                <li><a href="./ideas.html">Ý Tưởng</a></li>
+                <li><a href="./content.html">Nội Dung</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Ý Tưởng Sáng Tạo</h1>
+                <p>Khám phá các ý tưởng marketing đột phá và chiến lược mới mẻ</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Các Ý Tưởng Nổi Bật</h2>
+            <div class="card-grid">
+                <div class="card">
+                    <h3>Tìm Kiếm Xu Hướng</h3>
+                    <p>Chọn từ khóa hot trend từ danh sách hoặc nhập từ khóa tùy chỉnh vào ô bên dưới, sau đó bấm "Tìm Kiếm" để xem kết quả từ tất cả nền tảng.</p>
+                    <select class="data-input trend-select">
+                        <option value="">Chọn từ khóa hot trend (tổng hợp từ TikTok, Douyin, YouTube, Facebook, Google)</option>
+                        <option value="chăm sóc thai kỳ">Chăm sóc thai kỳ</option>
+                        <option value="dinh dưỡng mẹ bầu">Dinh dưỡng mẹ bầu</option>
+                        <option value="đồ dùng sơ sinh">Đồ dùng sơ sinh</option>
+                        <option value="chăm sóc sau sinh">Chăm sóc sau sinh</option>
+                        <option value="sữa mẹ và sữa công thức">Sữa mẹ và sữa công thức</option>
+                        <option value="phát triển trẻ sơ sinh">Phát triển trẻ sơ sinh</option>
+                        <option value="bệnh thường gặp ở trẻ">Bệnh thường gặp ở trẻ</option>
+                        <option value="giáo dục sớm cho bé">Giáo dục sớm cho bé</option>
+                        <option value="bầu ăn gì">Bầu ăn gì</option>
+                        <option value="tips mang thai">Tips mang thai</option>
+                        <option value="chăm sóc bé 1 tuổi">Chăm sóc bé 1 tuổi</option>
+                        <option value="vaccine cho trẻ">Vaccine cho trẻ</option>
+                        <option value="thời trang bầu">Thời trang bầu</option>
+                        <option value="yoga cho mẹ bầu">Yoga cho mẹ bầu</option>
+                    </select>
+                    <input type="text" placeholder="Hoặc nhập từ khóa tùy chỉnh..." class="data-input trend-input">
+                    <button class="search-btn" id="searchBtn">Tìm Kiếm</button>
+                    <div id="searchResults" class="search-results" style="display: none;">
+                        <h4>Kết Quả Tìm Kiếm:</h4>
+                        <div id="resultsContent"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Marketing Ads. Tất cả quyền được bảo lưu.</p>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="./assets/js/firebase-config.js"></script>
+    <script src="./assets/js/script.js?v=20260416-02"></script>
+</body>
+</html>
