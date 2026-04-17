@@ -27,6 +27,20 @@
         .rp-btn-export { background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; }
         .rp-btn-clear  { background:#fff0f0; color:#dc2626; border:1.5px solid #fca5a5; }
 
+        /* Telegram sync bar */
+        .rp-telebar {
+            display:flex; align-items:center; gap:.55rem; flex-wrap:wrap;
+            background:linear-gradient(135deg,#f7fbff,#eef8ff);
+            border:1px solid #c8defa; border-radius:14px;
+            box-shadow:0 4px 14px rgba(37,99,235,.12);
+            padding:.72rem .95rem; margin-bottom:.95rem;
+        }
+        .rp-tele-label { font-size:.78rem; font-weight:800; color:#1d4ed8; letter-spacing:.02em; }
+        .rp-tele-help { font-size:.78rem; font-weight:600; color:#486286; }
+        .rp-tele-status { font-size:.8rem; font-weight:700; color:#1d4ed8; }
+        .rp-tele-status.bad { color:#b91c1c; }
+        .rp-tele-status.good { color:#15803d; }
+
         /* KPI BAR */
         .rp-kpi-bar { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:.65rem; margin-bottom:1rem; }
         .rp-kpi { background:#fff; border-radius:13px; padding:.7rem .9rem; box-shadow:0 2px 10px rgba(94,33,61,.07); border-left:4px solid transparent; }
@@ -203,8 +217,11 @@
         <div class="rp-topbar">
             <div class="rp-title">&#128202; <span>Báo Cáo</span> Tháng</div>
             <div class="rp-controls">
-                <span class="rp-name-label">Người báo cáo:</span>
-                <input id="rpReporter" class="rp-name-inp" type="text" placeholder="Nhập tên nhân viên..." maxlength="40">
+                <span class="rp-name-label">Nhân viên:</span>
+                <select id="rpReporterPick" class="rp-select"></select>
+                <input id="rpReporterNew" class="rp-name-inp" type="text" placeholder="Thêm nhân viên mới..." maxlength="40">
+                <button class="rp-btn rp-btn-gen" id="rpBtnAddReporter" type="button">Thêm NV</button>
+                <button class="rp-btn rp-btn-clear" id="rpBtnDelReporter" type="button">Xóa NV</button>
                 <select id="rpMonth" class="rp-select">
                     <option value="1">Tháng 1</option><option value="2">Tháng 2</option>
                     <option value="3">Tháng 3</option><option value="4">Tháng 4</option>
@@ -234,6 +251,16 @@
             <input id="rpFilterTo" class="rp-filter-select" type="number" min="1" max="31" placeholder="31" style="width:62px;">
             <button class="rp-filter-chip rp-chip-primary" id="rpFilterApply">Áp dụng</button>
             <button class="rp-filter-chip" id="rpFilterReset">Đặt lại</button>
+        </div>
+
+        <div class="rp-telebar">
+            <span class="rp-tele-label">Đồng bộ Telegram:</span>
+            <button class="rp-btn rp-btn-export" id="rpTgSyncNow" type="button">Đồng bộ ngay</button>
+            <label class="rp-tele-help" style="display:inline-flex;align-items:center;gap:.35rem;">
+                <input type="checkbox" id="rpTgAutoSync"> Tự động 45 giây/lần
+            </label>
+            <span id="rpTgStatus" class="rp-tele-status">Chưa đồng bộ.</span>
+            <span class="rp-tele-help">Cú pháp Telegram: <strong>/report|Tên NV|YYYY-MM-DD|Chi phí|MESS|SĐT|Lịch|Hoãn hủy|HĐ|Doanh thu</strong></span>
         </div>
 
         <div class="rp-kpi-bar">
@@ -296,8 +323,63 @@
     <script src="./assets/js/script.js?v=20260417-01"></script>
     <script>
     (function(){
-        var SK='rpData3',HIST_KEY='rpEditHistory';
+        var SK='rpData3',HIST_KEY='rpEditHistory',EMP_KEY='rpEmployeeListV1',TG_OFFSET_KEY='rpTelegramOffsetV1';
         var MAX_HIST=30;
+        var tgTimer=null;
+
+        function normReporter(name){
+            var n=String(name||'').trim().replace(/\s+/g,' ');
+            return n;
+        }
+        function reporterId(name){
+            return encodeURIComponent(normReporter(name).toLowerCase().replace(/\s+/g,'-')||'nhan-vien-mac-dinh');
+        }
+        function loadReporters(){
+            var raw=[];
+            try{raw=JSON.parse(localStorage.getItem(EMP_KEY)||'[]');}catch(e){}
+            raw=(Array.isArray(raw)?raw:[]).map(normReporter).filter(Boolean);
+            if(!raw.length){raw=['Nhân viên 1'];}
+            return Array.from(new Set(raw));
+        }
+        function saveReporters(list){
+            var clean=(Array.isArray(list)?list:[]).map(normReporter).filter(Boolean);
+            if(!clean.length){clean=['Nhân viên 1'];}
+            localStorage.setItem(EMP_KEY,JSON.stringify(Array.from(new Set(clean))));
+        }
+        function renderReporterPick(selected){
+            var pick=document.getElementById('rpReporterPick');if(!pick)return;
+            var list=loadReporters();
+            pick.innerHTML=list.map(function(n){
+                var sel=(normReporter(selected)===n)?' selected':'';
+                return '<option value="'+n.replace(/"/g,'&quot;')+'"'+sel+'>'+n+'</option>';
+            }).join('');
+            if(!pick.value&&list.length){pick.value=list[0];}
+        }
+        function ensureReporterExists(name){
+            var n=normReporter(name);if(!n)return;
+            var list=loadReporters();
+            if(list.indexOf(n)===-1){
+                list.push(n);
+                saveReporters(list);
+            }
+            renderReporterPick(n);
+        }
+        function buildTelegramUrl(botToken, method){
+            if(typeof buildTelegramApiUrl==='function'){return buildTelegramApiUrl(botToken,method);}
+            return 'https://api.telegram.org/bot'+String(botToken||'').trim()+'/'+method;
+        }
+        function getTelegramConfigSafe(){
+            try{ if(typeof getTelegramConfig==='function'){ return getTelegramConfig(); } }catch(e){}
+            return {
+                botToken: localStorage.getItem('telegramBotToken') || '',
+                chatId: localStorage.getItem('telegramChatId') || ''
+            };
+        }
+        function setTgStatus(msg,type){
+            var el=document.getElementById('rpTgStatus');if(!el)return;
+            el.textContent=msg||'';
+            el.className='rp-tele-status'+(type?' '+type:'');
+        }
         function pushHistory(m,y,data){
             var hist=[];try{hist=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}catch(e){}
             var snap={ts:Date.now(),month:m,year:y,reporter:getReporter()||'Chưa nhập',data:JSON.stringify(data)};
@@ -319,8 +401,9 @@
                     var h=hist[parseInt(this.dataset.i)];if(!h)return;
                     if(!confirm('Khôi phục dữ liệu '+mn[h.month]+'/'+h.year+' của '+h.reporter+'?'))return;
                     var mv=getMY();
-                    localStorage.setItem(skey(h.month,h.year),h.data);
-                    if(h.month===mv.m&&h.year===mv.y)gen();
+                    ensureReporterExists(h.reporter);
+                    localStorage.setItem(skey(h.month,h.year,h.reporter),h.data);
+                    if(h.month===mv.m&&h.year===mv.y&&getReporter()===h.reporter)gen();
                     toast('Đã khôi phục!');
                 });
             });
@@ -337,9 +420,10 @@
             var now=new Date();
             var sel=document.getElementById('rpMonth');if(sel)sel.value=String(now.getMonth()+1);
             var yr=document.getElementById('rpYear');if(yr)yr.value=String(now.getFullYear());
-            var ri=document.getElementById('rpReporter');if(ri)ri.value='';
+            renderReporterPick('Nhân viên 1');
         }());
-        function getReporter(){var ri=document.getElementById('rpReporter');return(ri&&ri.value.trim())||'';}
+        function getReporter(){var pick=document.getElementById('rpReporterPick');return normReporter((pick&&pick.value)||'Nhân viên 1');}
+        function getNewReporterInput(){var ri=document.getElementById('rpReporterNew');return normReporter((ri&&ri.value)||'');}
         function vnd(n){if(!n)return'0 đ';return Number(n).toLocaleString('vi-VN')+' đ';}
         function sh(n){if(!n)return'-';if(n>=1e9)return(n/1e9).toFixed(2)+' tỷ';if(n>=1e6)return(n/1e6).toFixed(1)+' tr';return Number(n).toLocaleString('vi-VN');}
         function fn(n){if(!n&&n!==0)return'-';return Number(n).toLocaleString('vi-VN');}
@@ -353,9 +437,18 @@
         function dim(m,y){return new Date(y,m,0).getDate();}
         function dlbl(d,m,y){var ns=['CN','T2','T3','T4','T5','T6','T7'],dw=new Date(y,m-1,d).getDay();return d+'/'+m+' ('+ns[dw]+')';}
         function iswk(d,m,y){var dw=new Date(y,m-1,d).getDay();return dw===0||dw===6;}
-        function skey(m,y){return SK+'_'+y+'_'+m;}
-        function load(m,y){try{return JSON.parse(localStorage.getItem(skey(m,y))||'null')||{};}catch(e){return{};}}
-        function save(m,y){
+        function skey(m,y,reporter){return SK+'_'+y+'_'+m+'_'+reporterId(reporter);}
+        function legacyKey(m,y){return SK+'_'+y+'_'+m;}
+        function load(m,y,reporter){
+            try{
+                var v=JSON.parse(localStorage.getItem(skey(m,y,reporter))||'null');
+                if(v&&typeof v==='object'){return v;}
+                // Backward compatibility with old single-table data
+                var old=JSON.parse(localStorage.getItem(legacyKey(m,y))||'null');
+                return (old&&typeof old==='object')?old:{};
+            }catch(e){return{};}
+        }
+        function save(m,y,reporter){
             var days=dim(m,y),data={};
             for(var d=1;d<=days;d++){
                 var row=document.querySelector('.rd[data-day="'+d+'"]');if(!row)continue;
@@ -363,7 +456,7 @@
                 data['d'+d]={cost:inp[0]?inp[0].value:'',mess:inp[1]?inp[1].value:'',sdt:inp[2]?inp[2].value:'',lich:inp[3]?inp[3].value:'',hh:inp[4]?inp[4].value:'',hd:inp[5]?inp[5].value:'',rev:inp[6]?inp[6].value:''};
             }
             // no coc field anymore
-            localStorage.setItem(skey(m,y),JSON.stringify(data));
+            localStorage.setItem(skey(m,y,reporter),JSON.stringify(data));
         }
         var tt;function toast(msg){var t=document.getElementById('rpToast');if(!t)return;t.textContent=msg||'Đã lưu!';t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show');},2200);}
         var rt;function sched(){clearTimeout(rt);rt=setTimeout(recalc,60);}
@@ -507,22 +600,47 @@
             setTimeout(recalc,15);
         }
 
-        function gen(){var mv=getMY();buildTable(mv.m,mv.y,load(mv.m,mv.y));}
+        function gen(){var mv=getMY();buildTable(mv.m,mv.y,load(mv.m,mv.y,getReporter()));}
         gen();
         document.getElementById('rpMonth').addEventListener('change',gen);
         document.getElementById('rpYear').addEventListener('change',gen);
         document.getElementById('rpBtnGen').addEventListener('click',gen);
-        document.getElementById('rpReporter').addEventListener('input',function(){
+        document.getElementById('rpReporterPick').addEventListener('change',function(){
             var mv=getMY(),mn=['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
             var rp=getReporter();
             var t=document.getElementById('rpTableTitle');if(t)t.textContent=(rp?rp.toUpperCase()+' - ':'')+mn[mv.m]+'/'+mv.y;
+            gen();
+        });
+        document.getElementById('rpBtnAddReporter').addEventListener('click',function(){
+            var nv=getNewReporterInput();
+            if(!nv){alert('Vui lòng nhập tên nhân viên mới.');return;}
+            ensureReporterExists(nv);
+            var inp=document.getElementById('rpReporterNew');if(inp){inp.value='';}
+            gen();
+            toast('Đã thêm nhân viên và tạo bảng riêng.');
+        });
+        document.getElementById('rpBtnDelReporter').addEventListener('click',function(){
+            var current=getReporter();
+            var list=loadReporters();
+            if(list.length<=1){alert('Cần giữ lại ít nhất 1 nhân viên.');return;}
+            if(!confirm('Xóa nhân viên "'+current+'" khỏi danh sách?')){return;}
+            list=list.filter(function(n){return n!==current;});
+            saveReporters(list);
+            renderReporterPick(list[0]);
+            gen();
+            toast('Đã xóa nhân viên khỏi danh sách.');
         });
         document.getElementById('rpBtnSave').addEventListener('click',function(){
-            var mv=getMY();save(mv.m,mv.y);
-            pushHistory(mv.m,mv.y,JSON.parse(localStorage.getItem(skey(mv.m,mv.y))||'{}'));
+            var mv=getMY(),rp=getReporter();save(mv.m,mv.y,rp);
+            pushHistory(mv.m,mv.y,JSON.parse(localStorage.getItem(skey(mv.m,mv.y,rp))||'{}'));
             toast('Đã lưu!');
         });
-        document.getElementById('rpBtnClear').addEventListener('click',function(){if(!confirm('Xóa toàn bộ dữ liệu tháng này?'))return;var mv=getMY();localStorage.removeItem(skey(mv.m,mv.y));gen();toast('Đã xóa!');});
+        document.getElementById('rpBtnClear').addEventListener('click',function(){
+            if(!confirm('Xóa toàn bộ dữ liệu tháng này của nhân viên hiện tại?'))return;
+            var mv=getMY(),rp=getReporter();
+            localStorage.removeItem(skey(mv.m,mv.y,rp));
+            gen();toast('Đã xóa!');
+        });
         document.getElementById('rpBtnExport').addEventListener('click',function(){
             var mv=getMY(),rows=document.querySelectorAll('.rd[data-day]');
             var csv='Ngày,Chi Phí,MESS,SĐT,ĐẶT LỊCH,HOÀN HỦY,SỐ HĐ,TỈ LỆ KÝ,TỈ LỆ XIN SỐ,CP/MESS,CP/SĐT,CP/LỊCH,DOANH THU,% CP/DT\n';
@@ -536,7 +654,8 @@
                 csv+=vals.join(',')+'\n';
             });
             var ce=document.getElementById('rpCoc');csv+='COC,'+(ce?ce.value:'')+'\n';
-            var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='bao-cao-'+mv.m+'-'+mv.y+'.csv';a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);
+            var rp=getReporter().toLowerCase().replace(/\s+/g,'-');
+            var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='bao-cao-'+rp+'-'+mv.m+'-'+mv.y+'.csv';a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);
         });
         document.getElementById('rpHistClearAll').addEventListener('click',function(){
             if(!confirm('Xóa toàn bộ lịch sử chỉnh sửa?'))return;
@@ -575,7 +694,120 @@
                 row.classList.toggle('rp-hidden',!show);
             });
         }
-        setInterval(function(){var mv=getMY();save(mv.m,mv.y);},40000);
+
+        function parseReportDate(raw){
+            var text=String(raw||'').trim();
+            var m=text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+            if(m){return {y:parseInt(m[1],10),m:parseInt(m[2],10),d:parseInt(m[3],10)};}
+            m=text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            if(m){return {y:parseInt(m[3],10),m:parseInt(m[2],10),d:parseInt(m[1],10)};}
+            return null;
+        }
+        function parseNumLoose(v){
+            var cleaned=String(v||'').replace(/[^0-9]/g,'');
+            return cleaned?parseInt(cleaned,10):0;
+        }
+        function parseTelegramReportText(text){
+            var raw=String(text||'').trim();
+            if(!raw){return null;}
+            if(raw.indexOf('/report')===0){raw=raw.replace(/^\/report\s*/i,'');}
+            var sep='|';
+            if(raw.indexOf('|')===-1&&raw.indexOf(';')>-1){sep=';';}
+            if(raw.indexOf('|')===-1&&raw.indexOf(';')===-1&&raw.indexOf(',')>-1){sep=',';}
+            var parts=raw.split(sep).map(function(p){return p.trim();}).filter(Boolean);
+            if(parts.length<9){return null;}
+            var rp=normReporter(parts[0]);
+            var dt=parseReportDate(parts[1]);
+            if(!dt||!rp){return null;}
+            return {
+                reporter: rp,
+                year: dt.y,
+                month: dt.m,
+                day: dt.d,
+                row: {
+                    cost: String(parseNumLoose(parts[2])||''),
+                    mess: String(parseNumLoose(parts[3])||''),
+                    sdt: String(parseNumLoose(parts[4])||''),
+                    lich: String(parseNumLoose(parts[5])||''),
+                    hh: String(parseNumLoose(parts[6])||''),
+                    hd: String(parseNumLoose(parts[7])||''),
+                    rev: String(parseNumLoose(parts[8])||'')
+                }
+            };
+        }
+        function applyTelegramReport(parsed){
+            if(!parsed||!parsed.reporter||!parsed.day){return false;}
+            ensureReporterExists(parsed.reporter);
+            var key=skey(parsed.month,parsed.year,parsed.reporter);
+            var data=load(parsed.month,parsed.year,parsed.reporter);
+            var dayKey='d'+parsed.day;
+            var prev=(data[dayKey]&&typeof data[dayKey]==='object')?data[dayKey]:{};
+            data[dayKey]=Object.assign({},prev,parsed.row);
+            localStorage.setItem(key,JSON.stringify(data));
+
+            var mv=getMY();
+            var onCurrent=(mv.m===parsed.month&&mv.y===parsed.year&&getReporter()===parsed.reporter);
+            if(onCurrent){gen();}
+            return onCurrent;
+        }
+        async function syncFromTelegram(){
+            var cfg=getTelegramConfigSafe();
+            if(!cfg.botToken||!cfg.chatId){
+                setTgStatus('Thiếu Bot Token/Chat ID. Vui lòng cấu hình Telegram trước.', 'bad');
+                return;
+            }
+            setTgStatus('Đang đồng bộ dữ liệu từ Telegram...','');
+            var offset=parseInt(localStorage.getItem(TG_OFFSET_KEY)||'0',10)||0;
+            try{
+                var url=buildTelegramUrl(cfg.botToken,'getUpdates')+'?offset='+offset+'&limit=50&timeout=0';
+                var res=await fetch(url);
+                var data=await res.json().catch(function(){return{};});
+                if(!res.ok||!data.ok){
+                    setTgStatus('Không lấy được dữ liệu Telegram: '+(data.description||'Unknown'), 'bad');
+                    return;
+                }
+                var list=Array.isArray(data.result)?data.result:[];
+                var imported=0;
+                var currentTouched=false;
+                var maxUpdate=offset;
+                list.forEach(function(upd){
+                    if(upd&&upd.update_id>=maxUpdate){maxUpdate=upd.update_id+1;}
+                    var msg=upd&&upd.message;
+                    if(!msg||!msg.text||!msg.chat){return;}
+                    if(String(msg.chat.id)!==String(cfg.chatId)){return;}
+                    var parsed=parseTelegramReportText(msg.text);
+                    if(!parsed){return;}
+                    if(parsed.year<2020||parsed.year>2099||parsed.month<1||parsed.month>12||parsed.day<1||parsed.day>31){return;}
+                    var touched=applyTelegramReport(parsed);
+                    imported+=1;
+                    currentTouched=currentTouched||touched;
+                });
+                if(maxUpdate>offset){localStorage.setItem(TG_OFFSET_KEY,String(maxUpdate));}
+                if(currentTouched){gen();}
+                setTgStatus(imported>0?('Đồng bộ thành công '+imported+' báo cáo từ Telegram.'):('Không có báo cáo Telegram mới.'), imported>0?'good':'');
+            }catch(e){
+                setTgStatus('Lỗi đồng bộ Telegram: '+(e&&e.message?e.message:'Không rõ lỗi'), 'bad');
+            }
+        }
+        function bindTelegramSyncUi(){
+            var syncBtn=document.getElementById('rpTgSyncNow');
+            var auto=document.getElementById('rpTgAutoSync');
+            if(syncBtn){syncBtn.addEventListener('click',function(){syncFromTelegram();});}
+            if(auto){
+                auto.addEventListener('change',function(){
+                    if(tgTimer){clearInterval(tgTimer);tgTimer=null;}
+                    if(auto.checked){
+                        tgTimer=setInterval(function(){syncFromTelegram();},45000);
+                    }
+                });
+                if(auto.checked){
+                    tgTimer=setInterval(function(){syncFromTelegram();},45000);
+                }
+            }
+        }
+        bindTelegramSyncUi();
+
+        setInterval(function(){var mv=getMY();save(mv.m,mv.y,getReporter());},40000);
     }());
     </script>
 </body>
