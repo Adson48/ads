@@ -332,10 +332,10 @@ if (testTelegramBtn) {
             }
         } catch (error) {
             if (telegramConfigStatus) {
-                telegramConfigStatus.textContent = 'Loi khi test Telegram.';
+                telegramConfigStatus.textContent = 'Lỗi khi test Telegram.';
             }
             if (telegramDebugOutput) {
-                telegramDebugOutput.textContent = 'Loi: ' + (error && error.message ? error.message : 'unknown');
+                telegramDebugOutput.textContent = 'Lỗi: ' + (error && error.message ? error.message : 'unknown');
             }
         }
     });
@@ -1309,6 +1309,15 @@ if (studioOutput && sidebarCategoryLinks.length) {
     var CONF = 'ma_config';
     var firebaseStatusReason = 'Chưa khởi tạo Firebase.';
 
+    var setFirebaseOffline = function (reason, err) {
+        db = null;
+        if (err && err.message) {
+            firebaseStatusReason = err.message;
+            return;
+        }
+        firebaseStatusReason = reason || 'Kết nối Firebase không ổn định.';
+    };
+
     var initFirebase = function () {
         try {
             var cfg = window.MA_FIREBASE_CONFIG;
@@ -1324,9 +1333,25 @@ if (studioOutput && sidebarCategoryLinks.length) {
             db = firebase.firestore();
             firebaseStatusReason = '';
         } catch (e) {
-            db = null;
-            firebaseStatusReason = (e && e.message) ? e.message : 'Không thể khởi tạo Firestore.';
+            setFirebaseOffline('Không thể khởi tạo Firestore.', e);
         }
+    };
+
+    var ensureFirebaseReady = function () {
+        if (db) { return Promise.resolve(true); }
+        var attempts = 3;
+        var tryConnect = function () {
+            initFirebase();
+            if (db) { return Promise.resolve(true); }
+            attempts -= 1;
+            if (attempts <= 0) { return Promise.resolve(false); }
+            return new Promise(function (resolve) {
+                setTimeout(function () {
+                    tryConnect().then(resolve);
+                }, 450);
+            });
+        };
+        return tryConnect();
     };
 
     // Normalize account object
@@ -1419,11 +1444,15 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
     // Async account CRUD
     var getAccounts = function () {
+        if (!db) { initFirebase(); }
         if (db) {
             return db.collection(COLL).get().then(function (snap) {
                 return snap.docs
                     .map(function (d) { return norm(Object.assign({ id: d.id }, d.data())); })
                     .filter(function (u) { return !!u.username; });
+            }).catch(function (err) {
+                setFirebaseOffline('Kết nối Firebase không ổn định. Đang dùng dữ liệu cục bộ.', err);
+                return localAll();
             });
         }
         return Promise.resolve(localAll());
@@ -1431,8 +1460,16 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
     var upsertAccount = function (account) {
         var a = norm(account);
+        if (!db) { initFirebase(); }
         if (db) {
-            return db.collection(COLL).doc(a.id).set(a).then(function () { return a; });
+            return db.collection(COLL).doc(a.id).set(a).then(function () { return a; }).catch(function (err) {
+                setFirebaseOffline('Mất kết nối Firebase khi lưu dữ liệu. Đang lưu tạm trên trình duyệt.', err);
+                var allFallback = localAll();
+                var idxFallback = allFallback.findIndex(function (u) { return u.id === a.id; });
+                if (idxFallback >= 0) { allFallback[idxFallback] = a; } else { allFallback.push(a); }
+                localSave(allFallback);
+                return a;
+            });
         }
         var all = localAll();
         var idx = all.findIndex(function (u) { return u.id === a.id; });
@@ -1442,8 +1479,15 @@ if (studioOutput && sidebarCategoryLinks.length) {
     };
 
     var updateAccountField = function (id, fields) {
+        if (!db) { initFirebase(); }
         if (db) {
-            return db.collection(COLL).doc(id).update(Object.assign({}, fields, { updatedAt: Date.now() }));
+            return db.collection(COLL).doc(id).update(Object.assign({}, fields, { updatedAt: Date.now() })).catch(function (err) {
+                setFirebaseOffline('Mất kết nối Firebase khi cập nhật dữ liệu. Đang dùng dữ liệu cục bộ.', err);
+                return getAccounts().then(function (all) {
+                    var idx = all.findIndex(function (u) { return u.id === id; });
+                    if (idx >= 0) { Object.assign(all[idx], fields, { updatedAt: Date.now() }); localSave(all); }
+                });
+            });
         }
         return getAccounts().then(function (all) {
             var idx = all.findIndex(function (u) { return u.id === id; });
@@ -1453,10 +1497,14 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
     // Owner ID — stored in Firestore config + localStorage
     var getOwnerId = function () {
+        if (!db) { initFirebase(); }
         if (db) {
             return db.collection(CONF).doc('owner').get().then(function (snap) {
                 return (snap.exists && snap.data().ownerId) ? snap.data().ownerId : (localStorage.getItem(OWNER_KEY) || '');
-            }).catch(function () { return localStorage.getItem(OWNER_KEY) || ''; });
+            }).catch(function (err) {
+                setFirebaseOffline('Mất kết nối Firebase khi đọc cấu hình quản trị.', err);
+                return localStorage.getItem(OWNER_KEY) || '';
+            });
         }
         return Promise.resolve(localStorage.getItem(OWNER_KEY) || '');
     };
@@ -1464,7 +1512,12 @@ if (studioOutput && sidebarCategoryLinks.length) {
     var setOwnerId = function (id) {
         if (!id) { return Promise.resolve(); }
         localStorage.setItem(OWNER_KEY, id);
-        if (db) { return db.collection(CONF).doc('owner').set({ ownerId: id }); }
+        if (!db) { initFirebase(); }
+        if (db) {
+            return db.collection(CONF).doc('owner').set({ ownerId: id }).catch(function (err) {
+                setFirebaseOffline('Mất kết nối Firebase khi lưu cấu hình quản trị.', err);
+            });
+        }
         return Promise.resolve();
     };
 
@@ -1491,7 +1544,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
             document.body.appendChild(el);
         }
         var m = document.getElementById('maLoadingMsg');
-        if (m) { m.textContent = msg || 'Dang tai...'; }
+        if (m) { m.textContent = msg || 'Đang tải...'; }
         el.style.display = 'flex';
     };
 
@@ -1894,8 +1947,8 @@ if (studioOutput && sidebarCategoryLinks.length) {
     var bootAuthSystem = function () {
         addAuthStyles();
         showLoading('Đang kết nối...');
-        initFirebase();
-        ensureSuperadmin()
+        ensureFirebaseReady()
+            .then(function () { return ensureSuperadmin(); })
             .then(function () { return enforceSingleSuperadmin(); })
             .then(function () { return getCurrentUser(); })
             .then(function (currentUser) {
