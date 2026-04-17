@@ -1000,7 +1000,12 @@ if (studioOutput && sidebarCategoryLinks.length) {
             }
 
         const dashboardStorageKey = 'homeAdsDashboardInputs';
+        const reportEmployeeKey = 'rpEmployeeListV1';
+        const reportPrefix = 'rpData3';
+        const reportCollection = 'ma_reports';
         const insightWeeklyStamp = document.getElementById('insightWeeklyStamp');
+        let homeReportDb = null;
+        let homeReportUnsub = null;
 
         const parseNumber = function(raw) {
             return Number(String(raw || '').replace(/[^0-9]/g, '')) || 0;
@@ -1023,16 +1028,114 @@ if (studioOutput && sidebarCategoryLinks.length) {
             return Math.ceil((((utcDate - yearStart) / 86400000) + 1) / 7);
         };
 
-        const buildLinkedValueSeries = function(value, days) {
-            const valueInMillions = Number((((value || 0) / 1000000)).toFixed(2));
-            return Array.from({ length: days }, () => valueInMillions);
+        const getDaysInMonth = function(year, month) {
+            return new Date(year, month, 0).getDate();
         };
 
-        const buildDefaultKpiSeries = function(totalValue, days) {
-            return buildLinkedValueSeries(totalValue, days);
+        const getMonthDocId = function(year, month) {
+            return year + '_' + month;
         };
 
-        const labels = Array.from({ length: 30 }, (_, i) => String(i + 1));
+        const normalizeReporterName = function(value) {
+            return String(value || '').trim();
+        };
+
+        const reporterStorageId = function(name) {
+            return encodeURIComponent(normalizeReporterName(name).toLowerCase().replace(/\s+/g, '-') || 'nhan-vien-mac-dinh');
+        };
+
+        const reportStorageKey = function(year, month, reporter) {
+            return reportPrefix + '_' + year + '_' + month + '_' + reporterStorageId(reporter);
+        };
+
+        const buildFlatSeriesInMillions = function(value, days) {
+            const millionValue = Number((((value || 0) / 1000000)).toFixed(2));
+            return Array.from({ length: days }, () => millionValue);
+        };
+
+        const initHomeReportDb = function() {
+            if (homeReportDb) {
+                return homeReportDb;
+            }
+
+            try {
+                if (typeof firebase === 'undefined') {
+                    return null;
+                }
+
+                if (!firebase.apps.length && window.MA_FIREBASE_CONFIG && window.MA_FIREBASE_CONFIG.apiKey) {
+                    firebase.initializeApp(window.MA_FIREBASE_CONFIG);
+                }
+
+                homeReportDb = firebase.firestore();
+            } catch (e) {
+                homeReportDb = null;
+            }
+
+            return homeReportDb;
+        };
+
+        const aggregateReportStore = function(store, year, month) {
+            const days = getDaysInMonth(year, month);
+            const labels = Array.from({ length: days }, (_, index) => String(index + 1));
+            const costSeries = Array.from({ length: days }, () => 0);
+            const revenueSeries = Array.from({ length: days }, () => 0);
+            const employees = (store && store.employees && typeof store.employees === 'object') ? store.employees : {};
+
+            Object.keys(employees).forEach(function(employeeId) {
+                const employee = employees[employeeId] || {};
+                const data = (employee.data && typeof employee.data === 'object') ? employee.data : {};
+
+                for (let day = 1; day <= days; day += 1) {
+                    const row = data['d' + day] || {};
+                    costSeries[day - 1] += parseNumber(row.cost);
+                    revenueSeries[day - 1] += parseNumber(row.rev);
+                }
+            });
+
+            const totalCost = costSeries.reduce((sum, value) => sum + value, 0);
+            const totalRevenue = revenueSeries.reduce((sum, value) => sum + value, 0);
+            const today = new Date();
+            const todayIndex = today.getFullYear() === year && (today.getMonth() + 1) === month
+                ? Math.min(days, today.getDate()) - 1
+                : days - 1;
+            const currentDayRevenue = revenueSeries[Math.max(0, todayIndex)] || 0;
+
+            return {
+                labels: labels,
+                costSeries: costSeries.map(function(value) { return Number((value / 1000000).toFixed(2)); }),
+                revenueSeries: revenueSeries.map(function(value) { return Number((value / 1000000).toFixed(2)); }),
+                totalCost: totalCost,
+                totalRevenue: totalRevenue,
+                currentDayRevenue: currentDayRevenue,
+                days: days
+            };
+        };
+
+        const buildLocalMonthStore = function(year, month) {
+            let reporterNames = [];
+            try {
+                reporterNames = JSON.parse(localStorage.getItem(reportEmployeeKey) || '[]');
+            } catch (e) {
+                reporterNames = [];
+            }
+
+            const cleanNames = Array.isArray(reporterNames)
+                ? reporterNames.map(normalizeReporterName).filter(Boolean)
+                : [];
+            const employees = {};
+
+            cleanNames.forEach(function(name) {
+                try {
+                    const raw = JSON.parse(localStorage.getItem(reportStorageKey(year, month, name)) || '{}') || {};
+                    employees[reporterStorageId(name)] = { name: name, data: raw };
+                } catch (e) {
+                    employees[reporterStorageId(name)] = { name: name, data: {} };
+                }
+            });
+
+            return { month: month, year: year, employees: employees };
+        };
 
         if (insightWeeklyStamp) {
             const now = new Date();
@@ -1043,40 +1146,44 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const chart = new Chart(adsPerformanceChartCanvas, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: [],
                 datasets: [
                     {
-                        label: 'Chi phí hiện tại (triệu VNĐ)',
+                        label: 'Chi phí theo ngày (triệu VNĐ)',
                         data: [],
-                        tension: 0.35,
+                        tension: 0.18,
                         borderColor: '#ef5e7a',
-                        backgroundColor: 'rgba(239, 94, 122, 0.10)',
+                        backgroundColor: 'rgba(239, 94, 122, 0.08)',
                         pointBackgroundColor: '#db2777',
-                        pointRadius: 2,
-                        pointHoverRadius: 4,
-                        fill: true
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderWidth: 3,
+                        fill: false
                     },
                     {
-                        label: 'Doanh thu hiện tại (triệu VNĐ)',
+                        label: 'Doanh thu theo ngày (triệu VNĐ)',
                         data: [],
-                        tension: 0.35,
+                        tension: 0.18,
                         borderColor: '#22c55e',
-                        backgroundColor: 'rgba(34, 197, 94, 0.10)',
+                        backgroundColor: 'rgba(34, 197, 94, 0.08)',
                         pointBackgroundColor: '#16a34a',
-                        pointRadius: 2,
-                        pointHoverRadius: 4,
-                        fill: true
+                        pointRadius: 3,
+                        pointHoverRadius: 5,
+                        borderWidth: 3,
+                        fill: false
                     },
                     {
-                        label: 'Doanh thu tổng KPI (triệu VNĐ)',
+                        label: 'Mốc KPI/ngày (triệu VNĐ)',
                         data: [],
-                        tension: 0.35,
+                        tension: 0,
                         borderColor: '#3b82f6',
-                        backgroundColor: 'rgba(59, 130, 246, 0.14)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.06)',
                         pointBackgroundColor: '#2563eb',
-                        pointRadius: 2,
-                        pointHoverRadius: 4,
-                        fill: true
+                        pointRadius: 0,
+                        pointHoverRadius: 0,
+                        borderWidth: 2,
+                        borderDash: [8, 6],
+                        fill: false
                     }
                 ]
             },
@@ -1121,12 +1228,6 @@ if (studioOutput && sidebarCategoryLinks.length) {
         });
 
         const savedState = JSON.parse(localStorage.getItem(dashboardStorageKey) || '{}');
-        if (savedState.budget) {
-            budgetInput.value = String(savedState.budget);
-        }
-        if (savedState.dailyBudget) {
-            dailyBudgetInput.value = String(savedState.dailyBudget);
-        }
         if (savedState.revenue) {
             revenueInput.value = String(savedState.revenue);
         }
@@ -1134,38 +1235,75 @@ if (studioOutput && sidebarCategoryLinks.length) {
             campaignInput.value = String(savedState.campaign);
         }
 
-        const updateDashboardChart = function() {
-            const currentCost = parseNumber(budgetInput.value);
-            const currentRevenue = parseNumber(dailyBudgetInput.value);
+        const applyChartSeries = function(series) {
             const totalKpiRevenue = parseNumber(revenueInput.value);
             const campaignCount = clampCampaign(campaignInput.value);
+            const kpiDailySeries = buildFlatSeriesInMillions(series.days ? (totalKpiRevenue / series.days) : 0, series.days || 30);
+            const currentCost = series.totalCost || 0;
+            const currentRevenue = series.totalRevenue || 0;
 
             setRoasAlertContext(currentCost, currentRevenue);
 
             budgetInput.value = formatWithSeparator(currentCost);
-            dailyBudgetInput.value = formatWithSeparator(currentRevenue);
+            dailyBudgetInput.value = formatWithSeparator(series.currentDayRevenue || currentRevenue);
             revenueInput.value = formatWithSeparator(totalKpiRevenue);
             campaignInput.value = String(campaignCount);
 
             localStorage.setItem(dashboardStorageKey, JSON.stringify({
-                budget: currentCost,
-                dailyBudget: currentRevenue,
                 revenue: totalKpiRevenue,
                 campaign: campaignCount
             }));
 
-            chart.data.datasets[0].data = buildLinkedValueSeries(currentCost, 30);
-            chart.data.datasets[1].data = buildLinkedValueSeries(currentRevenue, 30);
-            chart.data.datasets[2].data = buildDefaultKpiSeries(totalKpiRevenue, 30);
+            chart.data.labels = series.labels;
+            chart.data.datasets[0].data = series.costSeries;
+            chart.data.datasets[1].data = series.revenueSeries;
+            chart.data.datasets[2].data = kpiDailySeries;
             chart.update();
         };
 
-        budgetInput.addEventListener('input', updateDashboardChart);
-        dailyBudgetInput.addEventListener('input', updateDashboardChart);
+        const updateDashboardChart = function() {
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const year = now.getFullYear();
+            const fallbackStore = buildLocalMonthStore(year, month);
+            const fallbackSeries = aggregateReportStore(fallbackStore, year, month);
+            applyChartSeries(fallbackSeries);
+        };
+
+        const bindHomeReportRealtime = function() {
+            const db = initHomeReportDb();
+            if (!db) {
+                updateDashboardChart();
+                return;
+            }
+
+            const now = new Date();
+            const month = now.getMonth() + 1;
+            const year = now.getFullYear();
+
+            if (homeReportUnsub) {
+                homeReportUnsub();
+                homeReportUnsub = null;
+            }
+
+            homeReportUnsub = db.collection(reportCollection).doc(getMonthDocId(year, month)).onSnapshot(function(snapshot) {
+                if (!snapshot.exists) {
+                    updateDashboardChart();
+                    return;
+                }
+
+                const remoteStore = snapshot.data() || {};
+                const series = aggregateReportStore(remoteStore, year, month);
+                applyChartSeries(series);
+            }, function() {
+                updateDashboardChart();
+            });
+        };
+
         revenueInput.addEventListener('input', updateDashboardChart);
         campaignInput.addEventListener('input', updateDashboardChart);
 
-        updateDashboardChart();
+        bindHomeReportRealtime();
         hydrateHomeAlerts();
         adsPerformanceChartCanvas.dataset.chartReady = '1';
         return true;
