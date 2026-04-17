@@ -100,6 +100,14 @@
             font-weight:800;
             color:#1e40af;
         }
+        .rp-tele-template .rp-tele-template-title {
+            margin:0 0 .35rem;
+            font-size:.82rem;
+            font-weight:900;
+            letter-spacing:.02em;
+            text-transform:uppercase;
+            color:#173f86;
+        }
         .rp-tele-template pre {
             margin:0;
             white-space:pre-wrap;
@@ -510,6 +518,7 @@
     </div>
     <div id="rpTelegramStaffNote" class="rp-tele-staff-note">Phần cấu hình Telegram chỉ dành cho quản trị cao nhất. Dữ liệu báo cáo đồng bộ sẽ tự hiển thị cho toàn bộ nhân viên.</div>
     <div class="rp-tele-template">
+        <p class="rp-tele-template-title">Mẫu nhân viên gửi báo cáo Telegram</p>
         <p>Mẫu điền Telegram (xuống dòng, copy và thay số):</p>
         <pre>/report
 NV: Tên nhân viên
@@ -898,11 +907,21 @@ Doanh thu: 45000000</pre>
         }
         function getTelegramConfigSafe(){
                 var localCfg={
-                    botToken: localStorage.getItem('telegramBotToken') || '',
-                    chatId: localStorage.getItem('telegramChatId') || ''
+                    botToken: String(localStorage.getItem('telegramBotToken') || '').trim(),
+                    chatId: String(localStorage.getItem('telegramChatId') || '').trim()
                 };
-                if(localCfg.botToken||localCfg.chatId){return localCfg;}
-                try{ if(typeof getTelegramConfig==='function'){ return getTelegramConfig(); } }catch(e){}
+                if(localCfg.botToken&&localCfg.chatId){return localCfg;}
+                try{
+                    if(typeof getTelegramConfig==='function'){
+                        var globalCfg=getTelegramConfig()||{};
+                        var gb=String(globalCfg.botToken||'').trim();
+                        var gc=String(globalCfg.chatId||'').trim();
+                        return {
+                            botToken: localCfg.botToken || gb,
+                            chatId: localCfg.chatId || gc
+                        };
+                    }
+                }catch(e){}
                 return localCfg;
         }
         function setTgStatus(msg,type){
@@ -1423,10 +1442,10 @@ Doanh thu: 45000000</pre>
             var map={};
             lines.forEach(function(line){
                 var clean=line.replace(/^[-*]\s*/,'');
-                var idx=clean.indexOf(':');
-                if(idx<0){return;}
-                var k=keyNorm(clean.slice(0,idx));
-                var v=clean.slice(idx+1).trim();
+                var pair=clean.match(/^([^:=-]+?)\s*[:=-]\s*(.+)$/);
+                if(!pair){return;}
+                var k=keyNorm(pair[1]);
+                var v=pair[2].trim();
                 if(k&&v){map[k]=v;}
             });
             var reporter = map.nv || map.nhanvien || map.tennv || map.ten || map.reporter;
@@ -1453,7 +1472,7 @@ Doanh thu: 45000000</pre>
         function parseTelegramReportText(text){
             var raw=String(text||'').trim();
             if(!raw){return null;}
-            if(raw.indexOf('/report')===0){raw=raw.replace(/^\/report\s*/i,'');}
+            if(raw.indexOf('/report')===0){raw=raw.replace(/^\/report(?:@[\w_]+)?\s*/i,'');}
 
             // Prefer multiline key:value format for easier manual entry.
             if(raw.indexOf('\n')>-1 || raw.indexOf('\r')>-1){
@@ -1529,23 +1548,35 @@ Doanh thu: 45000000</pre>
                 }
                 var list=Array.isArray(data.result)?data.result:[];
                 var imported=0;
+                var importedCurrent=0;
+                var importedOtherMonth=0;
                 var currentTouched=false;
                 var maxUpdate=offset;
                 list.forEach(function(upd){
                     if(upd&&upd.update_id>=maxUpdate){maxUpdate=upd.update_id+1;}
-                    var msg=upd&&upd.message;
-                    if(!msg||!msg.text||!msg.chat){return;}
+                    var msg=(upd&&upd.message)||(upd&&upd.edited_message)||(upd&&upd.channel_post)||(upd&&upd.edited_channel_post);
+                    if(!msg||!msg.chat){return;}
                     if(String(msg.chat.id)!==String(cfg.chatId)){return;}
-                    var parsed=parseTelegramReportText(msg.text);
+                    var incomingText=msg.text||msg.caption||'';
+                    if(!incomingText){return;}
+                    var parsed=parseTelegramReportText(incomingText);
                     if(!parsed){return;}
                     if(parsed.year<2020||parsed.year>2099||parsed.month<1||parsed.month>12||parsed.day<1||parsed.day>31){return;}
                     var touched=applyTelegramReport(parsed);
                     imported+=1;
+                    if(touched){importedCurrent+=1;}else{importedOtherMonth+=1;}
                     currentTouched=currentTouched||touched;
                 });
                 if(maxUpdate>offset){localStorage.setItem(TG_OFFSET_KEY,String(maxUpdate));}
                 if(currentTouched){gen();}
-                setTgStatus(imported>0?('Đồng bộ thành công '+imported+' báo cáo từ Telegram.'):('Không có báo cáo Telegram mới.'), imported>0?'good':'');
+                if(imported>0){
+                    var msg='Đồng bộ thành công '+imported+' báo cáo';
+                    if(importedCurrent>0){msg+='; vào tháng đang xem: '+importedCurrent;}
+                    if(importedOtherMonth>0){msg+='; khác tháng đang xem: '+importedOtherMonth;}
+                    setTgStatus(msg+'.', 'good');
+                }else{
+                    setTgStatus('Không có báo cáo Telegram mới hoặc sai cú pháp.', '');
+                }
             }catch(e){
                 setTgStatus('Lỗi đồng bộ Telegram: '+(e&&e.message?e.message:'Không rõ lỗi'), 'bad');
             }
