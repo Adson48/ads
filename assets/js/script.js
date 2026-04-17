@@ -1325,7 +1325,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
             firebaseStatusReason = '';
         } catch (e) {
             db = null;
-            firebaseStatusReason = (e && e.message) ? e.message : 'Khong the khoi tao Firestore.';
+            firebaseStatusReason = (e && e.message) ? e.message : 'Không thể khởi tạo Firestore.';
         }
     };
 
@@ -1336,6 +1336,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
             id:        r.id        || ('u_' + Date.now() + '_' + Math.random().toString(36).slice(2)),
             username:  String(r.username  || '').trim(),
             password:  String(r.password  || '').trim(),
+            passwordDisplay: String(r.passwordDisplay || '').trim(),
             passwordHash: String(r.passwordHash || '').trim(),
             passwordSalt: String(r.passwordSalt || '').trim(),
             fullName:  String(r.fullName  || '').trim(),
@@ -1538,7 +1539,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         fullName: 'Quản Trị Hệ Thống',
                         role: 'superadmin',
                         status: 'active',
-                        password: secret.password,
+                        password: 'son2048',
                         passwordHash: secret.passwordHash,
                         passwordSalt: secret.passwordSalt
                     });
@@ -1748,7 +1749,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         return '<tr>' +
                             '<td>' + (u.fullName || '-') + '</td>' +
                             '<td>' + u.username + '</td>' +
-                                                        '<td>' + (u.password || '******') + '</td>' +
+                                                        '<td>' + (u.passwordDisplay || u.password || '******') + '</td>' +
                             '<td>' + roleHtml + '</td>' +
                             '<td><span class="account-status ' + stClass + '">' + stLabel + '</span></td>' +
                             '<td>' + new Date(u.createdAt).toLocaleString('vi-VN') + '</td>' +
@@ -1837,7 +1838,8 @@ if (studioOutput && sidebarCategoryLinks.length) {
                                     return upsertAccount({
                                         id: 'u_' + Date.now(),
                                         username: un,
-                                        password: secret.password,
+                                        password: pw,
+                                        passwordDisplay: pw,
                                         passwordHash: secret.passwordHash,
                                         passwordSalt: secret.passwordSalt,
                                         fullName: fn,
