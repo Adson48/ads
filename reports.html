@@ -80,20 +80,23 @@
         /* TABLE */
         .rp-table-wrap { background:#fff; border-radius:16px; box-shadow:0 2px 16px rgba(94,33,61,.08); overflow:hidden; }
         .rp-scroll { overflow-x:auto; overflow-y:auto; max-height:calc(100vh - 300px); }
-        .rp-table { width:100%; border-collapse:collapse; font-size:.83rem; min-width:1460px; }
+        .rp-table { width:100%; border-collapse:collapse; font-size:.83rem; }  /* min-width auto - multi-emp */
+        .emp-banner-td { color:#fff; font-weight:900; font-size:.9rem; text-align:center; padding:.5rem .4rem; border:2px solid rgba(255,255,255,.25); position:sticky; top:0; z-index:10; white-space:nowrap; }
+        .rh-day-cell { background:#7c2d56; color:#fff; font-weight:900; text-align:center; vertical-align:middle; position:sticky; top:0; left:0; z-index:13; padding:.45rem .5rem; border:1px solid #a93c63; min-width:90px; font-size:.8rem; }
 
         /* Banner row */
-        .rp-table thead tr.rh-banner td { background:#f5d315; color:#1a1a1a; font-weight:900; font-size:1rem; text-align:center; padding:.55rem; border:1px solid #d4b800; }
+        .rp-table thead tr.rh-banner td,
+        .rp-table thead tr.rh-banner th { background:#f5d315; color:#1a1a1a; font-weight:900; font-size:1rem; text-align:center; padding:.55rem; border:1px solid #d4b800; }
 
         /* Column headers sticky */
-        .rp-table thead tr.rh-cols th { position:sticky; top:0; z-index:10; background:#c7517c; color:#fff; font-weight:700; padding:.6rem .4rem; text-align:center; border:1px solid #a93c63; white-space:nowrap; font-size:.78rem; }
+        .rp-table thead tr.rh-cols th { position:sticky; top:32px; z-index:10; background:#c7517c; color:#fff; font-weight:700; padding:.6rem .4rem; text-align:center; border:1px solid #a93c63; white-space:nowrap; font-size:.78rem; }
         .rp-table thead tr.rh-cols th.col-e { background:#a93c63; }
         .rp-table thead tr.rh-cols th.col-f { background:#7c2d56; }
-        .rp-table thead tr.rh-cols th.col-day { position:sticky; left:0; z-index:11; background:#b03070; }
+        .rp-table thead tr.rh-cols th.col-day { position:sticky; left:0; z-index:11; background:#b03070; display:none; }
 
         /* Total sticky row */
-        .rp-table thead tr.rh-total th { position:sticky; top:38px; z-index:9; background:#fff8e1; color:#7c5700; font-weight:800; padding:.5rem .4rem; text-align:center; border:1px solid #ffe082; font-size:.82rem; white-space:nowrap; }
-        .rp-table thead tr.rh-total th.tl { text-align:left; padding-left:.6rem; background:#fff3cd; position:sticky; left:0; z-index:11; }
+        .rp-table thead tr.rh-total th { position:sticky; top:72px; z-index:9; background:#fff8e1; color:#7c5700; font-weight:800; padding:.5rem .4rem; text-align:center; border:1px solid #ffe082; font-size:.82rem; white-space:nowrap; }
+        .rp-table thead tr.rh-total th.tl { text-align:left; padding-left:.6rem; background:#fff3cd; position:sticky; top:72px; left:0; z-index:11; }
         .rp-table thead tr.rh-total th.tv.good { color:#16a34a; } .rp-table thead tr.rh-total th.tv.warn { color:#d97706; } .rp-table thead tr.rh-total th.tv.bad { color:#dc2626; }
 
         /* Data rows */
@@ -136,6 +139,10 @@
         .rp-table tbody tr.rd-btotal td.bt-good { color:#16a34a; }
         .rp-table tbody tr.rd-btotal td.bt-warn { color:#d97706; }
         .rp-table tbody tr.rd-btotal td.bt-bad  { color:#dc2626; }
+        /* Employee group separator */
+        .emp-group-end { border-right:3px solid #c7517c !important; }
+        /* Rename button */
+        .rp-btn-rename { background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; }
 
         /* Filter bar (premium) */
         .rp-filterbar {
@@ -246,6 +253,7 @@
                 <select id="rpReporterPick" class="rp-select"></select>
                 <input id="rpReporterNew" class="rp-name-inp" type="text" placeholder="Thêm nhân viên mới..." maxlength="40">
                 <button class="rp-btn rp-btn-gen" id="rpBtnAddReporter" type="button">Thêm NV</button>
+                <button class="rp-btn rp-btn-rename" id="rpBtnRenameReporter" type="button">Đổi tên NV</button>
                 <button class="rp-btn rp-btn-clear" id="rpBtnDelReporter" type="button">Xóa NV</button>
                 <select id="rpMonth" class="rp-select">
                     <option value="1">Tháng 1</option><option value="2">Tháng 2</option>
@@ -486,46 +494,73 @@ Doanh thu: 45000000</pre>
                 return (old&&typeof old==='object')?old:{};
             }catch(e){return{};}
         }
-        function save(m,y,reporter){
-            var days=dim(m,y),data={};
-            for(var d=1;d<=days;d++){
-                var row=document.querySelector('.rd[data-day="'+d+'"]');if(!row)continue;
-                var inp=row.querySelectorAll('.rpf');
-                data['d'+d]={cost:inp[0]?inp[0].value:'',mess:inp[1]?inp[1].value:'',sdt:inp[2]?inp[2].value:'',lich:inp[3]?inp[3].value:'',hh:inp[4]?inp[4].value:'',hd:inp[5]?inp[5].value:'',rev:inp[6]?inp[6].value:''};
-            }
-            // no coc field anymore
-            localStorage.setItem(skey(m,y,reporter),JSON.stringify(data));
+        function saveAll(m,y){
+            var emps=loadReporters();var days=dim(m,y);
+            emps.forEach(function(emp,ei){
+                var data={};
+                for(var d=1;d<=days;d++){
+                    var row=document.querySelector('.rd[data-day="'+d+'"]');if(!row)continue;
+                    var inp=row.querySelectorAll('td[data-emp-idx="'+ei+'"] .rpf');
+                    data['d'+d]={cost:inp[0]?inp[0].value:'',mess:inp[1]?inp[1].value:'',sdt:inp[2]?inp[2].value:'',lich:inp[3]?inp[3].value:'',hh:inp[4]?inp[4].value:'',hd:inp[5]?inp[5].value:'',rev:inp[6]?inp[6].value:''};
+                }
+                localStorage.setItem(skey(m,y,emp),JSON.stringify(data));
+            });
+        }
+        function renameReporter(oldName,newName){
+            var list=loadReporters();var oi=list.indexOf(normReporter(oldName));if(oi===-1)return null;
+            var nn=normReporter(newName);
+            if(!nn||nn===normReporter(oldName))return null;
+            if(list.indexOf(nn)!==-1)return null;
+            var oldSuffix='_'+reporterId(oldName);
+            var newSuffix='_'+reporterId(nn);
+            var toMigrate=[];
+            for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k&&k.slice(-oldSuffix.length)===oldSuffix)toMigrate.push(k);}
+            toMigrate.forEach(function(k){
+                var newKey=k.slice(0,k.length-oldSuffix.length)+newSuffix;
+                localStorage.setItem(newKey,localStorage.getItem(k));localStorage.removeItem(k);
+            });
+            list[oi]=nn;saveReporters(list);return nn;
         }
         var tt;function toast(msg){var t=document.getElementById('rpToast');if(!t)return;t.textContent=msg||'Đã lưu!';t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show');},2200);}
-        var rt;function sched(){clearTimeout(rt);rt=setTimeout(recalc,60);}
+        var rt;function sched(){clearTimeout(rt);rt=setTimeout(recalcAll,60);}
 
-        function recalc(){
-            var rows=document.querySelectorAll('.rd[data-day]');
-            var sc=0,sm=0,ss=0,sl=0,shh=0,shd=0,sr=0;
-            rows.forEach(function(row){
-                var inp=row.querySelectorAll('.rpf');
-                var cost=pf(inp[0]&&inp[0].value),mess=pf(inp[1]&&inp[1].value),sdt=pf(inp[2]&&inp[2].value),lich=pf(inp[3]&&inp[3].value),hh=pf(inp[4]&&inp[4].value),hd=pf(inp[5]&&inp[5].value),rev=pf(inp[6]&&inp[6].value);
-                var hasData=cost||mess||sdt||lich||hd||rev;
-                sc+=cost;sm+=mess;ss+=sdt;sl+=lich;shh+=hh;shd+=hd;sr+=rev;
-                /* formula cells */
-                var fc=row.querySelectorAll('.rp-fc');
-                rpct(fc[0],hd,lich,hasData,true);rpct(fc[1],sdt,mess,hasData,false);
-                rcp(fc[2],cost,mess,hasData);rcp(fc[3],cost,sdt,hasData);rcp(fc[4],cost,lich,hasData);
-                rcpdt(fc[5],cost,rev,hasData);
+        function recalcAll(){
+            var emps=loadReporters();
+            var allCost=0,allRev=0,allMess=0,allSdt=0,allLich=0,allHd=0;
+            emps.forEach(function(emp,ei){
+                var rows=document.querySelectorAll('.rd[data-day]');
+                var sc=0,sm=0,ss=0,sl=0,shh=0,shd=0,sr=0;
+                rows.forEach(function(row){
+                    var inputs=row.querySelectorAll('td[data-emp-idx="'+ei+'"] .rpf');
+                    var fcs=row.querySelectorAll('td.rp-fc[data-emp-idx="'+ei+'"]');
+                    if(inputs.length<7)return;
+                    var cost=pf(inputs[0].value),mess=pf(inputs[1].value),sdt=pf(inputs[2].value);
+                    var lich=pf(inputs[3].value),hh=pf(inputs[4].value),hd=pf(inputs[5].value),rev=pf(inputs[6].value);
+                    var hasData=cost||mess||sdt||lich||hd||rev;
+                    sc+=cost;sm+=mess;ss+=sdt;sl+=lich;shh+=hh;shd+=hd;sr+=rev;
+                    rpct(fcs[0],hd,lich,hasData,true);rpct(fcs[1],sdt,mess,hasData,false);
+                    rcp(fcs[2],cost,mess,hasData);rcp(fcs[3],cost,sdt,hasData);rcp(fcs[4],cost,lich,hasData);
+                    rcpdt(fcs[5],cost,rev,hasData);
+                });
+                /* Top total row */
+                sth('tCost_'+ei,sc?sh(sc):'-');sth('tMess_'+ei,sm?fn(sm):'-');sth('tSdt_'+ei,ss?fn(ss):'-');
+                sth('tLich_'+ei,sl?fn(sl):'-');sth('tHoanHuy_'+ei,shh?fn(shh):'-');sth('tHd_'+ei,shd?fn(shd):'-');sth('tRev_'+ei,sr?sh(sr):'-');
+                rtpct('tTiLeKy_'+ei,shd,sl,true);rtpct('tTiLeXs_'+ei,ss,sm,false);
+                rtcp('tCpMess_'+ei,sc,sm);rtcp('tCpSdt_'+ei,sc,ss);rtcp('tCpLich_'+ei,sc,sl);rtcpdt('tCpDt_'+ei,sc,sr);
+                /* Bottom total row */
+                sth('btCost_'+ei,sc?sh(sc):'-');sth('btMess_'+ei,sm?fn(sm):'-');sth('btSdt_'+ei,ss?fn(ss):'-');
+                sth('btLich_'+ei,sl?fn(sl):'-');sth('btHoanHuy_'+ei,shh?fn(shh):'-');sth('btHd_'+ei,shd?fn(shd):'-');sth('btRev_'+ei,sr?sh(sr):'-');
+                rbtpct('btTiLeKy_'+ei,shd,sl,true);rbtpct('btTiLeXs_'+ei,ss,sm,false);
+                rbtcp('btCpMess_'+ei,sc,sm);rbtcp('btCpSdt_'+ei,sc,ss);rbtcp('btCpLich_'+ei,sc,sl);rbtcpdt('btCpDt_'+ei,sc,sr);
+                allCost+=sc;allRev+=sr;allMess+=sm;allSdt+=ss;allLich+=sl;allHd+=shd;
             });
-            /* totals */
-            sth('tCost',sc?sh(sc):'-');sth('tMess',sm?fn(sm):'-');sth('tSdt',ss?fn(ss):'-');sth('tLich',sl?fn(sl):'-');sth('tHoanHuy',shh?fn(shh):'-');sth('tHd',shd?fn(shd):'-');sth('tRev',sr?sh(sr):'-');
-            rtpct('tTiLeKy',shd,sl,true);rtpct('tTiLeXs',ss,sm,false);rtcp('tCpMess',sc,sm);rtcp('tCpSdt',sc,ss);rtcp('tCpLich',sc,sl);rtcpdt('tCpDt',sc,sr);
-            /* bottom total row */
-            sth('btCost',sc?sh(sc):'-');sth('btMess',sm?fn(sm):'-');sth('btSdt',ss?fn(ss):'-');sth('btLich',sl?fn(sl):'-');sth('btHoanHuy',shh?fn(shh):'-');sth('btHd',shd?fn(shd):'-');sth('btRev',sr?sh(sr):'-');
-            rbtpct('btTiLeKy',shd,sl,true);rbtpct('btTiLeXs',ss,sm,false);rbtcp('btCpMess',sc,sm);rbtcp('btCpSdt',sc,ss);rbtcp('btCpLich',sc,sl);rbtcpdt('btCpDt',sc,sr);
-            /* kpi */
-            sel('kpiCost',vnd(Math.round(sc)));sel('kpiRev',vnd(Math.round(sr)));
-            sel('kpiMess',sm||'0');sel('kpiSdt',ss||'0');sel('kpiLich',sl||'0');sel('kpiHd',shd||'0');
+            /* KPI bar aggregate */
+            sel('kpiCost',vnd(Math.round(allCost)));sel('kpiRev',vnd(Math.round(allRev)));
+            sel('kpiMess',allMess||'0');sel('kpiSdt',allSdt||'0');sel('kpiLich',allLich||'0');sel('kpiHd',allHd||'0');
             var re=document.getElementById('kpiRoas');
-            if(sc&&sr){var roas=sr/sc;re.textContent=roas.toFixed(2);re.className='rp-kpi-value '+(roas>=2?'good':roas>=1?'warn':'bad');}
+            if(allCost&&allRev){var roas=allRev/allCost;re.textContent=roas.toFixed(2);re.className='rp-kpi-value '+(roas>=2?'good':roas>=1?'warn':'bad');}
             else{re.textContent='-';re.className='rp-kpi-value';}
-            sel('kpiCoc','0 d');
+            sel('kpiCoc','0 đ');
         }
 
         function rpct(td,num,den,hasData,isSign){
@@ -585,99 +620,185 @@ Doanh thu: 45000000</pre>
 
         function getMY(){return{m:parseInt(document.getElementById('rpMonth').value),y:parseInt(document.getElementById('rpYear').value)};}
 
-        function buildTable(m,y,data){
-            var days=dim(m,y),body=document.getElementById('rpBody');
-            body.innerHTML='';
+        function buildMultiTable(m,y,emps){
+            var days=dim(m,y);
             var mn=['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
-            var rp=getReporter();
-            document.getElementById('rpTableTitle').textContent=(rp?rp.toUpperCase()+' - ':'')+mn[m]+'/'+y;
+            var table=document.getElementById('rpTable');
+            var thead=table.querySelector('thead');
+            var tbody=document.getElementById('rpBody');
+            thead.innerHTML='';
+            tbody.innerHTML='';
 
-            function minp(val,ph,cls,type){
-                var i=document.createElement('input');i.type=type||'text';
-                i.inputMode='numeric';
-                i.className='rpf '+(cls||'rp-inp');i.placeholder=ph||'';i.value=val||'';
-                i.addEventListener('input',sched);return i;
-            }
+            var EMP_COLORS=['#1b7a34','#1a5fa8','#6d2f9c','#b54d08','#8e2222','#0e6b5a','#8a5400','#14756e'];
+            var COL_DEFS=[
+                {l:'CHI PHÍ (đ)',c:'col-e'},{l:'MESS',c:'col-e'},{l:'SĐT',c:'col-e'},
+                {l:'ĐẶT LỊCH',c:'col-e'},{l:'HOÀN HỦY',c:'col-e'},{l:'SỐ HĐ',c:'col-e'},
+                {l:'TỈ LỆ KÝ',c:'col-f'},{l:'TỈ LỆ XIN SỐ',c:'col-f'},
+                {l:'CP/MESS',c:'col-f'},{l:'CP/SĐT',c:'col-f'},{l:'CP/LỊCH',c:'col-f'},
+                {l:'DOANH THU',c:'col-e'},{l:'% CP/DT',c:'col-f'}
+            ];
 
-            for(var d=1;d<=days;d++){
-                var sv=(data&&data['d'+d])||{};
-                // migrate old data: if pct field exists, ignore it
-                var tr=document.createElement('tr');tr.className='rd'+(iswk(d,m,y)?' is-wknd':'');tr.dataset.day=d;
+            /* ── ROW 1: Day cell (rowspan=3) + Employee banners ── */
+            var bannerRow=document.createElement('tr');
+            bannerRow.className='rh-banner';
+            var dayTh=document.createElement('th');
+            dayTh.className='rh-day-cell';
+            dayTh.rowSpan=3;
+            dayTh.textContent='Ngày';
+            bannerRow.appendChild(dayTh);
+            emps.forEach(function(emp,ei){
+                var td=document.createElement('td');
+                td.colSpan=COL_DEFS.length;
+                td.className='emp-banner-td';
+                td.style.background=EMP_COLORS[ei%EMP_COLORS.length];
+                if(ei===emps.length-1)td.classList.add('emp-group-end');
+                td.textContent=emp.toUpperCase()+' — '+mn[m]+'/'+y;
+                bannerRow.appendChild(td);
+            });
+            thead.appendChild(bannerRow);
 
-                /* Day */
-                var tdD=document.createElement('td');tdD.className='cell-day';tdD.textContent=dlbl(d,m,y);tr.appendChild(tdD);
-
-                /* Cost cell */
-                var tdC=document.createElement('td');tdC.className='cell-cost-wrap';
-                var ic=minp(sv.cost,'','cell-cost-inp rpf');
-                tdC.appendChild(ic);tr.appendChild(tdC);
-
-                /* MESS SĐT LỊCH HH HD */
-                [{v:sv.mess},{v:sv.sdt},{v:sv.lich},{v:sv.hh},{v:sv.hd}].forEach(function(f){
-                    var td=document.createElement('td');td.className='cell-num';
-                    td.appendChild(minp(f.v,''));tr.appendChild(td);
+            /* ── ROW 2: Column headers ── */
+            var colRow=document.createElement('tr');
+            colRow.className='rh-cols';
+            emps.forEach(function(emp,ei){
+                COL_DEFS.forEach(function(cd,ci){
+                    var th=document.createElement('th');
+                    th.className=cd.c+(ci===COL_DEFS.length-1&&ei<emps.length-1?' emp-group-end':'');
+                    th.textContent=cd.l;
+                    colRow.appendChild(th);
                 });
+            });
+            thead.appendChild(colRow);
 
-                /* 6 formula cells */
-                for(var i=0;i<6;i++){var tf=document.createElement('td');tf.className='rp-fc fc-empty';tr.appendChild(tf);}
+            /* ── ROW 3: Top total row ── */
+            var totalRow=document.createElement('tr');
+            totalRow.className='rh-total';
+            totalRow.id='rpTotalRow';
+            var TOTAL_IDS=['Cost','Mess','Sdt','Lich','HoanHuy','Hd','TiLeKy','TiLeXs','CpMess','CpSdt','CpLich','Rev','CpDt'];
+            emps.forEach(function(emp,ei){
+                TOTAL_IDS.forEach(function(f,fi){
+                    var th=document.createElement('th');
+                    th.className='tv'+(fi===TOTAL_IDS.length-1&&ei<emps.length-1?' emp-group-end':'');
+                    th.id='t'+f+'_'+ei;
+                    th.textContent='-';
+                    totalRow.appendChild(th);
+                });
+            });
+            thead.appendChild(totalRow);
 
-                /* Revenue */
-                var tdR=document.createElement('td');tdR.className='cell-rev';
-                tdR.appendChild(minp(sv.rev,'','rp-inp-rev rpf'));tr.appendChild(tdR);
+            /* ── TBODY: Day rows ── */
+            for(var d=1;d<=days;d++){
+                var tr=document.createElement('tr');
+                tr.className='rd'+(iswk(d,m,y)?' is-wknd':'');
+                tr.dataset.day=d;
+                var tdDay=document.createElement('td');
+                tdDay.className='cell-day';
+                tdDay.textContent=dlbl(d,m,y);
+                tr.appendChild(tdDay);
 
-                body.appendChild(tr);
+                emps.forEach(function(emp,ei){
+                    var data=load(m,y,emp);
+                    var sv=(data&&data['d'+d])||{};
+                    function minp(val,cls){
+                        var inp=document.createElement('input');inp.type='text';
+                        inp.inputMode='numeric';
+                        inp.className='rpf '+(cls||'rp-inp');
+                        inp.value=val||'';
+                        inp.dataset.empIdx=ei;
+                        inp.addEventListener('input',sched);
+                        return inp;
+                    }
+                    var lastInEmpGroup=ei===emps.length-1;
+
+                    /* Chi phí */
+                    var tdC=document.createElement('td');tdC.className='cell-cost-wrap';tdC.dataset.empIdx=ei;
+                    tdC.appendChild(minp(sv.cost,'cell-cost-inp rpf'));tr.appendChild(tdC);
+
+                    /* MESS SĐT LỊCH HH HĐ */
+                    [{v:sv.mess},{v:sv.sdt},{v:sv.lich},{v:sv.hh},{v:sv.hd}].forEach(function(f){
+                        var td=document.createElement('td');td.className='cell-num';td.dataset.empIdx=ei;
+                        td.appendChild(minp(f.v));tr.appendChild(td);
+                    });
+
+                    /* 6 formula cells */
+                    for(var i=0;i<6;i++){
+                        var tf=document.createElement('td');
+                        tf.className='rp-fc fc-empty';
+                        tf.dataset.empIdx=ei;
+                        tr.appendChild(tf);
+                    }
+
+                    /* Doanh thu */
+                    var tdR=document.createElement('td');
+                    tdR.className='cell-rev'+(lastInEmpGroup?'':' emp-group-end');
+                    if(!lastInEmpGroup)tdR.style.borderRight='3px solid #c7517c';
+                    tdR.dataset.empIdx=ei;
+                    tdR.appendChild(minp(sv.rev,'rp-inp-rev rpf'));
+                    tr.appendChild(tdR);
+                });
+                tbody.appendChild(tr);
             }
 
             /* Bottom total row */
             var bt=document.createElement('tr');bt.className='rd-btotal';bt.id='rpBtotal';
-            var btIds=['btCost','btMess','btSdt','btLich','btHoanHuy','btHd','btTiLeKy','btTiLeXs','btCpMess','btCpSdt','btCpLich','btRev','btCpDt'];
             var lbl=document.createElement('td');lbl.className='bt-lbl';lbl.textContent='TỔNG CỘNG';bt.appendChild(lbl);
-            btIds.forEach(function(id){var td=document.createElement('td');td.id=id;td.textContent='-';bt.appendChild(td);});
-            body.appendChild(bt);
+            var BT_IDS=['btCost','btMess','btSdt','btLich','btHoanHuy','btHd','btTiLeKy','btTiLeXs','btCpMess','btCpSdt','btCpLich','btRev','btCpDt'];
+            emps.forEach(function(emp,ei){
+                BT_IDS.forEach(function(bId,bi){
+                    var td=document.createElement('td');
+                    if(bi===BT_IDS.length-1&&ei<emps.length-1)td.style.borderRight='3px solid #c7517c';
+                    td.id=bId+'_'+ei;td.textContent='-';bt.appendChild(td);
+                });
+            });
+            tbody.appendChild(bt);
 
-            setTimeout(recalc,15);
+            setTimeout(recalcAll,15);
         }
 
-        function gen(){var mv=getMY();buildTable(mv.m,mv.y,load(mv.m,mv.y,getReporter()));}
+        function gen(){var mv=getMY();buildMultiTable(mv.m,mv.y,loadReporters());}
         gen();
         document.getElementById('rpMonth').addEventListener('change',gen);
         document.getElementById('rpYear').addEventListener('change',gen);
         document.getElementById('rpBtnGen').addEventListener('click',gen);
         document.getElementById('rpReporterPick').addEventListener('change',function(){
-            var mv=getMY(),mn=['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
-            var rp=getReporter();
-            var t=document.getElementById('rpTableTitle');if(t)t.textContent=(rp?rp.toUpperCase()+' - ':'')+mn[mv.m]+'/'+mv.y;
-            gen();
+            // dropdown now just tracks which employee to rename/delete
         });
         document.getElementById('rpBtnAddReporter').addEventListener('click',function(){
             var nv=getNewReporterInput();
             if(!nv){alert('Vui lòng nhập tên nhân viên mới.');return;}
             ensureReporterExists(nv);
             var inp=document.getElementById('rpReporterNew');if(inp){inp.value='';}
+            renderReporterPick(nv);
             gen();
-            toast('Đã thêm nhân viên và tạo bảng riêng.');
+            toast('Đã thêm nhân viên "'+nv+'" — bảng mới hiển thị bên phải.');
+        });
+        document.getElementById('rpBtnRenameReporter').addEventListener('click',function(){
+            var oldName=getReporter();var newName=getNewReporterInput();
+            if(!newName){alert('Nhập tên mới vào ô nhập liệu bên cạnh.');return;}
+            if(!confirm('Đổi tên "'+oldName+'" → "'+newName+'"?\nDữ liệu cũ sẽ chuyển sang tên mới.'))return;
+            var nn=renameReporter(oldName,newName);
+            if(!nn){alert('Tên không hợp lệ hoặc đã tồn tại.');return;}
+            var inp=document.getElementById('rpReporterNew');if(inp)inp.value='';
+            renderReporterPick(nn);gen();toast('Đã đổi tên thành "'+nn+'"!');
         });
         document.getElementById('rpBtnDelReporter').addEventListener('click',function(){
-            var current=getReporter();
-            var list=loadReporters();
+            var current=getReporter();var list=loadReporters();
             if(list.length<=1){alert('Cần giữ lại ít nhất 1 nhân viên.');return;}
             if(!confirm('Xóa nhân viên "'+current+'" khỏi danh sách?')){return;}
-            list=list.filter(function(n){return n!==current;});
-            saveReporters(list);
-            renderReporterPick(list[0]);
-            gen();
-            toast('Đã xóa nhân viên khỏi danh sách.');
+            list=list.filter(function(n){return n!==current;});saveReporters(list);
+            renderReporterPick(list[0]);gen();toast('Đã xóa nhân viên khỏi danh sách.');
         });
         document.getElementById('rpBtnSave').addEventListener('click',function(){
-            var mv=getMY(),rp=getReporter();save(mv.m,mv.y,rp);
+            var mv=getMY();saveAll(mv.m,mv.y);
+            var rp=getReporter();
             pushHistory(mv.m,mv.y,JSON.parse(localStorage.getItem(skey(mv.m,mv.y,rp))||'{}'));
-            toast('Đã lưu!');
+            toast('Đã lưu tất cả nhân viên!');
         });
         document.getElementById('rpBtnClear').addEventListener('click',function(){
-            if(!confirm('Xóa toàn bộ dữ liệu tháng này của nhân viên hiện tại?'))return;
+            if(!confirm('Xóa dữ liệu tháng này của nhân viên "'+getReporter()+'"?'))return;
             var mv=getMY(),rp=getReporter();
             localStorage.removeItem(skey(mv.m,mv.y,rp));
-            gen();toast('Đã xóa!');
+            gen();toast('Đã xóa dữ liệu của "'+rp+'"!');
         });
         document.getElementById('rpBtnExport').addEventListener('click',function(){
             var mv=getMY(),rows=document.querySelectorAll('.rd[data-day]');
@@ -891,7 +1012,7 @@ Doanh thu: 45000000</pre>
         }
         bindTelegramSyncUi();
 
-        setInterval(function(){var mv=getMY();save(mv.m,mv.y,getReporter());},40000);
+        setInterval(function(){var mv=getMY();saveAll(mv.m,mv.y);},40000);
     }());
     </script>
 </body>
