@@ -1705,7 +1705,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         setSession({ userId: user.id, at: Date.now() });
                         setSiteLocked(false);
                         hideAuthModal();
-                        location.reload();
+                        location.href = './index.html';
                     };
 
                     if (auth.upgradedUser) {
