@@ -124,15 +124,53 @@
         .rp-kpi-value { font-size:1.08rem; font-weight:800; color:var(--ink); line-height:1.2; }
         .rp-kpi-value.good { color:#16a34a; } .rp-kpi-value.warn { color:#d97706; } .rp-kpi-value.bad { color:#dc2626; }
 
+        .rp-table-tools {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:.75rem;
+            flex-wrap:wrap;
+            background:linear-gradient(135deg,#fffdfd,#fff7fb);
+            border:1px solid rgba(199,81,124,.14);
+            border-radius:16px 16px 0 0;
+            padding:.72rem .9rem;
+            border-bottom:none;
+            box-shadow:0 8px 24px rgba(94,33,61,.07);
+        }
+        .rp-table-tools-main { display:flex; align-items:center; gap:.65rem; flex-wrap:wrap; }
+        .rp-table-tools-title { font-size:.84rem; font-weight:900; color:#7b284c; }
+        .rp-table-tools-hint { font-size:.77rem; font-weight:600; color:#7b7280; }
+        .rp-table-tools-actions { display:flex; align-items:center; gap:.45rem; flex-wrap:wrap; }
+        .rp-table-chip {
+            padding:.38rem .78rem;
+            border:1px solid #eccfdd;
+            border-radius:999px;
+            font-size:.78rem;
+            font-weight:800;
+            cursor:pointer;
+            background:linear-gradient(180deg,#fff,#fff7fb);
+            color:#8d7280;
+            transition:all .18s;
+            box-shadow:0 2px 8px rgba(94,33,61,.07);
+        }
+        .rp-table-chip:hover { transform:translateY(-1px); border-color:#dca8bf; color:#6d4a5b; }
+        .rp-table-chip.active {
+            background:linear-gradient(135deg,#c7517c,#a93c63);
+            color:#fff;
+            border-color:#a93c63;
+            box-shadow:0 6px 16px rgba(169,60,99,.24);
+        }
+
         /* TABLE */
-        .rp-table-wrap { background:#fff; border-radius:18px; box-shadow:0 4px 28px rgba(94,33,61,.12); overflow:hidden; border:1px solid rgba(199,81,124,.15); }
+        .rp-table-wrap { background:#fff; border-radius:0 0 18px 18px; box-shadow:0 4px 28px rgba(94,33,61,.12); overflow:hidden; border:1px solid rgba(199,81,124,.15); }
         .rp-scroll { overflow-x:auto; overflow-y:auto; max-height:calc(100vh - 260px);
             scrollbar-width:thin; scrollbar-color:rgba(199,81,124,.4) rgba(255,240,246,.6); }
         .rp-scroll::-webkit-scrollbar { height:9px; width:9px; }
         .rp-scroll::-webkit-scrollbar-track { background:rgba(255,240,246,.6); border-radius:7px; }
         .rp-scroll::-webkit-scrollbar-thumb { background:rgba(199,81,124,.45); border-radius:7px; }
         .rp-scroll::-webkit-scrollbar-thumb:hover { background:rgba(169,60,99,.7); }
-        .rp-table { width:100%; border-collapse:collapse; font-size:.82rem; }
+        .rp-table { width:max-content; min-width:100%; border-collapse:collapse; font-size:.82rem; table-layout:fixed; }
+        .rp-table col.col-day { width:104px; }
         .emp-banner-td { color:#fff; font-weight:900; font-size:.9rem; text-align:center;
             padding:.65rem .5rem; border-bottom:2px solid rgba(255,255,255,.2); border-right:1px solid rgba(255,255,255,.14);
             position:sticky; top:0; z-index:10; white-space:nowrap;
@@ -152,7 +190,8 @@
             background:linear-gradient(180deg,#d4638d,#b04873); color:#fff;
             font-weight:700; padding:.52rem .4rem; text-align:center;
             border-top:none; border-bottom:2px solid rgba(255,255,255,.18);
-            border-right:1px solid rgba(255,255,255,.14); white-space:nowrap; font-size:.7rem; letter-spacing:.03em; }
+            border-right:1px solid rgba(255,255,255,.14); white-space:nowrap; font-size:.7rem; letter-spacing:.03em;
+            overflow:hidden; text-overflow:ellipsis; position:sticky; }
         /* Input cols: slightly lighter pink */
         .rp-table thead tr.rh-cols th.col-e { background:linear-gradient(180deg,#c7517c,#a83b60); }
         /* Formula cols: deep purple-wine to clearly differ from input cols */
@@ -169,6 +208,33 @@
             background:linear-gradient(180deg,#fff0c4,#fcd900); font-weight:900;
             position:sticky; top:72px; left:0; z-index:11; border-right:2px solid #d4a800; }
         .rp-table thead tr.rh-total th.tv.good { color:#15803d; } .rp-table thead tr.rh-total th.tv.warn { color:#b45309; } .rp-table thead tr.rh-total th.tv.bad { color:#dc2626; }
+        .rp-col-head, .rh-day-cell { position:sticky; }
+        .rp-col-resize {
+            position:absolute;
+            top:0;
+            right:-4px;
+            width:10px;
+            height:100%;
+            cursor:col-resize;
+            z-index:16;
+            touch-action:none;
+        }
+        .rp-col-resize::before {
+            content:'';
+            position:absolute;
+            top:18%;
+            bottom:18%;
+            left:4px;
+            width:2px;
+            border-radius:999px;
+            background:rgba(255,255,255,.35);
+            transition:background .15s, box-shadow .15s;
+        }
+        .rp-col-resize:hover::before,
+        body.rp-is-resizing .rp-col-resize::before {
+            background:#fff;
+            box-shadow:0 0 0 3px rgba(255,255,255,.18);
+        }
 
         /* Data rows */
         .rp-table tbody tr.rd { border-bottom:1px solid rgba(230,215,222,.65); transition:background .1s; }
@@ -218,6 +284,26 @@
         .rp-table tbody tr.rd-btotal td.bt-bad  { color:#dc2626; }
         /* Employee group separator */
         .emp-group-end { border-right:3px solid rgba(199,81,124,.4) !important; }
+        .rp-table-wrap.rp-density-comfy .rp-table { font-size:.88rem; }
+        .rp-table-wrap.rp-density-comfy .rp-table thead tr.rh-cols th { padding:.66rem .56rem; font-size:.74rem; }
+        .rp-table-wrap.rp-density-comfy .rp-table thead tr.rh-total th { padding:.64rem .52rem; font-size:.8rem; }
+        .rp-table-wrap.rp-density-comfy .cell-day { padding:.56rem .7rem; font-size:.84rem; }
+        .rp-table-wrap.rp-density-comfy .cell-cost-inp,
+        .rp-table-wrap.rp-density-comfy .rp-inp,
+        .rp-table-wrap.rp-density-comfy .rp-inp-rev,
+        .rp-table-wrap.rp-density-comfy td.rp-fc,
+        .rp-table-wrap.rp-density-comfy .rp-table tbody tr.rd-btotal td { padding:.6rem .6rem; font-size:.82rem; }
+        .rp-table-wrap.rp-density-compact .rp-table { font-size:.8rem; }
+        .rp-table-wrap.rp-density-compact .rp-table thead tr.rh-cols th { padding:.48rem .36rem; }
+        .rp-table-wrap.rp-density-compact .cell-cost-inp,
+        .rp-table-wrap.rp-density-compact .rp-inp,
+        .rp-table-wrap.rp-density-compact .rp-inp-rev,
+        .rp-table-wrap.rp-density-compact td.rp-fc,
+        .rp-table-wrap.rp-density-compact .rp-table tbody tr.rd-btotal td { padding:.38rem .4rem; }
+        @media(max-width:900px){
+            .rp-table-tools { border-radius:16px; border-bottom:1px solid rgba(199,81,124,.15); }
+            .rp-table-wrap { border-radius:16px; }
+        }
         /* Rename button */
         .rp-btn-rename { background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; }
 
@@ -416,7 +502,18 @@ Doanh thu: 45000000</pre>
             <div class="rp-kpi kpi-coc"> <div class="rp-kpi-label">Tổng Cọc</div><div class="rp-kpi-value good" id="kpiCoc">0 đ</div></div>
         </div>
 
-        <div class="rp-table-wrap">
+        <div class="rp-table-tools">
+            <div class="rp-table-tools-main">
+                <span class="rp-table-tools-title">Tùy chỉnh bảng</span>
+                <span class="rp-table-tools-hint">Kéo mép phải tiêu đề cột để đổi độ rộng. Chế độ rộng giúp nhập số dễ hơn.</span>
+            </div>
+            <div class="rp-table-tools-actions">
+                <button class="rp-table-chip" type="button" data-density="compact">Chế độ gọn</button>
+                <button class="rp-table-chip" type="button" data-density="comfy">Chế độ rộng</button>
+                <button class="rp-table-chip" type="button" id="rpResetColWidths">Reset độ rộng cột</button>
+            </div>
+        </div>
+        <div class="rp-table-wrap" id="rpTableWrap">
             <div class="rp-scroll">
                 <table class="rp-table" id="rpTable">
                     <thead>
@@ -465,9 +562,116 @@ Doanh thu: 45000000</pre>
     <script src="./assets/js/script.js?v=20260417-01"></script>
     <script>
     (function(){
-        var SK='rpData3',HIST_KEY='rpEditHistory',EMP_KEY='rpEmployeeListV1',TG_OFFSET_KEY='rpTelegramOffsetV1';
+        var SK='rpData3',HIST_KEY='rpEditHistory',EMP_KEY='rpEmployeeListV1',TG_OFFSET_KEY='rpTelegramOffsetV1',TABLE_WIDTH_KEY='rpTableWidthsV1',TABLE_DENSITY_KEY='rpTableDensityV1';
         var MAX_HIST=30;
         var tgTimer=null;
+
+        function getDefaultColWidthByIndex(index){
+            var widths=[118,84,84,92,92,82,92,92,96,96,96,126,90];
+            return widths[index]||92;
+        }
+        function loadTableWidthMap(){
+            try{return JSON.parse(localStorage.getItem(TABLE_WIDTH_KEY)||'{}')||{};}catch(e){return{};}
+        }
+        function saveTableWidthMap(map){
+            localStorage.setItem(TABLE_WIDTH_KEY,JSON.stringify(map||{}));
+        }
+        function getTableDensity(){
+            var v=localStorage.getItem(TABLE_DENSITY_KEY)||'compact';
+            return v==='comfy'?'comfy':'compact';
+        }
+        function applyTableDensity(){
+            var wrap=document.getElementById('rpTableWrap');
+            if(!wrap)return;
+            var density=getTableDensity();
+            wrap.classList.remove('rp-density-compact','rp-density-comfy');
+            wrap.classList.add(density==='comfy'?'rp-density-comfy':'rp-density-compact');
+            Array.from(document.querySelectorAll('[data-density]')).forEach(function(btn){
+                btn.classList.toggle('active',btn.getAttribute('data-density')===density);
+            });
+        }
+        function bindTableTools(){
+            Array.from(document.querySelectorAll('[data-density]')).forEach(function(btn){
+                btn.addEventListener('click',function(){
+                    localStorage.setItem(TABLE_DENSITY_KEY,btn.getAttribute('data-density'));
+                    applyTableDensity();
+                });
+            });
+            var resetBtn=document.getElementById('rpResetColWidths');
+            if(resetBtn){
+                resetBtn.addEventListener('click',function(){
+                    localStorage.removeItem(TABLE_WIDTH_KEY);
+                    gen();
+                });
+            }
+            applyTableDensity();
+        }
+        function setColumnWidth(table,key,width,save){
+            var col=table&&table.querySelector('col[data-col-key="'+key+'"]');
+            if(!col)return;
+            var next=Math.max(62,Math.min(360,Math.round(width||0)));
+            col.style.width=next+'px';
+            if(save!==false){
+                var map=loadTableWidthMap();
+                map[key]=next;
+                saveTableWidthMap(map);
+            }
+        }
+        function attachResizeHandle(table,cell,key,startWidth){
+            if(!cell||!key)return;
+            cell.style.position='sticky';
+            var handle=document.createElement('span');
+            handle.className='rp-col-resize';
+            handle.title='Kéo để đổi độ rộng cột';
+            handle.addEventListener('mousedown',function(ev){
+                ev.preventDefault();
+                ev.stopPropagation();
+                var originX=ev.clientX;
+                var baseWidth=(table.querySelector('col[data-col-key="'+key+'"]')||{}).offsetWidth||startWidth||cell.offsetWidth;
+                document.body.classList.add('rp-is-resizing');
+                function onMove(moveEv){
+                    setColumnWidth(table,key,baseWidth+(moveEv.clientX-originX),false);
+                }
+                function onUp(upEv){
+                    var finalWidth=baseWidth+((upEv&&typeof upEv.clientX==='number'?upEv.clientX:originX)-originX);
+                    setColumnWidth(table,key,finalWidth,true);
+                    document.body.classList.remove('rp-is-resizing');
+                    document.removeEventListener('mousemove',onMove);
+                    document.removeEventListener('mouseup',onUp);
+                }
+                document.addEventListener('mousemove',onMove);
+                document.addEventListener('mouseup',onUp);
+            });
+            cell.appendChild(handle);
+        }
+        function buildColGroup(table,emps,colDefs){
+            var old=table.querySelector('colgroup');
+            if(old){old.remove();}
+            var map=loadTableWidthMap();
+            var colgroup=document.createElement('colgroup');
+            var dayCol=document.createElement('col');
+            dayCol.className='col-day';
+            dayCol.dataset.colKey='day';
+            dayCol.style.width=((map.day||104))+'px';
+            colgroup.appendChild(dayCol);
+            emps.forEach(function(emp,ei){
+                colDefs.forEach(function(cd,ci){
+                    var key='c'+(ei*colDefs.length+ci);
+                    var col=document.createElement('col');
+                    col.dataset.colKey=key;
+                    col.style.width=((map[key]||getDefaultColWidthByIndex(ci)))+'px';
+                    colgroup.appendChild(col);
+                });
+            });
+            table.insertBefore(colgroup,table.querySelector('thead'));
+        }
+        function bindColumnResizers(table,colDefs,emps,dayHeader,colHeaders){
+            attachResizeHandle(table,dayHeader,'day',104);
+            Array.from(colHeaders||[]).forEach(function(th,index){
+                var colIndex=index%colDefs.length;
+                attachResizeHandle(table,th,'c'+index,getDefaultColWidthByIndex(colIndex));
+            });
+        }
 
         function normReporter(name){
             var n=String(name||'').trim().replace(/\s+/g,' ');
@@ -744,12 +948,14 @@ Doanh thu: 45000000</pre>
                 {l:'CP/MESS',c:'col-f'},{l:'CP/SĐT',c:'col-f'},{l:'CP/LỊCH',c:'col-f'},
                 {l:'DOANH THU',c:'col-e'},{l:'% CP/DT',c:'col-f'}
             ];
+            buildColGroup(table,emps,COL_DEFS);
 
             /* ── ROW 1: Day cell (rowspan=3) + Employee banners ── */
             var bannerRow=document.createElement('tr');
             bannerRow.className='rh-banner';
             var dayTh=document.createElement('th');
             dayTh.className='rh-day-cell';
+            dayTh.dataset.colKey='day';
             dayTh.rowSpan=3;
             dayTh.textContent='Ngày';
             bannerRow.appendChild(dayTh);
@@ -770,7 +976,8 @@ Doanh thu: 45000000</pre>
             emps.forEach(function(emp,ei){
                 COL_DEFS.forEach(function(cd,ci){
                     var th=document.createElement('th');
-                    th.className=cd.c+(ci===COL_DEFS.length-1&&ei<emps.length-1?' emp-group-end':'');
+                    th.className='rp-col-head '+cd.c+(ci===COL_DEFS.length-1&&ei<emps.length-1?' emp-group-end':'');
+                    th.dataset.colKey='c'+(ei*COL_DEFS.length+ci);
                     th.textContent=cd.l;
                     colRow.appendChild(th);
                 });
@@ -865,10 +1072,13 @@ Doanh thu: 45000000</pre>
             });
             tbody.appendChild(bt);
 
+            bindColumnResizers(table,COL_DEFS,emps,dayTh,colRow.children);
+            applyTableDensity();
             setTimeout(recalcAll,15);
         }
 
         function gen(){var mv=getMY();buildMultiTable(mv.m,mv.y,loadReporters());}
+        bindTableTools();
         gen();
         document.getElementById('rpMonth').addEventListener('change',gen);
         document.getElementById('rpYear').addEventListener('change',gen);
