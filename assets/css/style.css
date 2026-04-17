@@ -1537,12 +1537,12 @@ header {
     border: 1px solid rgba(205, 148, 170, 0.34);
     background: linear-gradient(165deg, rgba(255, 255, 255, 0.96) 0%, rgba(255, 246, 249, 0.92) 100%);
     box-shadow: 0 18px 40px rgba(95, 33, 61, 0.12);
-    padding: 1.1rem 1.1rem 0.65rem;
+    padding: 1.3rem 1.2rem 0.85rem;
 }
 
 #adsPerformanceChart {
     width: 100%;
-    min-height: 360px;
+    min-height: 500px;
 }
 
 .dashboard-insight-section {
@@ -1811,7 +1811,7 @@ header {
     }
 
     #adsPerformanceChart {
-        min-height: 290px;
+        min-height: 360px;
     }
 
     .area-input-grid {

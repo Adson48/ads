@@ -1004,6 +1004,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const reportPrefix = 'rpData3';
         const reportCollection = 'ma_reports';
         const insightWeeklyStamp = document.getElementById('insightWeeklyStamp');
+        const chartRefreshMs = 6000;
         let homeReportDb = null;
         let homeReportUnsub = null;
 
@@ -1051,6 +1052,10 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const buildFlatSeriesInMillions = function(value, days) {
             const millionValue = Number((((value || 0) / 1000000)).toFixed(2));
             return Array.from({ length: days }, () => millionValue);
+        };
+
+        const formatVnd = function(value) {
+            return (Number(value) || 0).toLocaleString('vi-VN') + ' đ';
         };
 
         const initHomeReportDb = function() {
@@ -1199,7 +1204,33 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         position: 'top',
                         labels: {
                             usePointStyle: true,
-                            boxWidth: 10
+                            boxWidth: 12,
+                            font: {
+                                size: 12,
+                                weight: '600'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const dsLabel = context.dataset && context.dataset.label ? context.dataset.label : 'Giá trị';
+                                const valMillion = Number(context.parsed && context.parsed.y ? context.parsed.y : 0);
+                                const valVnd = Math.round(valMillion * 1000000);
+                                return dsLabel + ': ' + valMillion.toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' triệu (' + formatVnd(valVnd) + ')';
+                            },
+                            afterLabel: function(context) {
+                                const ds = context.dataset && Array.isArray(context.dataset.data) ? context.dataset.data : [];
+                                const idx = context.dataIndex;
+                                if (!ds.length || idx <= 0) {
+                                    return '';
+                                }
+                                const prev = Number(ds[idx - 1] || 0);
+                                const cur = Number(ds[idx] || 0);
+                                const diff = Number((cur - prev).toFixed(2));
+                                const sign = diff > 0 ? '+' : '';
+                                return 'So với hôm trước: ' + sign + diff.toLocaleString('vi-VN', { maximumFractionDigits: 2 }) + ' triệu';
+                            }
                         }
                     }
                 },
@@ -1208,6 +1239,11 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         title: {
                             display: true,
                             text: 'Ngày'
+                        },
+                        ticks: {
+                            autoSkip: true,
+                            maxTicksLimit: 16,
+                            color: '#6f4b5c'
                         },
                         grid: {
                             color: 'rgba(122, 74, 98, 0.09)'
@@ -1219,6 +1255,12 @@ if (studioOutput && sidebarCategoryLinks.length) {
                             text: 'Chi phí / Doanh thu theo ngày (triệu VNĐ)'
                         },
                         beginAtZero: true,
+                        ticks: {
+                            color: '#6f4b5c',
+                            callback: function(value) {
+                                return Number(value).toLocaleString('vi-VN', { maximumFractionDigits: 1 }) + ' tr';
+                            }
+                        },
                         grid: {
                             color: 'rgba(122, 74, 98, 0.11)'
                         }
@@ -1302,6 +1344,16 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
         revenueInput.addEventListener('input', updateDashboardChart);
         campaignInput.addEventListener('input', updateDashboardChart);
+        window.addEventListener('storage', function(event) {
+            const key = event && event.key ? event.key : '';
+            if (!key) {
+                return;
+            }
+            if (key.indexOf(reportPrefix + '_') === 0 || key === reportEmployeeKey || key === dashboardStorageKey) {
+                updateDashboardChart();
+            }
+        });
+        setInterval(updateDashboardChart, chartRefreshMs);
 
         bindHomeReportRealtime();
         hydrateHomeAlerts();
