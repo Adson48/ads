@@ -337,6 +337,31 @@
             box-shadow:0 6px 16px rgba(169,60,99,.24);
         }
         .rp-filter-sep { width:1px; height:22px; background:linear-gradient(#f8eaf1,#eccfdd,#f8eaf1); margin:0 .25rem; }
+        .rp-filter-date {
+            padding:.38rem .62rem;
+            border:1.5px solid #e9c9d9;
+            border-radius:10px;
+            font-size:.82rem;
+            font-weight:700;
+            color:#5a3e4b;
+            background:#fff;
+            outline:none;
+            font-family:inherit;
+            box-shadow:inset 0 1px 2px rgba(94,33,61,.06);
+        }
+        .rp-filter-date:focus { border-color:var(--brand); box-shadow:0 0 0 3px rgba(199,81,124,.14); }
+        .rp-tele-admin-hidden { display:none !important; }
+        .rp-tele-staff-note {
+            display:none;
+            margin:-.15rem 0 .95rem;
+            background:linear-gradient(135deg,#fff7fb,#fffdfd);
+            border:1px dashed #efcfde;
+            border-radius:12px;
+            padding:.62rem .78rem;
+            font-size:.79rem;
+            font-weight:700;
+            color:#7b4a5f;
+        }
 
         /* History panel (premium) */
         .rp-history-wrap {
@@ -445,10 +470,15 @@
             <input id="rpFilterFrom" class="rp-filter-select" type="number" min="1" max="31" placeholder="1" style="width:62px;">
             <label>Đến ngày:</label>
             <input id="rpFilterTo" class="rp-filter-select" type="number" min="1" max="31" placeholder="31" style="width:62px;">
+            <label>Từ lịch:</label>
+            <input id="rpFilterDateFrom" class="rp-filter-date" type="date">
+            <label>Đến lịch:</label>
+            <input id="rpFilterDateTo" class="rp-filter-date" type="date">
             <button class="rp-filter-chip rp-chip-primary" id="rpFilterApply">Áp dụng</button>
             <button class="rp-filter-chip" id="rpFilterReset">Đặt lại</button>
         </div>
 
+        <div id="rpTelegramAdminZone">
         <div class="rp-telebar">
             <span class="rp-tele-label">Đồng bộ Telegram:</span>
             <button class="rp-btn rp-btn-export" id="rpTgSyncNow" type="button">Đồng bộ ngay</button>
@@ -490,6 +520,8 @@ Hoãn hủy: 2
 HĐ: 6
 Doanh thu: 45000000</pre>
         </div>
+    </div>
+    <div id="rpTelegramStaffNote" class="rp-tele-staff-note">Phần cấu hình Telegram chỉ dành cho quản trị cao nhất. Dữ liệu báo cáo đồng bộ sẽ tự hiển thị cho toàn bộ nhân viên.</div>
 
         <div class="rp-kpi-bar">
             <div class="rp-kpi kpi-cost"><div class="rp-kpi-label">Tổng Chi Phí</div><div class="rp-kpi-value" id="kpiCost">0 đ</div></div>
@@ -563,8 +595,158 @@ Doanh thu: 45000000</pre>
     <script>
     (function(){
         var SK='rpData3',HIST_KEY='rpEditHistory',EMP_KEY='rpEmployeeListV1',TG_OFFSET_KEY='rpTelegramOffsetV1',TABLE_WIDTH_KEY='rpTableWidthsV1',TABLE_DENSITY_KEY='rpTableDensityV1';
+        var SESSION_KEY='ma_session_v1',ACCOUNT_LOCAL_KEY='ma_accounts_v1',ACCOUNT_COLL='ma_accounts',REPORT_COLL='ma_reports';
         var MAX_HIST=30;
         var tgTimer=null;
+        var rpDb=null;
+        var monthCache={};
+        var saveTimers={};
+        var isSuperadminUser=false;
+
+        function initReportDb(){
+            if(rpDb){return rpDb;}
+            try{
+                if(typeof firebase==='undefined'){return null;}
+                if(!firebase.apps.length&&window.MA_FIREBASE_CONFIG&&window.MA_FIREBASE_CONFIG.apiKey){firebase.initializeApp(window.MA_FIREBASE_CONFIG);}
+                rpDb=firebase.firestore();
+            }catch(e){rpDb=null;}
+            return rpDb;
+        }
+        function monthId(m,y){return y+'_'+m;}
+        function cacheKey(m,y){return monthId(m,y);} 
+        function ymd(y,m,d){return y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+        function parseYmd(v){
+            var m=String(v||'').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if(!m){return null;}
+            return {y:parseInt(m[1],10),m:parseInt(m[2],10),d:parseInt(m[3],10)};
+        }
+        function getSessionUserId(){
+            try{var ses=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');return ses&&ses.userId?String(ses.userId):'';}catch(e){return '';}
+        }
+        function getRoleFromLocalAccounts(uid){
+            if(!uid){return 'staff';}
+            try{
+                var list=JSON.parse(localStorage.getItem(ACCOUNT_LOCAL_KEY)||'[]');
+                var u=(Array.isArray(list)?list:[]).find(function(it){return it&&it.id===uid;});
+                return (u&&u.role==='superadmin')?'superadmin':'staff';
+            }catch(e){return 'staff';}
+        }
+        async function resolveCurrentUserRole(){
+            var uid=getSessionUserId();
+            if(!uid){return 'staff';}
+            var db=initReportDb();
+            if(db){
+                try{
+                    var snap=await db.collection(ACCOUNT_COLL).doc(uid).get();
+                    if(snap.exists){return (snap.data()&&snap.data().role==='superadmin')?'superadmin':'staff';}
+                }catch(e){}
+            }
+            return getRoleFromLocalAccounts(uid);
+        }
+        function applyTelegramAccessByRole(){
+            var zone=document.getElementById('rpTelegramAdminZone');
+            var note=document.getElementById('rpTelegramStaffNote');
+            resolveCurrentUserRole().then(function(role){
+                isSuperadminUser=(role==='superadmin');
+                if(zone){zone.classList.toggle('rp-tele-admin-hidden',!isSuperadminUser);}
+                if(note){note.style.display=isSuperadminUser?'none':'block';}
+                if(!isSuperadminUser&&tgTimer){clearInterval(tgTimer);tgTimer=null;}
+            }).catch(function(){
+                isSuperadminUser=false;
+                if(zone){zone.classList.add('rp-tele-admin-hidden');}
+                if(note){note.style.display='block';}
+            });
+        }
+        function buildLocalMonthStore(m,y){
+            var employees={};
+            loadReporters().forEach(function(name){
+                var rid=reporterId(name);
+                var raw={};
+                try{raw=JSON.parse(localStorage.getItem(skey(m,y,name))||'{}')||{};}catch(e){raw={};}
+                employees[rid]={name:name,data:raw};
+            });
+            return {month:m,year:y,employees:employees};
+        }
+        function normalizeRemoteMonthStore(m,y,src){
+            var out={month:m,year:y,employees:{}};
+            if(!src||typeof src!=='object'){return out;}
+            var emps=(src.employees&&typeof src.employees==='object')?src.employees:{};
+            Object.keys(emps).forEach(function(rid){
+                var item=emps[rid]||{};
+                var n=normReporter(item.name||'');
+                if(!n){return;}
+                out.employees[rid]={name:n,data:(item.data&&typeof item.data==='object')?item.data:{}};
+            });
+            return out;
+        }
+        function persistMonthStoreToLocal(m,y,store){
+            var names=loadReporters();
+            var emps=(store&&store.employees)||{};
+            Object.keys(emps).forEach(function(rid){
+                var item=emps[rid]||{};
+                var n=normReporter(item.name||'');
+                if(!n){return;}
+                if(names.indexOf(n)===-1){names.push(n);}
+                localStorage.setItem(skey(m,y,n),JSON.stringify((item.data&&typeof item.data==='object')?item.data:{}));
+            });
+            saveReporters(names);
+        }
+        function getMonthStoreSync(m,y){
+            var key=cacheKey(m,y);
+            if(!monthCache[key]){monthCache[key]=buildLocalMonthStore(m,y);}
+            return monthCache[key];
+        }
+        async function fetchRemoteMonthStore(m,y){
+            var db=initReportDb();
+            if(!db){return null;}
+            try{
+                var snap=await db.collection(REPORT_COLL).doc(monthId(m,y)).get();
+                if(!snap.exists){return null;}
+                return normalizeRemoteMonthStore(m,y,snap.data()||{});
+            }catch(e){return null;}
+        }
+        async function saveRemoteMonthStore(m,y,store){
+            var db=initReportDb();
+            if(!db){return false;}
+            try{
+                await db.collection(REPORT_COLL).doc(monthId(m,y)).set({
+                    month:m,
+                    year:y,
+                    employees:(store&&store.employees)||{},
+                    updatedAt:Date.now()
+                },{merge:true});
+                return true;
+            }catch(e){return false;}
+        }
+        function queueRemoteMonthSave(m,y){
+            var key=cacheKey(m,y);
+            clearTimeout(saveTimers[key]);
+            saveTimers[key]=setTimeout(function(){
+                var store=getMonthStoreSync(m,y);
+                saveRemoteMonthStore(m,y,store);
+            },420);
+        }
+        async function ensureMonthLoaded(m,y){
+            var key=cacheKey(m,y);
+            var before=JSON.stringify(getMonthStoreSync(m,y).employees||{});
+            var remote=await fetchRemoteMonthStore(m,y);
+            if(!remote){return false;}
+            monthCache[key]=remote;
+            persistMonthStoreToLocal(m,y,remote);
+            var after=JSON.stringify((monthCache[key]&&monthCache[key].employees)||{});
+            return before!==after;
+        }
+        function refreshFilterDateBounds(){
+            var mv=getMY();
+            var maxDay=dim(mv.m,mv.y);
+            var minV=ymd(mv.y,mv.m,1),maxV=ymd(mv.y,mv.m,maxDay);
+            ['rpFilterDateFrom','rpFilterDateTo'].forEach(function(id){
+                var el=document.getElementById(id);if(!el)return;
+                el.min=minV;el.max=maxV;
+                var p=parseYmd(el.value);
+                if(!p||p.y!==mv.y||p.m!==mv.m){el.value='';}
+            });
+        }
 
         function getDefaultColWidthByIndex(index){
             var widths=[118,84,84,92,92,82,92,92,96,96,96,126,90];
@@ -788,6 +970,10 @@ Doanh thu: 45000000</pre>
         function skey(m,y,reporter){return SK+'_'+y+'_'+m+'_'+reporterId(reporter);}
         function legacyKey(m,y){return SK+'_'+y+'_'+m;}
         function load(m,y,reporter){
+            var store=getMonthStoreSync(m,y);
+            var rid=reporterId(reporter);
+            var inCache=store&&store.employees&&store.employees[rid]&&store.employees[rid].data;
+            if(inCache&&typeof inCache==='object'){return inCache;}
             try{
                 var v=JSON.parse(localStorage.getItem(skey(m,y,reporter))||'null');
                 if(v&&typeof v==='object'){return v;}
@@ -798,6 +984,7 @@ Doanh thu: 45000000</pre>
         }
         function saveAll(m,y){
             var emps=loadReporters();var days=dim(m,y);
+            var store={month:m,year:y,employees:{}};
             emps.forEach(function(emp,ei){
                 var data={};
                 for(var d=1;d<=days;d++){
@@ -806,7 +993,10 @@ Doanh thu: 45000000</pre>
                     data['d'+d]={cost:inp[0]?inp[0].value:'',mess:inp[1]?inp[1].value:'',sdt:inp[2]?inp[2].value:'',lich:inp[3]?inp[3].value:'',hh:inp[4]?inp[4].value:'',hd:inp[5]?inp[5].value:'',rev:inp[6]?inp[6].value:''};
                 }
                 localStorage.setItem(skey(m,y,emp),JSON.stringify(data));
+                store.employees[reporterId(emp)]={name:emp,data:data};
             });
+            monthCache[cacheKey(m,y)]=store;
+            queueRemoteMonthSave(m,y);
         }
         function renameReporter(oldName,newName){
             var list=loadReporters();var oi=list.indexOf(normReporter(oldName));if(oi===-1)return null;
@@ -1077,7 +1267,17 @@ Doanh thu: 45000000</pre>
             setTimeout(recalcAll,15);
         }
 
-        function gen(){var mv=getMY();buildMultiTable(mv.m,mv.y,loadReporters());}
+        function gen(){
+            var mv=getMY();
+            refreshFilterDateBounds();
+            buildMultiTable(mv.m,mv.y,loadReporters());
+            ensureMonthLoaded(mv.m,mv.y).then(function(changed){
+                var cur=getMY();
+                if(!changed||cur.m!==mv.m||cur.y!==mv.y){return;}
+                buildMultiTable(mv.m,mv.y,loadReporters());
+                applyFilter();
+            });
+        }
         bindTableTools();
         gen();
         document.getElementById('rpMonth').addEventListener('change',gen);
@@ -1153,17 +1353,38 @@ Doanh thu: 45000000</pre>
             });
         });
         document.getElementById('rpFilterApply').addEventListener('click',function(){applyFilter();});
+        document.getElementById('rpFilterDateFrom').addEventListener('change',function(){
+            var p=parseYmd(this.value);var mv=getMY();
+            if(p&&p.y===mv.y&&p.m===mv.m){document.getElementById('rpFilterFrom').value=String(p.d);} 
+            applyFilter();
+        });
+        document.getElementById('rpFilterDateTo').addEventListener('change',function(){
+            var p=parseYmd(this.value);var mv=getMY();
+            if(p&&p.y===mv.y&&p.m===mv.m){document.getElementById('rpFilterTo').value=String(p.d);} 
+            applyFilter();
+        });
         document.getElementById('rpFilterReset').addEventListener('click',function(){
             document.getElementById('rpFilterFrom').value='';
             document.getElementById('rpFilterTo').value='';
+            document.getElementById('rpFilterDateFrom').value='';
+            document.getElementById('rpFilterDateTo').value='';
             curFilter='all';
             document.querySelectorAll('.rp-filter-chip[data-filter]').forEach(function(b){b.classList.remove('active');});
             document.querySelector('.rp-filter-chip[data-filter="all"]').classList.add('active');
             applyFilter();
         });
         function applyFilter(){
+            var mv=getMY();
+            var maxDay=dim(mv.m,mv.y);
             var from=parseInt(document.getElementById('rpFilterFrom').value)||1;
-            var to=parseInt(document.getElementById('rpFilterTo').value)||31;
+            var to=parseInt(document.getElementById('rpFilterTo').value)||maxDay;
+            var dateFrom=parseYmd(document.getElementById('rpFilterDateFrom').value);
+            var dateTo=parseYmd(document.getElementById('rpFilterDateTo').value);
+            if(dateFrom&&dateFrom.y===mv.y&&dateFrom.m===mv.m){from=dateFrom.d;}
+            if(dateTo&&dateTo.y===mv.y&&dateTo.m===mv.m){to=dateTo.d;}
+            from=Math.max(1,Math.min(maxDay,from));
+            to=Math.max(1,Math.min(maxDay,to));
+            if(from>to){var t=from;from=to;to=t;}
             document.querySelectorAll('.rd[data-day]').forEach(function(row){
                 var d=parseInt(row.dataset.day);
                 var inRange=(d>=from&&d<=to);
@@ -1273,6 +1494,13 @@ Doanh thu: 45000000</pre>
             var prev=(data[dayKey]&&typeof data[dayKey]==='object')?data[dayKey]:{};
             data[dayKey]=Object.assign({},prev,parsed.row);
             localStorage.setItem(key,JSON.stringify(data));
+            var mk=cacheKey(parsed.month,parsed.year);
+            var store=getMonthStoreSync(parsed.month,parsed.year);
+            var rid=reporterId(parsed.reporter);
+            if(!store.employees){store.employees={};}
+            store.employees[rid]={name:parsed.reporter,data:data};
+            monthCache[mk]=store;
+            queueRemoteMonthSave(parsed.month,parsed.year);
             /* Refresh if same month+year on screen (all employees shown together) */
             var mv=getMY();
             var onCurrent=(mv.m===parsed.month&&mv.y===parsed.year);
@@ -1280,6 +1508,10 @@ Doanh thu: 45000000</pre>
             return onCurrent;
         }
         async function syncFromTelegram(){
+            if(!isSuperadminUser){
+                setTgStatus('Chỉ quản trị cao nhất mới được đồng bộ Telegram.', 'bad');
+                return;
+            }
             var cfg=getTelegramConfigSafe();
             if(!cfg.botToken||!cfg.chatId){
                 setTgStatus('Thiếu Bot Token/Chat ID. Vui lòng cấu hình Telegram trước.', 'bad');
@@ -1362,6 +1594,7 @@ Doanh thu: 45000000</pre>
             refreshTelegramConfigUi();
             if(saveBtn){
                 saveBtn.addEventListener('click',function(){
+                    if(!isSuperadminUser){setTgStatus('Chỉ quản trị cao nhất mới được chỉnh cấu hình Telegram.', 'bad');return;}
                     var token=tokenInp?tokenInp.value.trim():'';
                     var chatId=chatInp?chatInp.value.trim():'';
                     if(!token||!chatId){
@@ -1377,6 +1610,7 @@ Doanh thu: 45000000</pre>
             }
             if(clearBtn){
                 clearBtn.addEventListener('click',function(){
+                    if(!isSuperadminUser){setTgStatus('Chỉ quản trị cao nhất mới được chỉnh cấu hình Telegram.', 'bad');return;}
                     localStorage.removeItem('telegramBotToken');
                     localStorage.removeItem('telegramChatId');
                     localStorage.removeItem(TG_OFFSET_KEY);
@@ -1387,8 +1621,15 @@ Doanh thu: 45000000</pre>
         }
         bindTelegramSyncUi();
         bindTelegramConfigUi();
+        applyTelegramAccessByRole();
 
         setInterval(function(){var mv=getMY();saveAll(mv.m,mv.y);},40000);
+        setInterval(function(){
+            var mv=getMY();
+            ensureMonthLoaded(mv.m,mv.y).then(function(changed){
+                if(changed){buildMultiTable(mv.m,mv.y,loadReporters());applyFilter();}
+            });
+        },30000);
     }());
     </script>
 </body>
