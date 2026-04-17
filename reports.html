@@ -511,11 +511,13 @@ Doanh thu: 45000000</pre>
             return 'https://api.telegram.org/bot'+String(botToken||'').trim()+'/'+method;
         }
         function getTelegramConfigSafe(){
-            try{ if(typeof getTelegramConfig==='function'){ return getTelegramConfig(); } }catch(e){}
-            return {
-                botToken: localStorage.getItem('telegramBotToken') || '',
-                chatId: localStorage.getItem('telegramChatId') || ''
-            };
+                var localCfg={
+                    botToken: localStorage.getItem('telegramBotToken') || '',
+                    chatId: localStorage.getItem('telegramChatId') || ''
+                };
+                if(localCfg.botToken||localCfg.chatId){return localCfg;}
+                try{ if(typeof getTelegramConfig==='function'){ return getTelegramConfig(); } }catch(e){}
+                return localCfg;
         }
         function setTgStatus(msg,type){
             var el=document.getElementById('rpTgStatus');if(!el)return;
@@ -1158,14 +1160,16 @@ Doanh thu: 45000000</pre>
                     }
                     localStorage.setItem('telegramBotToken',token);
                     localStorage.setItem('telegramChatId',chatId);
+                    localStorage.removeItem(TG_OFFSET_KEY);
                     refreshTelegramConfigUi();
-                    setTgStatus('Đã lưu cấu hình Telegram. Có thể bấm Đồng bộ ngay.', 'good');
+                    setTgStatus('Đã lưu cấu hình Telegram cho trang báo cáo. Có thể bấm Đồng bộ ngay.', 'good');
                 });
             }
             if(clearBtn){
                 clearBtn.addEventListener('click',function(){
                     localStorage.removeItem('telegramBotToken');
                     localStorage.removeItem('telegramChatId');
+                    localStorage.removeItem(TG_OFFSET_KEY);
                     refreshTelegramConfigUi();
                     setTgStatus('Đã xóa cấu hình Telegram trên trình duyệt này.', '');
                 });
