@@ -35,6 +35,53 @@
             box-shadow:0 4px 14px rgba(37,99,235,.12);
             padding:.72rem .95rem; margin-bottom:.95rem;
         }
+        .rp-tele-config {
+            display:grid;
+            grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+            gap:.75rem;
+            background:linear-gradient(135deg,#ffffff,#f9fbff);
+            border:1px solid #d9e7fb;
+            border-radius:14px;
+            box-shadow:0 4px 14px rgba(37,99,235,.08);
+            padding:.85rem .95rem;
+            margin:-.2rem 0 .95rem;
+        }
+        .rp-tele-config-head {
+            grid-column:1 / -1;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:.75rem;
+            flex-wrap:wrap;
+        }
+        .rp-tele-config-title { font-size:.84rem; font-weight:900; color:#1e40af; }
+        .rp-tele-config-note { font-size:.78rem; font-weight:600; color:#5b6f8f; }
+        .rp-tele-field { display:grid; gap:.3rem; }
+        .rp-tele-field label { font-size:.75rem; font-weight:800; color:#54657e; text-transform:uppercase; letter-spacing:.04em; }
+        .rp-tele-input {
+            width:100%;
+            padding:.58rem .72rem;
+            border:1.5px solid #cfe0fb;
+            border-radius:10px;
+            font-size:.88rem;
+            font-weight:600;
+            color:#20324d;
+            background:#fff;
+            outline:none;
+            font-family:inherit;
+        }
+        .rp-tele-input:focus { border-color:#3b82f6; box-shadow:0 0 0 3px rgba(59,130,246,.12); }
+        .rp-tele-actions { display:flex; align-items:flex-end; gap:.55rem; flex-wrap:wrap; }
+        .rp-tele-summary {
+            grid-column:1 / -1;
+            font-size:.78rem;
+            font-weight:700;
+            color:#486286;
+            background:#f4f8ff;
+            border:1px dashed #c8defa;
+            border-radius:10px;
+            padding:.58rem .7rem;
+        }
         .rp-tele-label { font-size:.78rem; font-weight:800; color:#1d4ed8; letter-spacing:.02em; }
         .rp-tele-help { font-size:.78rem; font-weight:600; color:#486286; }
         .rp-tele-status { font-size:.8rem; font-weight:700; color:#1d4ed8; }
@@ -324,6 +371,25 @@
             </label>
             <span id="rpTgStatus" class="rp-tele-status">Chưa đồng bộ.</span>
             <span class="rp-tele-help">Hỗ trợ cả dạng 1 dòng và xuống dòng.</span>
+        </div>
+        <div class="rp-tele-config">
+            <div class="rp-tele-config-head">
+                <div class="rp-tele-config-title">Cấu hình Telegram để nhận báo cáo từ nhóm</div>
+                <div class="rp-tele-config-note">Thêm Bot Token và Chat ID nhóm ở đây, không cần sang trang khác.</div>
+            </div>
+            <div class="rp-tele-field">
+                <label for="rpTgBotToken">Bot Token</label>
+                <input id="rpTgBotToken" class="rp-tele-input" type="text" placeholder="VD: 123456:ABC-DEF...">
+            </div>
+            <div class="rp-tele-field">
+                <label for="rpTgChatId">Chat ID nhóm</label>
+                <input id="rpTgChatId" class="rp-tele-input" type="text" placeholder="VD: -1001234567890">
+            </div>
+            <div class="rp-tele-actions">
+                <button class="rp-btn rp-btn-gen" id="rpTgSaveConfig" type="button">Lưu Telegram</button>
+                <button class="rp-btn rp-btn-clear" id="rpTgClearConfig" type="button">Xóa cấu hình</button>
+            </div>
+            <div class="rp-tele-summary" id="rpTgConfigSummary">Chưa có cấu hình Telegram.</div>
         </div>
         <div class="rp-tele-template">
             <p>Mẫu điền Telegram (xuống dòng, copy và thay số):</p>
@@ -1056,7 +1122,57 @@ Doanh thu: 45000000</pre>
                 }
             }
         }
+        function maskTelegramToken(token){
+            token=String(token||'').trim();
+            if(!token){return 'chưa nhập';}
+            if(token.length<=10){return token;}
+            return token.slice(0,6)+'...'+token.slice(-4);
+        }
+        function refreshTelegramConfigUi(){
+            var tokenInp=document.getElementById('rpTgBotToken');
+            var chatInp=document.getElementById('rpTgChatId');
+            var summary=document.getElementById('rpTgConfigSummary');
+            var storedToken=localStorage.getItem('telegramBotToken')||'';
+            var storedChat=localStorage.getItem('telegramChatId')||'';
+            if(tokenInp&&document.activeElement!==tokenInp){tokenInp.value=storedToken;}
+            if(chatInp&&document.activeElement!==chatInp){chatInp.value=storedChat;}
+            if(summary){
+                summary.textContent=(storedToken||storedChat)
+                    ? ('Đang dùng Bot Token: '+maskTelegramToken(storedToken)+' | Chat ID: '+(storedChat||'chưa nhập'))
+                    : 'Chưa có cấu hình Telegram. Dán Bot Token và Chat ID nhóm rồi bấm Lưu Telegram.';
+            }
+        }
+        function bindTelegramConfigUi(){
+            var saveBtn=document.getElementById('rpTgSaveConfig');
+            var clearBtn=document.getElementById('rpTgClearConfig');
+            var tokenInp=document.getElementById('rpTgBotToken');
+            var chatInp=document.getElementById('rpTgChatId');
+            refreshTelegramConfigUi();
+            if(saveBtn){
+                saveBtn.addEventListener('click',function(){
+                    var token=tokenInp?tokenInp.value.trim():'';
+                    var chatId=chatInp?chatInp.value.trim():'';
+                    if(!token||!chatId){
+                        setTgStatus('Thiếu Bot Token hoặc Chat ID nhóm.', 'bad');
+                        return;
+                    }
+                    localStorage.setItem('telegramBotToken',token);
+                    localStorage.setItem('telegramChatId',chatId);
+                    refreshTelegramConfigUi();
+                    setTgStatus('Đã lưu cấu hình Telegram. Có thể bấm Đồng bộ ngay.', 'good');
+                });
+            }
+            if(clearBtn){
+                clearBtn.addEventListener('click',function(){
+                    localStorage.removeItem('telegramBotToken');
+                    localStorage.removeItem('telegramChatId');
+                    refreshTelegramConfigUi();
+                    setTgStatus('Đã xóa cấu hình Telegram trên trình duyệt này.', '');
+                });
+            }
+        }
         bindTelegramSyncUi();
+        bindTelegramConfigUi();
 
         setInterval(function(){var mv=getMY();saveAll(mv.m,mv.y);},40000);
     }());
