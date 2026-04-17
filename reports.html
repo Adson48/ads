@@ -78,97 +78,99 @@
         .rp-kpi-value.good { color:#16a34a; } .rp-kpi-value.warn { color:#d97706; } .rp-kpi-value.bad { color:#dc2626; }
 
         /* TABLE */
-        .rp-table-wrap { background:#fff; border-radius:18px; box-shadow:0 4px 24px rgba(94,33,61,.10); overflow:hidden; border:1px solid rgba(199,81,124,.12); }
-        .rp-scroll { overflow-x:auto; overflow-y:auto; max-height:calc(100vh - 280px);
-            scrollbar-width:thin; scrollbar-color:rgba(199,81,124,.35) rgba(255,240,246,.6); }
-        .rp-scroll::-webkit-scrollbar { height:8px; width:8px; }
-        .rp-scroll::-webkit-scrollbar-track { background:rgba(255,240,246,.6); border-radius:6px; }
-        .rp-scroll::-webkit-scrollbar-thumb { background:rgba(199,81,124,.4); border-radius:6px; }
-        .rp-scroll::-webkit-scrollbar-thumb:hover { background:rgba(169,60,99,.65); }
+        .rp-table-wrap { background:#fff; border-radius:18px; box-shadow:0 4px 28px rgba(94,33,61,.12); overflow:hidden; border:1px solid rgba(199,81,124,.15); }
+        .rp-scroll { overflow-x:auto; overflow-y:auto; max-height:calc(100vh - 260px);
+            scrollbar-width:thin; scrollbar-color:rgba(199,81,124,.4) rgba(255,240,246,.6); }
+        .rp-scroll::-webkit-scrollbar { height:9px; width:9px; }
+        .rp-scroll::-webkit-scrollbar-track { background:rgba(255,240,246,.6); border-radius:7px; }
+        .rp-scroll::-webkit-scrollbar-thumb { background:rgba(199,81,124,.45); border-radius:7px; }
+        .rp-scroll::-webkit-scrollbar-thumb:hover { background:rgba(169,60,99,.7); }
         .rp-table { width:100%; border-collapse:collapse; font-size:.82rem; }
-        .emp-banner-td { color:#fff; font-weight:900; font-size:.88rem; text-align:center;
-            padding:.6rem .5rem; border-bottom:2px solid rgba(255,255,255,.18); border-right:1px solid rgba(255,255,255,.12);
+        .emp-banner-td { color:#fff; font-weight:900; font-size:.9rem; text-align:center;
+            padding:.65rem .5rem; border-bottom:2px solid rgba(255,255,255,.2); border-right:1px solid rgba(255,255,255,.14);
             position:sticky; top:0; z-index:10; white-space:nowrap;
-            text-shadow:0 1px 3px rgba(0,0,0,.25); letter-spacing:.04em; }
+            text-shadow:0 1px 4px rgba(0,0,0,.3); letter-spacing:.06em; }
         .rh-day-cell { background:linear-gradient(180deg,#8b1a4a,#6e1239); color:#fff; font-weight:900;
             text-align:center; vertical-align:middle; position:sticky; top:0; left:0; z-index:13;
-            padding:.5rem .6rem; border:none; border-right:2px solid rgba(255,255,255,.2);
-            border-bottom:1px solid rgba(255,255,255,.1); min-width:94px; font-size:.79rem;
+            padding:.5rem .6rem; border:none; border-right:2px solid rgba(255,255,255,.22);
+            border-bottom:1px solid rgba(255,255,255,.12); min-width:94px; font-size:.79rem;
             text-shadow:0 1px 2px rgba(0,0,0,.3); }
 
         /* Banner row */
         .rp-table thead tr.rh-banner td,
-        .rp-table thead tr.rh-banner th { font-weight:900; font-size:.9rem; text-align:center; padding:.6rem; }
+        .rp-table thead tr.rh-banner th { font-weight:900; font-size:.9rem; text-align:center; padding:.65rem; }
 
         /* Column headers sticky */
-        .rp-table thead tr.rh-cols th { position:sticky; top:34px; z-index:10;
-            background:linear-gradient(180deg,#c7517c,#a83b60); color:#fff;
-            font-weight:700; padding:.55rem .38rem; text-align:center;
-            border-top:none; border-bottom:2px solid rgba(255,255,255,.15);
-            border-right:1px solid rgba(255,255,255,.12); white-space:nowrap; font-size:.73rem; letter-spacing:.02em; }
-        .rp-table thead tr.rh-cols th.col-e { background:linear-gradient(180deg,#b84872,#9c3358); }
-        .rp-table thead tr.rh-cols th.col-f { background:linear-gradient(180deg,#7c2d56,#62224a); font-size:.7rem; }
+        .rp-table thead tr.rh-cols th { position:sticky; top:36px; z-index:10;
+            background:linear-gradient(180deg,#d4638d,#b04873); color:#fff;
+            font-weight:700; padding:.52rem .4rem; text-align:center;
+            border-top:none; border-bottom:2px solid rgba(255,255,255,.18);
+            border-right:1px solid rgba(255,255,255,.14); white-space:nowrap; font-size:.7rem; letter-spacing:.03em; }
+        /* Input cols: slightly lighter pink */
+        .rp-table thead tr.rh-cols th.col-e { background:linear-gradient(180deg,#c7517c,#a83b60); }
+        /* Formula cols: deep purple-wine to clearly differ from input cols */
+        .rp-table thead tr.rh-cols th.col-f { background:linear-gradient(180deg,#6d2a7e,#4e1e5a); font-size:.67rem; letter-spacing:.02em; }
         .rp-table thead tr.rh-cols th.col-day { position:sticky; left:0; z-index:11; background:#6e1239; display:none; }
 
         /* Total sticky row */
-        .rp-table thead tr.rh-total th { position:sticky; top:69px; z-index:9;
-            background:linear-gradient(180deg,#fff9e6,#fff3cd); color:#7c5700;
-            font-weight:800; padding:.48rem .38rem; text-align:center;
-            border-top:1px solid #ffe082; border-bottom:2px solid #f0c000;
-            border-right:1px solid #ffe082; font-size:.78rem; white-space:nowrap; }
+        .rp-table thead tr.rh-total th { position:sticky; top:72px; z-index:9;
+            background:linear-gradient(180deg,#fff9e6,#fff0c4); color:#6b4a00;
+            font-weight:800; padding:.5rem .4rem; text-align:center;
+            border-top:1px solid #ffd454; border-bottom:2px solid #e8b800;
+            border-right:1px solid #ffe299; font-size:.77rem; white-space:nowrap; }
         .rp-table thead tr.rh-total th.tl { text-align:center; font-size:.82rem; letter-spacing:.03em;
-            background:linear-gradient(180deg,#fff3cd,#ffeaa0); font-weight:900;
-            position:sticky; top:69px; left:0; z-index:11; border-right:2px solid #e8b800; }
-        .rp-table thead tr.rh-total th.tv.good { color:#16a34a; } .rp-table thead tr.rh-total th.tv.warn { color:#d97706; } .rp-table thead tr.rh-total th.tv.bad { color:#dc2626; }
+            background:linear-gradient(180deg,#fff0c4,#fcd900); font-weight:900;
+            position:sticky; top:72px; left:0; z-index:11; border-right:2px solid #d4a800; }
+        .rp-table thead tr.rh-total th.tv.good { color:#15803d; } .rp-table thead tr.rh-total th.tv.warn { color:#b45309; } .rp-table thead tr.rh-total th.tv.bad { color:#dc2626; }
 
         /* Data rows */
-        .rp-table tbody tr.rd { border-bottom:1px solid rgba(240,224,232,.7); transition:background .1s; }
-        .rp-table tbody tr.rd:hover { background:rgba(255,235,243,.65) !important; }
-        .rp-table tbody tr.rd:nth-child(even) { background:rgba(255,250,252,.8); }
-        .rp-table tbody tr.rd.is-wknd { background:rgba(255,248,242,.9); }
-        .rp-table tbody tr.rd.is-wknd:hover { background:rgba(255,235,243,.65) !important; }
+        .rp-table tbody tr.rd { border-bottom:1px solid rgba(230,215,222,.65); transition:background .1s; }
+        .rp-table tbody tr.rd:hover { background:rgba(255,232,241,.7) !important; }
+        .rp-table tbody tr.rd:nth-child(even) { background:rgba(253,248,251,.85); }
+        .rp-table tbody tr.rd.is-wknd { background:rgba(255,247,240,.9); }
+        .rp-table tbody tr.rd.is-wknd:hover { background:rgba(255,232,241,.7) !important; }
 
         /* Day cell sticky */
         .cell-day { position:sticky; left:0; z-index:5;
-            background:linear-gradient(90deg,#fdeef4,#fef6f9); border-right:2px solid #ebbcce;
-            border-top:1px solid rgba(240,200,216,.5); padding:.4rem .55rem;
+            background:linear-gradient(90deg,#feeaf2,#fef5f8); border-right:2px solid #e8b4c8;
+            border-top:1px solid rgba(235,196,210,.5); padding:.42rem .58rem;
             font-weight:700; font-size:.8rem; color:#7a2e4a; white-space:nowrap; min-width:90px; }
-        .rp-table tbody tr.rd:hover .cell-day { background:linear-gradient(90deg,#fde0ec,#fdeef4); }
-        .rp-table tbody tr.rd.is-wknd .cell-day { background:linear-gradient(90deg,#fff0e4,#fff7f2); color:#b84f1a; border-right-color:#f5b88a; }
+        .rp-table tbody tr.rd:hover .cell-day { background:linear-gradient(90deg,#fddaeb,#feeaf2); }
+        .rp-table tbody tr.rd.is-wknd .cell-day { background:linear-gradient(90deg,#fff0e6,#fff6f0); color:#b84f1a; border-right-color:#f5b888; }
 
-        /* Input cells */
-        .cell-cost-wrap { padding:0; border-right:1px solid rgba(240,224,232,.7); border-bottom:1px solid rgba(240,224,232,.7); min-width:108px; vertical-align:middle; background:rgba(255,253,254,.8); }
-        .cell-cost-inp { width:100%; border:none; outline:none; background:transparent; text-align:right; padding:.35rem .5rem .1rem; font-size:.8rem; font-family:inherit; color:#3d1f2e; font-weight:600; display:block; }
-        .cell-cost-inp:focus { background:rgba(252,232,240,.7); }
+        /* Input cells — subtle warm-white background */
+        .cell-cost-wrap { padding:0; border-right:1px solid rgba(230,215,222,.65); border-bottom:1px solid rgba(230,215,222,.65); min-width:110px; vertical-align:middle; background:rgba(255,254,255,.95); }
+        .cell-cost-inp { width:100%; border:none; outline:none; background:transparent; text-align:right; padding:.38rem .52rem; font-size:.8rem; font-family:inherit; color:#3d1f2e; font-weight:600; display:block; }
+        .cell-cost-inp:focus { background:rgba(255,234,244,.75); }
 
-        .cell-num { padding:0; border-right:1px solid rgba(240,224,232,.7); border-bottom:1px solid rgba(240,224,232,.7); vertical-align:middle; }
+        .cell-num { padding:0; border-right:1px solid rgba(230,215,222,.65); border-bottom:1px solid rgba(230,215,222,.65); vertical-align:middle; background:rgba(255,254,255,.9); }
         .rp-inp { width:100%; border:none; outline:none; background:transparent; text-align:right;
-            padding:.4rem .45rem; font-size:.8rem; font-family:inherit; color:#2f2030; min-width:60px; display:block; }
-        .rp-inp:focus { background:rgba(252,232,240,.7); }
-        .cell-rev { padding:0; border-right:1px solid rgba(240,224,232,.7); border-bottom:1px solid rgba(240,224,232,.7); min-width:108px; vertical-align:middle; background:rgba(245,255,250,.8); }
+            padding:.4rem .46rem; font-size:.8rem; font-family:inherit; color:#2f2030; min-width:62px; display:block; }
+        .rp-inp:focus { background:rgba(255,234,244,.75); }
+        /* Revenue column — distinct green-tinted background */
+        .cell-rev { padding:0; border-right:1px solid rgba(230,215,222,.65); border-bottom:1px solid rgba(230,215,222,.65); min-width:112px; vertical-align:middle; background:rgba(236,253,245,.9); }
         .rp-inp-rev { width:100%; border:none; outline:none; background:transparent; text-align:right;
-            padding:.4rem .45rem; font-size:.8rem; font-family:inherit; color:#15803d; font-weight:700; display:block; }
-        .rp-inp-rev:focus { background:rgba(220,252,231,.7); }
+            padding:.4rem .46rem; font-size:.8rem; font-family:inherit; color:#116640; font-weight:700; display:block; }
+        .rp-inp-rev:focus { background:rgba(209,250,229,.8); }
 
-        /* Formula cells */
-        td.rp-fc { border-right:1px solid rgba(240,224,232,.7); border-bottom:1px solid rgba(240,224,232,.7);
-            text-align:right; padding:.4rem .45rem; font-size:.78rem; font-weight:700; white-space:nowrap; }
-        td.rp-fc.fc-num { color:#1d4ed8; background:rgba(239,246,255,.7); }
-        td.rp-fc.fc-pct-good { color:#15803d; background:rgba(240,253,244,.85); text-align:center; }
-        td.rp-fc.fc-pct-warn { color:#b45309; background:rgba(255,251,235,.85); text-align:center; }
-        td.rp-fc.fc-pct-bad  { color:#dc2626; background:rgba(254,242,242,.85); text-align:center; }
-        td.rp-fc.fc-empty    { background:rgba(250,249,251,.6); }
-
-
+        /* Formula cells — light purple background so they differ from white input cells */
+        td.rp-fc { border-right:1px solid rgba(210,190,225,.55); border-bottom:1px solid rgba(230,215,222,.65);
+            text-align:center; padding:.4rem .42rem; font-size:.77rem; font-weight:700; white-space:nowrap;
+            background:rgba(245,240,252,.65); }
+        td.rp-fc.fc-num { color:#1d4ed8; background:rgba(235,244,255,.8); }
+        td.rp-fc.fc-pct-good { color:#166534; background:rgba(220,252,231,.8); }
+        td.rp-fc.fc-pct-warn { color:#92400e; background:rgba(255,247,210,.85); }
+        td.rp-fc.fc-pct-bad  { color:#991b1b; background:rgba(254,226,226,.8); }
+        td.rp-fc.fc-empty    { background:rgba(244,241,248,.5); color:transparent; }
 
         /* Bottom total row */
-        .rp-table tbody tr.rd-btotal td { background:linear-gradient(180deg,#fff9e6,#ffefc0); border-top:2px solid #e8b800; border-bottom:1px solid #ffe082; border-right:1px solid #ffe082; font-weight:800; color:#6b4a00; text-align:center; padding:.5rem .42rem; font-size:.8rem; white-space:nowrap; }
-        .rp-table tbody tr.rd-btotal td.bt-lbl { text-align:center; font-size:.84rem; background:linear-gradient(180deg,#ffefc0,#fcd900); font-weight:900; letter-spacing:.05em; color:#5a3c00; position:sticky; left:0; border-right:2px solid #e8b800; }
+        .rp-table tbody tr.rd-btotal td { background:linear-gradient(180deg,#fff9e6,#fff0c4); border-top:2px solid #e8b800; border-bottom:1px solid #ffe082; border-right:1px solid #ffe299; font-weight:800; color:#5e4000; text-align:center; padding:.52rem .44rem; font-size:.8rem; white-space:nowrap; }
+        .rp-table tbody tr.rd-btotal td.bt-lbl { text-align:center; font-size:.84rem; background:linear-gradient(180deg,#fff0c4,#fcd900); font-weight:900; letter-spacing:.05em; color:#4a3000; position:sticky; left:0; border-right:2px solid #d4a800; }
         .rp-table tbody tr.rd-btotal td.bt-good { color:#15803d; }
         .rp-table tbody tr.rd-btotal td.bt-warn { color:#b45309; }
         .rp-table tbody tr.rd-btotal td.bt-bad  { color:#dc2626; }
         /* Employee group separator */
-        .emp-group-end { border-right:3px solid rgba(0,0,0,.25) !important; }
+        .emp-group-end { border-right:3px solid rgba(199,81,124,.4) !important; }
         /* Rename button */
         .rp-btn-rename { background:linear-gradient(135deg,#f59e0b,#d97706); color:#fff; }
 
@@ -757,21 +759,27 @@ Doanh thu: 45000000</pre>
                         td.appendChild(minp(f.v));tr.appendChild(td);
                     });
 
-                    /* 6 formula cells */
-                    for(var i=0;i<6;i++){
+                    /* 5 formula cells: TiLeKy, TiLeXs, CpMess, CpSdt, CpLich */
+                    for(var i=0;i<5;i++){
                         var tf=document.createElement('td');
                         tf.className='rp-fc fc-empty';
                         tf.dataset.empIdx=ei;
                         tr.appendChild(tf);
                     }
 
-                    /* Doanh thu */
+                    /* Doanh thu input (col 11) */
                     var tdR=document.createElement('td');
-                    tdR.className='cell-rev'+(lastInEmpGroup?'':' emp-group-end');
-                    if(!lastInEmpGroup)tdR.style.borderRight='3px solid #c7517c';
+                    tdR.className='cell-rev';
                     tdR.dataset.empIdx=ei;
                     tdR.appendChild(minp(sv.rev,'rp-inp-rev rpf'));
                     tr.appendChild(tdR);
+
+                    /* 6th formula cell: % CP/DT (col 12) */
+                    var tfCpDt=document.createElement('td');
+                    tfCpDt.className='rp-fc fc-empty'+(lastInEmpGroup?'':' emp-group-end');
+                    if(!lastInEmpGroup)tfCpDt.style.borderRight='3px solid #c7517c';
+                    tfCpDt.dataset.empIdx=ei;
+                    tr.appendChild(tfCpDt);
                 });
                 tbody.appendChild(tr);
             }
@@ -900,7 +908,8 @@ Doanh thu: 45000000</pre>
             return null;
         }
         function stripAccents(input){
-            return String(input||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+            // Replace Vietnamese Đ/đ (U+0110/U+0111) BEFORE NFD normalize since they don't decompose
+            return String(input||'').replace(/Đ/g,'D').replace(/đ/g,'d').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
         }
         function keyNorm(input){
             return stripAccents(input).toLowerCase().replace(/[^a-z0-9]/g,'');
