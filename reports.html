@@ -40,6 +40,31 @@
         .rp-tele-status { font-size:.8rem; font-weight:700; color:#1d4ed8; }
         .rp-tele-status.bad { color:#b91c1c; }
         .rp-tele-status.good { color:#15803d; }
+        .rp-tele-template {
+            background:#f8fbff;
+            border:1px dashed #bfd8fb;
+            border-radius:12px;
+            padding:.65rem .85rem;
+            margin:-.35rem 0 .95rem;
+        }
+        .rp-tele-template p {
+            margin:0 0 .45rem;
+            font-size:.8rem;
+            font-weight:800;
+            color:#1e40af;
+        }
+        .rp-tele-template pre {
+            margin:0;
+            white-space:pre-wrap;
+            font-size:.78rem;
+            line-height:1.45;
+            color:#1f3d6e;
+            background:#ffffff;
+            border:1px solid #dbeafe;
+            border-radius:8px;
+            padding:.55rem .65rem;
+            font-family:Consolas, 'Courier New', monospace;
+        }
 
         /* KPI BAR */
         .rp-kpi-bar { display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:.65rem; margin-bottom:1rem; }
@@ -260,7 +285,20 @@
                 <input type="checkbox" id="rpTgAutoSync"> Tự động 45 giây/lần
             </label>
             <span id="rpTgStatus" class="rp-tele-status">Chưa đồng bộ.</span>
-            <span class="rp-tele-help">Cú pháp Telegram: <strong>/report|Tên NV|YYYY-MM-DD|Chi phí|MESS|SĐT|Lịch|Hoãn hủy|HĐ|Doanh thu</strong></span>
+            <span class="rp-tele-help">Hỗ trợ cả dạng 1 dòng và xuống dòng.</span>
+        </div>
+        <div class="rp-tele-template">
+            <p>Mẫu điền Telegram (xuống dòng, copy và thay số):</p>
+            <pre>/report
+NV: Tên nhân viên
+Ngày: 2026-04-17
+Chi phí: 1200000
+MESS: 80
+SĐT: 30
+Lịch: 15
+Hoãn hủy: 2
+HĐ: 6
+Doanh thu: 45000000</pre>
         </div>
 
         <div class="rp-kpi-bar">
@@ -703,14 +741,60 @@
             if(m){return {y:parseInt(m[3],10),m:parseInt(m[2],10),d:parseInt(m[1],10)};}
             return null;
         }
+        function stripAccents(input){
+            return String(input||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+        }
+        function keyNorm(input){
+            return stripAccents(input).toLowerCase().replace(/[^a-z0-9]/g,'');
+        }
         function parseNumLoose(v){
             var cleaned=String(v||'').replace(/[^0-9]/g,'');
             return cleaned?parseInt(cleaned,10):0;
+        }
+        function parseTelegramReportByLines(raw){
+            var lines=String(raw||'').split(/\r?\n/).map(function(s){return s.trim();}).filter(Boolean);
+            if(!lines.length){return null;}
+            var map={};
+            lines.forEach(function(line){
+                var clean=line.replace(/^[-*]\s*/,'');
+                var idx=clean.indexOf(':');
+                if(idx<0){return;}
+                var k=keyNorm(clean.slice(0,idx));
+                var v=clean.slice(idx+1).trim();
+                if(k&&v){map[k]=v;}
+            });
+            var reporter = map.nv || map.nhanvien || map.tennv || map.ten || map.reporter;
+            var dateRaw = map.ngay || map.date;
+            if(!reporter || !dateRaw){return null;}
+            var dt=parseReportDate(dateRaw);
+            if(!dt){return null;}
+            return {
+                reporter: normReporter(reporter),
+                year: dt.y,
+                month: dt.m,
+                day: dt.d,
+                row: {
+                    cost: String(parseNumLoose(map.chiphi || map.cost || '')||''),
+                    mess: String(parseNumLoose(map.mess || '')||''),
+                    sdt: String(parseNumLoose(map.sdt || map.sodt || map.sodienthoai || '')||''),
+                    lich: String(parseNumLoose(map.lich || map.datlich || '')||''),
+                    hh: String(parseNumLoose(map.hoanhuy || map.huy || '')||''),
+                    hd: String(parseNumLoose(map.hd || map.hopdong || '')||''),
+                    rev: String(parseNumLoose(map.doanhthu || map.dt || map.revenue || '')||'')
+                }
+            };
         }
         function parseTelegramReportText(text){
             var raw=String(text||'').trim();
             if(!raw){return null;}
             if(raw.indexOf('/report')===0){raw=raw.replace(/^\/report\s*/i,'');}
+
+            // Prefer multiline key:value format for easier manual entry.
+            if(raw.indexOf('\n')>-1 || raw.indexOf('\r')>-1){
+                var byLine=parseTelegramReportByLines(raw);
+                if(byLine){return byLine;}
+            }
+
             var sep='|';
             if(raw.indexOf('|')===-1&&raw.indexOf(';')>-1){sep=';';}
             if(raw.indexOf('|')===-1&&raw.indexOf(';')===-1&&raw.indexOf(',')>-1){sep=',';}
