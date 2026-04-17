@@ -607,6 +607,9 @@ Doanh thu: 45000000</pre>
         var SESSION_KEY='ma_session_v1',ACCOUNT_LOCAL_KEY='ma_accounts_v1',ACCOUNT_COLL='ma_accounts',REPORT_COLL='ma_reports';
         var MAX_HIST=30;
         var tgTimer=null;
+        var monthRealtimeUnsub=null;
+        var monthRealtimeKey='';
+        var TG_AUTO_INTERVAL_MS=8000;
         var rpDb=null;
         var monthCache={};
         var saveTimers={};
@@ -659,11 +662,18 @@ Doanh thu: 45000000</pre>
                 isSuperadminUser=(role==='superadmin');
                 if(zone){zone.classList.toggle('rp-tele-admin-hidden',!isSuperadminUser);}
                 if(note){note.style.display=isSuperadminUser?'none':'block';}
-                if(!isSuperadminUser&&tgTimer){clearInterval(tgTimer);tgTimer=null;}
+                var auto=document.getElementById('rpTgAutoSync');
+                if(isSuperadminUser&&auto){
+                    if(!auto.checked){auto.checked=true;}
+                    startTelegramAutoSync(true);
+                }else{
+                    stopTelegramAutoSync();
+                }
             }).catch(function(){
                 isSuperadminUser=false;
                 if(zone){zone.classList.add('rp-tele-admin-hidden');}
                 if(note){note.style.display='block';}
+                stopTelegramAutoSync();
             });
         }
         function buildLocalMonthStore(m,y){
@@ -744,6 +754,37 @@ Doanh thu: 45000000</pre>
             persistMonthStoreToLocal(m,y,remote);
             var after=JSON.stringify((monthCache[key]&&monthCache[key].employees)||{});
             return before!==after;
+        }
+        function stopMonthRealtime(){
+            if(monthRealtimeUnsub){
+                try{monthRealtimeUnsub();}catch(e){}
+                monthRealtimeUnsub=null;
+            }
+            monthRealtimeKey='';
+        }
+        function startMonthRealtime(m,y){
+            var db=initReportDb();
+            if(!db){return;}
+            var key=monthId(m,y);
+            if(monthRealtimeKey===key&&monthRealtimeUnsub){return;}
+            stopMonthRealtime();
+            monthRealtimeKey=key;
+            monthRealtimeUnsub=db.collection(REPORT_COLL).doc(key).onSnapshot(function(snap){
+                if(!snap.exists){return;}
+                var remote=normalizeRemoteMonthStore(m,y,snap.data()||{});
+                var ck=cacheKey(m,y);
+                var before=JSON.stringify((monthCache[ck]&&monthCache[ck].employees)||{});
+                monthCache[ck]=remote;
+                persistMonthStoreToLocal(m,y,remote);
+                var after=JSON.stringify((monthCache[ck]&&monthCache[ck].employees)||{});
+                if(before!==after){
+                    var mv=getMY();
+                    if(mv.m===m&&mv.y===y){
+                        buildMultiTable(m,y,loadReporters());
+                        applyFilter();
+                    }
+                }
+            },function(){});
         }
         function refreshFilterDateBounds(){
             var mv=getMY();
@@ -1288,6 +1329,7 @@ Doanh thu: 45000000</pre>
 
         function gen(){
             var mv=getMY();
+            startMonthRealtime(mv.m,mv.y);
             refreshFilterDateBounds();
             buildMultiTable(mv.m,mv.y,loadReporters());
             ensureMonthLoaded(mv.m,mv.y).then(function(changed){
@@ -1436,6 +1478,18 @@ Doanh thu: 45000000</pre>
             var cleaned=String(v||'').replace(/[^0-9]/g,'');
             return cleaned?parseInt(cleaned,10):0;
         }
+        function chatIdMatches(configId,actualId){
+            var cfg=String(configId||'').trim();
+            var act=String(actualId||'').trim();
+            if(!cfg||!act){return false;}
+            if(cfg===act){return true;}
+            var cfgDigits=cfg.replace(/^-/, '');
+            var actDigits=act.replace(/^-/, '');
+            if(cfgDigits===actDigits){return true;}
+            if(act.indexOf('-100')===0&&cfg===act.slice(4)){return true;}
+            if(cfg.indexOf('-100')===0&&act===cfg.slice(4)){return true;}
+            return false;
+        }
         function parseTelegramReportByLines(raw){
             var lines=String(raw||'').split(/\r?\n/).map(function(s){return s.trim();}).filter(Boolean);
             if(!lines.length){return null;}
@@ -1550,36 +1604,54 @@ Doanh thu: 45000000</pre>
                 var imported=0;
                 var importedCurrent=0;
                 var importedOtherMonth=0;
+                var chatMatched=0;
+                var parsedCount=0;
                 var currentTouched=false;
                 var maxUpdate=offset;
                 list.forEach(function(upd){
                     if(upd&&upd.update_id>=maxUpdate){maxUpdate=upd.update_id+1;}
                     var msg=(upd&&upd.message)||(upd&&upd.edited_message)||(upd&&upd.channel_post)||(upd&&upd.edited_channel_post);
                     if(!msg||!msg.chat){return;}
-                    if(String(msg.chat.id)!==String(cfg.chatId)){return;}
+                    if(!chatIdMatches(cfg.chatId,msg.chat.id)){return;}
+                    chatMatched+=1;
                     var incomingText=msg.text||msg.caption||'';
                     if(!incomingText){return;}
                     var parsed=parseTelegramReportText(incomingText);
                     if(!parsed){return;}
+                    parsedCount+=1;
                     if(parsed.year<2020||parsed.year>2099||parsed.month<1||parsed.month>12||parsed.day<1||parsed.day>31){return;}
                     var touched=applyTelegramReport(parsed);
                     imported+=1;
                     if(touched){importedCurrent+=1;}else{importedOtherMonth+=1;}
                     currentTouched=currentTouched||touched;
                 });
-                if(maxUpdate>offset){localStorage.setItem(TG_OFFSET_KEY,String(maxUpdate));}
+                if(imported>0&&maxUpdate>offset){localStorage.setItem(TG_OFFSET_KEY,String(maxUpdate));}
                 if(currentTouched){gen();}
                 if(imported>0){
                     var msg='Đồng bộ thành công '+imported+' báo cáo';
                     if(importedCurrent>0){msg+='; vào tháng đang xem: '+importedCurrent;}
                     if(importedOtherMonth>0){msg+='; khác tháng đang xem: '+importedOtherMonth;}
                     setTgStatus(msg+'.', 'good');
+                }else if(list.length===0){
+                    setTgStatus('Không có cập nhật Telegram mới.', '');
+                }else if(chatMatched===0){
+                    setTgStatus('Có cập nhật Telegram nhưng không khớp Chat ID đã cấu hình.', 'bad');
+                }else if(parsedCount===0){
+                    setTgStatus('Đã thấy tin trong nhóm nhưng sai cú pháp /report. Vui lòng đối chiếu đúng mẫu.', 'bad');
                 }else{
-                    setTgStatus('Không có báo cáo Telegram mới hoặc sai cú pháp.', '');
+                    setTgStatus('Đã đọc tin Telegram nhưng chưa ghi dữ liệu hợp lệ vào bảng.', 'bad');
                 }
             }catch(e){
                 setTgStatus('Lỗi đồng bộ Telegram: '+(e&&e.message?e.message:'Không rõ lỗi'), 'bad');
             }
+        }
+        function stopTelegramAutoSync(){
+            if(tgTimer){clearInterval(tgTimer);tgTimer=null;}
+        }
+        function startTelegramAutoSync(runNow){
+            stopTelegramAutoSync();
+            tgTimer=setInterval(function(){syncFromTelegram();},TG_AUTO_INTERVAL_MS);
+            if(runNow){syncFromTelegram();}
         }
         function bindTelegramSyncUi(){
             var syncBtn=document.getElementById('rpTgSyncNow');
@@ -1587,13 +1659,14 @@ Doanh thu: 45000000</pre>
             if(syncBtn){syncBtn.addEventListener('click',function(){syncFromTelegram();});}
             if(auto){
                 auto.addEventListener('change',function(){
-                    if(tgTimer){clearInterval(tgTimer);tgTimer=null;}
                     if(auto.checked){
-                        tgTimer=setInterval(function(){syncFromTelegram();},45000);
+                        startTelegramAutoSync(true);
+                    }else{
+                        stopTelegramAutoSync();
                     }
                 });
                 if(auto.checked){
-                    tgTimer=setInterval(function(){syncFromTelegram();},45000);
+                    startTelegramAutoSync(true);
                 }
             }
         }
@@ -1637,6 +1710,7 @@ Doanh thu: 45000000</pre>
                     localStorage.removeItem(TG_OFFSET_KEY);
                     refreshTelegramConfigUi();
                     setTgStatus('Đã lưu cấu hình Telegram cho trang báo cáo. Có thể bấm Đồng bộ ngay.', 'good');
+                    syncFromTelegram();
                 });
             }
             if(clearBtn){
