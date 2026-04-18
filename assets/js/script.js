@@ -1007,6 +1007,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const insightWeeklyStamp = document.getElementById('insightWeeklyStamp');
         const insightDateFromInput = document.getElementById('insightDateFrom');
         const insightDateToInput = document.getElementById('insightDateTo');
+        const topAreaWeekSelect = document.getElementById('topAreaWeekSelect');
         const topAreaSheetUrlInput = document.getElementById('topAreaSheetUrl');
         const topAreaSheetApplyBtn = document.getElementById('topAreaSheetApply');
         const topAreaSheetStatus = document.getElementById('topAreaSheetStatus');
@@ -1556,6 +1557,45 @@ if (studioOutput && sidebarCategoryLinks.length) {
             return { from: from, to: to };
         };
 
+        const buildWeekOptionLabel = function(fromDate, toDate) {
+            const weekNo = getWeekNumber(toDate);
+            return 'Tuần ' + weekNo + ' (' + toViDate(toInputDate(fromDate)) + ' - ' + toViDate(toInputDate(toDate)) + ')';
+        };
+
+        const populateTopAreaWeekSelect = function() {
+            if (!topAreaWeekSelect) {
+                return;
+            }
+            const previousValue = String(topAreaWeekSelect.value || '').trim();
+            topAreaWeekSelect.innerHTML = '<option value="custom">Theo khoảng ngày đang chọn</option>';
+
+            const today = new Date();
+            for (let i = 0; i < 16; i += 1) {
+                const anchor = addDays(today, -(i * 7));
+                const fromDate = getWeekStartMonday(anchor);
+                const toDate = addDays(fromDate, 6);
+                const value = toInputDate(fromDate) + '|' + toInputDate(toDate);
+                const option = document.createElement('option');
+                option.value = value;
+                option.textContent = buildWeekOptionLabel(fromDate, toDate);
+                topAreaWeekSelect.appendChild(option);
+            }
+
+            topAreaWeekSelect.value = previousValue && topAreaWeekSelect.querySelector('option[value="' + previousValue + '"]')
+                ? previousValue
+                : 'custom';
+        };
+
+        const syncTopAreaWeekSelectWithRange = function(range) {
+            if (!topAreaWeekSelect) {
+                return;
+            }
+            const normalized = normalizeInsightRange(range && range.from, range && range.to);
+            const key = normalized.from + '|' + normalized.to;
+            const matched = topAreaWeekSelect.querySelector('option[value="' + key + '"]');
+            topAreaWeekSelect.value = matched ? key : 'custom';
+        };
+
         const renderInsightRangeStamp = function(range) {
             if (!insightWeeklyStamp) {
                 return;
@@ -1579,6 +1619,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 insightDateToInput.value = normalized.to;
             }
             renderInsightRangeStamp(normalized);
+            syncTopAreaWeekSelectWithRange(normalized);
             if (shouldPersist) {
                 saveDashboardState({
                     insightFrom: normalized.from,
@@ -1719,6 +1760,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         };
 
         const initialDashboardState = loadDashboardState();
+        populateTopAreaWeekSelect();
         applyInsightRange(initialDashboardState.insightFrom, initialDashboardState.insightTo, false);
         const initialSheetCfg = loadTopAreaSheetConfig();
         applyTopAreaSheetAccessByRole();
@@ -1754,6 +1796,16 @@ if (studioOutput && sidebarCategoryLinks.length) {
         if (insightDateToInput) {
             insightDateToInput.addEventListener('change', function() {
                 applyInsightRange(insightDateFromInput ? insightDateFromInput.value : '', insightDateToInput.value, true);
+            });
+        }
+        if (topAreaWeekSelect) {
+            topAreaWeekSelect.addEventListener('change', function() {
+                const value = String(topAreaWeekSelect.value || '').trim();
+                if (!value || value === 'custom' || value.indexOf('|') === -1) {
+                    return;
+                }
+                const parts = value.split('|');
+                applyInsightRange(parts[0], parts[1], true);
             });
         }
 
