@@ -1005,6 +1005,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const reportCollection = 'ma_reports';
         const reportEmployeeStat = document.getElementById('reportEmployeeStat');
         const insightWeeklyStamp = document.getElementById('insightWeeklyStamp');
+        const weeklyStrategyWeekStamp = document.getElementById('weeklyStrategyWeekStamp');
         const insightDateFromInput = document.getElementById('insightDateFrom');
         const insightDateToInput = document.getElementById('insightDateTo');
         const topAreaWeekSelect = document.getElementById('topAreaWeekSelect');
@@ -1944,16 +1945,25 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
         const renderInsightRangeStamp = function(range) {
             if (!insightWeeklyStamp) {
+                if (weeklyStrategyWeekStamp) {
+                    weeklyStrategyWeekStamp.textContent = 'Tuần từ ngày --/--/---- đến --/--/----';
+                }
                 return;
             }
             const fromText = toViDate(range.from);
             const toText = toViDate(range.to);
             if (!fromText || !toText) {
                 insightWeeklyStamp.textContent = 'Update theo tuần';
+                if (weeklyStrategyWeekStamp) {
+                    weeklyStrategyWeekStamp.textContent = 'Tuần từ ngày --/--/---- đến --/--/----';
+                }
                 return;
             }
             const wk = getWeekNumber(new Date(range.to));
             insightWeeklyStamp.textContent = 'Tuần ' + wk + ' - ' + fromText + ' đến ' + toText;
+            if (weeklyStrategyWeekStamp) {
+                weeklyStrategyWeekStamp.textContent = 'Tuần từ ngày ' + fromText + ' đến ' + toText;
+            }
         };
 
         const applyInsightRange = function(fromVal, toVal, shouldPersist) {
