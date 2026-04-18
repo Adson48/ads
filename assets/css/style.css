@@ -1397,14 +1397,16 @@ header {
     width: 100%;
     max-width: none;
     margin: 3.35rem 0 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
     font-size: 16px;
 }
 
 .home-dashboard .section {
     max-width: none;
     margin: 0;
-    padding-left: 0;
-    padding-right: 0;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .home-alert-banner {
@@ -1420,7 +1422,7 @@ header {
     width: 100%;
     max-width: none;
     margin: 0;
-    padding: 0;
+    padding: 0 1rem;
 }
 
 .home-alert-title {
@@ -1881,6 +1883,8 @@ header {
         width: 100%;
         max-width: none;
         margin-top: 1.9rem;
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
     }
 
     .home-alert-banner {
