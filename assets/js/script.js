@@ -2234,29 +2234,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         }
                     }
                 } catch (e) {
-                    // Continue to direct sheet fetch / cache fallback below.
-                }
-
-                // Staff can fetch and calculate from the shared Google Sheet link in read-only mode.
-                if (sheetId) {
-                    try {
-                        const csvText = await fetchSheetCsvText(sheetId, gid);
-                        const parsed = parseCsvText(csvText);
-                        const normalized = normalizeSheetRows(parsed);
-                        if (!normalized.ok) {
-                            throw new Error('Thiếu cột bắt buộc: Ngày, Khu vực, HĐ.');
-                        }
-
-                        localStorage.setItem(topAreaSheetDataKey, JSON.stringify(normalized.rows));
-                        const rowsFromSheet = deriveTopAreaRows(normalized.rows, currentRange);
-                        if (rowsFromSheet.length) {
-                            applyTopAreaRowsToUi(rowsFromSheet);
-                            setTopAreaStatus('Đã tải dữ liệu Google Sheet tuần từ ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
-                            return true;
-                        }
-                    } catch (e) {
-                        // Continue to fallback from cached rows below.
-                    }
+                    // Keep fallback on existing synced payload only.
                 }
 
                 const cachedRowsForStaff = safeParseState(localStorage.getItem(topAreaSheetDataKey));
@@ -2268,7 +2246,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 }
 
                 if (!(options && options.silent)) {
-                    setTopAreaStatus('Không lấy được dữ liệu Google Sheet cho tuần đang chọn. Vui lòng thử lại hoặc chọn tuần khác.', 'bad');
+                    setTopAreaStatus('Chưa có dữ liệu đồng bộ cho tuần này. Vui lòng bấm "Đồng bộ Sheet" từ tài khoản superadmin.', 'bad');
                 }
                 return false;
             }
