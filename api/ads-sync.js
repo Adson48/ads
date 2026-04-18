@@ -3,8 +3,8 @@
 // ================================================================
 // Cấu hình environment variables trên Vercel Dashboard:
 //   Settings → Environment Variables → thêm:
-//   - FB_ACCESS_TOKEN = "EAAVDZCoYN0OoB..."
-//   - FB_AD_ACCOUNT_ID = "act_724992993672214"
+//   - FB_ACCESS_TOKEN = "YOUR_LONG_LIVED_ACCESS_TOKEN"
+//   - FB_AD_ACCOUNT_ID = "act_YOUR_AD_ACCOUNT_ID"
 //   - FB_API_VERSION = "v25.0"  (hoặc v19.0)
 // ================================================================
 
