@@ -143,6 +143,8 @@
         var syncBtn = document.getElementById('adsSyncBtn');
         if (syncBtn) syncBtn.addEventListener('click', function () { syncNow(); });
 
+        setupDateQuickFilters();
+
         var search = document.getElementById('adsSearchInput');
         if (search) search.addEventListener('input', function () {
             searchQuery = this.value.toLowerCase().trim();
@@ -213,6 +215,64 @@
         setupColResize();
     }
 
+    function setupDateQuickFilters() {
+        var quickBtn = document.getElementById('adsDateQuickBtn');
+        var panel = document.getElementById('adsDateQuickPanel');
+        if (!quickBtn || !panel) return;
+
+        quickBtn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            panel.classList.toggle('open');
+        });
+
+        panel.querySelectorAll('.ads-date-preset').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                applyDatePreset(this.dataset.range);
+                panel.classList.remove('open');
+            });
+        });
+
+        document.addEventListener('click', function (e) {
+            if (!panel.classList.contains('open')) return;
+            if (!panel.contains(e.target) && e.target !== quickBtn) {
+                panel.classList.remove('open');
+            }
+        });
+    }
+
+    function applyDatePreset(range) {
+        var fromEl = document.getElementById('adsDateFrom');
+        var toEl = document.getElementById('adsDateTo');
+        if (!fromEl || !toEl) return;
+
+        var today = new Date();
+        var from = new Date(today);
+        var to = new Date(today);
+
+        if (range === 'today') {
+            // Already initialized as today
+        } else if (range === 'yesterday') {
+            from.setDate(from.getDate() - 1);
+            to.setDate(to.getDate() - 1);
+        } else if (range === 'last7') {
+            from.setDate(from.getDate() - 6);
+        } else if (range === 'last14') {
+            from.setDate(from.getDate() - 13);
+        } else if (range === 'last30') {
+            from.setDate(from.getDate() - 29);
+        } else if (range === 'thisMonth' || range === 'allMonthToDate') {
+            from = new Date(today.getFullYear(), today.getMonth(), 1);
+        } else if (range === 'lastMonth') {
+            from = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+            to = new Date(today.getFullYear(), today.getMonth(), 0);
+        }
+
+        fromEl.value = fmtDate(from);
+        toEl.value = fmtDate(to);
+
+        setPill('Đã chọn bộ lọc ngày, bấm Cập Nhật', '');
+    }
+
     // ---- COL RESIZE ----
     function setupColResize() {
         document.querySelectorAll('.col-resize-handle').forEach(function (handle) {
@@ -275,17 +335,22 @@
             var result = await res.json();
             if (!result.success) throw new Error(result.error || 'Lỗi API');
 
+            // Render trực tiếp ngay sau khi API trả về để tránh phụ thuộc hoàn toàn vào realtime query.
+            allCampaigns = Array.isArray(result.data) ? result.data : [];
+            applyFilterSort();
+            updateStats();
+
             // Save to Firestore
             if (db && result.data && result.data.length > 0) {
-                var batch = db.batch();
-                result.data.forEach(function (c) {
-                    batch.set(db.collection(CFG.firestoreCollection).doc(c.id + '_' + since + '_' + until), c);
-                });
-                await batch.commit();
-            } else if (result.data && result.data.length === 0) {
-                allCampaigns = [];
-                applyFilterSort();
-                updateStats();
+                try {
+                    var batch = db.batch();
+                    result.data.forEach(function (c) {
+                        batch.set(db.collection(CFG.firestoreCollection).doc(c.id + '_' + since + '_' + until), c);
+                    });
+                    await batch.commit();
+                } catch (fireErr) {
+                    console.warn('Firestore write error:', fireErr.message);
+                }
             }
 
             localStorage.setItem(CFG.syncTimeKey, Date.now().toString());

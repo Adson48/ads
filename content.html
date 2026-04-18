@@ -19,6 +19,35 @@ body { background: #f4f6fb; }
 .ads-date-range { display:flex;align-items:center;gap:4px; }
 .ads-date-range .ads-ctrl { width:135px; }
 .ads-date-sep { color:#9ca3af;font-size:.85rem; }
+.ads-date-quick-wrap { position:relative; }
+.ads-date-quick-panel {
+    position:absolute;
+    top:calc(100% + 8px);
+    right:0;
+    width:300px;
+    background:#fff;
+    border:1px solid #e5e7eb;
+    border-radius:12px;
+    box-shadow:0 12px 28px rgba(15,23,42,.15);
+    padding:.75rem;
+    z-index:30;
+    display:none;
+}
+.ads-date-quick-panel.open { display:block; }
+.ads-date-quick-title { font-size:.82rem;font-weight:700;color:#374151;margin-bottom:.55rem; }
+.ads-date-quick-grid { display:grid;grid-template-columns:1fr 1fr;gap:.4rem; }
+.ads-date-preset {
+    border:1px solid #e5e7eb;
+    background:#fff;
+    border-radius:8px;
+    padding:.45rem .55rem;
+    font-size:.8rem;
+    color:#374151;
+    cursor:pointer;
+    text-align:left;
+}
+.ads-date-preset:hover { border-color:#c7517c;color:#be185d;background:#fff8fa; }
+.ads-date-quick-hint { margin-top:.5rem;font-size:.74rem;color:#9ca3af; }
 .ads-btn { padding:.44rem 1rem;border:none;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .12s,box-shadow .12s;white-space:nowrap; }
 .ads-btn:hover:not(:disabled) { transform:translateY(-1px);box-shadow:0 4px 14px rgba(169,60,99,.22); }
 .ads-btn:disabled { opacity:.55;cursor:not-allowed; }
@@ -128,6 +157,23 @@ body { background: #f4f6fb; }
                     <input type="date" class="ads-ctrl" id="adsDateFrom">
                     <span class="ads-date-sep">→</span>
                     <input type="date" class="ads-ctrl" id="adsDateTo">
+                </div>
+                <div class="ads-date-quick-wrap">
+                    <button class="ads-btn ads-btn-outline" id="adsDateQuickBtn" type="button">🗓️ Bộ lọc</button>
+                    <div class="ads-date-quick-panel" id="adsDateQuickPanel">
+                        <div class="ads-date-quick-title">Bộ lọc nhanh</div>
+                        <div class="ads-date-quick-grid">
+                            <button class="ads-date-preset" type="button" data-range="today">Hôm nay</button>
+                            <button class="ads-date-preset" type="button" data-range="yesterday">Hôm qua</button>
+                            <button class="ads-date-preset" type="button" data-range="last7">7 ngày qua</button>
+                            <button class="ads-date-preset" type="button" data-range="last14">14 ngày qua</button>
+                            <button class="ads-date-preset" type="button" data-range="last30">30 ngày qua</button>
+                            <button class="ads-date-preset" type="button" data-range="thisMonth">Tháng này</button>
+                            <button class="ads-date-preset" type="button" data-range="lastMonth">Tháng trước</button>
+                            <button class="ads-date-preset" type="button" data-range="allMonthToDate">Đầu tháng tới nay</button>
+                        </div>
+                        <div class="ads-date-quick-hint">Chọn preset rồi bấm Cập Nhật để tải dữ liệu.</div>
+                    </div>
                 </div>
                 <button class="ads-btn ads-btn-primary" id="adsSyncBtn" type="button">🔄 Cập Nhật</button>
                 <span class="ads-sync-pill" id="adsSyncPill">Chờ đồng bộ</span>
@@ -263,6 +309,6 @@ body { background: #f4f6fb; }
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
     <script src="./assets/js/firebase-config.js?v=20260418-24"></script>
     <script src="./assets/js/script.js?v=20260418-31"></script>
-    <script src="./assets/js/ads-manager.js?v=20260419-03"></script>
+    <script src="./assets/js/ads-manager.js?v=20260419-04"></script>
 </body>
 </html>
