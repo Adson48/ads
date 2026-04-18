@@ -1181,6 +1181,33 @@ if (studioOutput && sidebarCategoryLinks.length) {
             return access.known && access.isSuperadmin;
         };
 
+        const applyInsightStrategyEditAccessByRole = function() {
+            const access = resolveTopAreaSheetAccess();
+            const isSuperadmin = access.known && access.isSuperadmin;
+            const editableSelectors = [
+                '#insightAgeInput',
+                '#insightInterestInput',
+                '#insightBehaviorInput',
+                '#insightDateFrom',
+                '#insightDateTo',
+                '#weeklyGoalInput',
+                '#weeklyAudienceInput',
+                '#weeklyActionInput',
+                '#weeklyOfferInput',
+                '#weeklyStrategyWeekPicker'
+            ];
+
+            editableSelectors.forEach(function(selector) {
+                const field = document.querySelector(selector);
+                if (!field) {
+                    return;
+                }
+                field.disabled = !isSuperadmin;
+            });
+
+            return isSuperadmin;
+        };
+
         const applyTopAreaSheetAccessByRole = function(skipStatusUpdate) {
             const access = resolveTopAreaSheetAccess();
             const isSuperadmin = access.known && access.isSuperadmin;
@@ -1274,6 +1301,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     ? remoteCfg[topAreaSharedResultField]
                     : null;
                 applyTopAreaSheetAccessByRole(true);
+                applyInsightStrategyEditAccessByRole();
                 if (sharedResult && Array.isArray(sharedResult.rows) && sharedResult.rows.length) {
                     saveTopAreaSharedResult(sharedResult);
                     if (!canManageTopAreaSheet()) {
@@ -2168,7 +2196,11 @@ if (studioOutput && sidebarCategoryLinks.length) {
         applyInsightRange(initialDashboardState.insightFrom, initialDashboardState.insightTo, false);
         const initialSheetCfg = loadTopAreaSheetConfig();
         applyTopAreaSheetAccessByRole();
-        setTimeout(function() { applyTopAreaSheetAccessByRole(false); }, 1200);
+        applyInsightStrategyEditAccessByRole();
+        setTimeout(function() {
+            applyTopAreaSheetAccessByRole(false);
+            applyInsightStrategyEditAccessByRole();
+        }, 1200);
         if (topAreaSheetUrlInput) {
             topAreaSheetUrlInput.value = String(initialSheetCfg.url || '');
         }
@@ -2440,9 +2472,11 @@ if (studioOutput && sidebarCategoryLinks.length) {
             }
             if (key === authSessionKey || key === authOwnerKey) {
                 applyTopAreaSheetAccessByRole();
+                applyInsightStrategyEditAccessByRole();
             }
             if (key === authAccountsKey) {
                 applyTopAreaSheetAccessByRole();
+                applyInsightStrategyEditAccessByRole();
             }
         });
         setInterval(updateDashboardChart, chartRefreshMs);
