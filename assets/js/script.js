@@ -1003,7 +1003,10 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const reportEmployeeKey = 'rpEmployeeListV1';
         const reportPrefix = 'rpData3';
         const reportCollection = 'ma_reports';
+        const reportEmployeeStat = document.getElementById('reportEmployeeStat');
         const insightWeeklyStamp = document.getElementById('insightWeeklyStamp');
+        const insightDateFromInput = document.getElementById('insightDateFrom');
+        const insightDateToInput = document.getElementById('insightDateTo');
         const chartRefreshMs = 6000;
         let homeReportDb = null;
         let homeReportUnsub = null;
@@ -1027,6 +1030,97 @@ if (studioOutput && sidebarCategoryLinks.length) {
             utcDate.setUTCDate(utcDate.getUTCDate() + 4 - day);
             const yearStart = new Date(Date.UTC(utcDate.getUTCFullYear(), 0, 1));
             return Math.ceil((((utcDate - yearStart) / 86400000) + 1) / 7);
+        };
+
+        const safeParseState = function(raw) {
+            try {
+                const parsed = JSON.parse(raw || '{}');
+                return (parsed && typeof parsed === 'object') ? parsed : {};
+            } catch (e) {
+                return {};
+            }
+        };
+
+        const loadDashboardState = function() {
+            return safeParseState(localStorage.getItem(dashboardStorageKey));
+        };
+
+        const saveDashboardState = function(patch) {
+            const base = loadDashboardState();
+            const next = Object.assign({}, base, patch || {});
+            localStorage.setItem(dashboardStorageKey, JSON.stringify(next));
+            return next;
+        };
+
+        const toInputDate = function(dateObj) {
+            const d = dateObj instanceof Date ? dateObj : new Date();
+            if (Number.isNaN(d.getTime())) {
+                return '';
+            }
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+        };
+
+        const toViDate = function(inputDate) {
+            const m = String(inputDate || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!m) {
+                return '';
+            }
+            return m[3] + '/' + m[2] + '/' + m[1];
+        };
+
+        const getWeekStartMonday = function(dateObj) {
+            const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+            const day = d.getDay() || 7;
+            d.setDate(d.getDate() - (day - 1));
+            return d;
+        };
+
+        const normalizeInsightRange = function(fromVal, toVal) {
+            let from = String(fromVal || '').trim();
+            let to = String(toVal || '').trim();
+            if (!from || !to) {
+                const now = new Date();
+                const weekStart = getWeekStartMonday(now);
+                from = from || toInputDate(weekStart);
+                to = to || toInputDate(now);
+            }
+            if (from && to && from > to) {
+                const tmp = from;
+                from = to;
+                to = tmp;
+            }
+            return { from: from, to: to };
+        };
+
+        const renderInsightRangeStamp = function(range) {
+            if (!insightWeeklyStamp) {
+                return;
+            }
+            const fromText = toViDate(range.from);
+            const toText = toViDate(range.to);
+            if (!fromText || !toText) {
+                insightWeeklyStamp.textContent = 'Update theo tuần';
+                return;
+            }
+            const wk = getWeekNumber(new Date(range.to));
+            insightWeeklyStamp.textContent = 'Tuần ' + wk + ' - ' + fromText + ' đến ' + toText;
+        };
+
+        const applyInsightRange = function(fromVal, toVal, shouldPersist) {
+            const normalized = normalizeInsightRange(fromVal, toVal);
+            if (insightDateFromInput) {
+                insightDateFromInput.value = normalized.from;
+            }
+            if (insightDateToInput) {
+                insightDateToInput.value = normalized.to;
+            }
+            renderInsightRangeStamp(normalized);
+            if (shouldPersist) {
+                saveDashboardState({
+                    insightFrom: normalized.from,
+                    insightTo: normalized.to
+                });
+            }
         };
 
         const getDaysInMonth = function(year, month) {
@@ -1086,25 +1180,38 @@ if (studioOutput && sidebarCategoryLinks.length) {
             const costSeries = Array.from({ length: days }, () => 0);
             const revenueSeries = Array.from({ length: days }, () => 0);
             const employees = (store && store.employees && typeof store.employees === 'object') ? store.employees : {};
+            const employeeKeys = Object.keys(employees);
+            const employeePresence = Array.from({ length: days }, () => 0);
 
-            Object.keys(employees).forEach(function(employeeId) {
+            employeeKeys.forEach(function(employeeId) {
                 const employee = employees[employeeId] || {};
                 const data = (employee.data && typeof employee.data === 'object') ? employee.data : {};
 
                 for (let day = 1; day <= days; day += 1) {
                     const row = data['d' + day] || {};
-                    costSeries[day - 1] += parseNumber(row.cost);
-                    revenueSeries[day - 1] += parseNumber(row.rev);
+                    const dayCost = parseNumber(row.cost);
+                    const dayRevenue = parseNumber(row.rev);
+                    const hasAnySignal = dayCost > 0 || dayRevenue > 0 || parseNumber(row.mess) > 0 || parseNumber(row.sdt) > 0 || parseNumber(row.lich) > 0 || parseNumber(row.hd) > 0;
+
+                    costSeries[day - 1] += dayCost;
+                    revenueSeries[day - 1] += dayRevenue;
+                    if (hasAnySignal) {
+                        employeePresence[day - 1] += 1;
+                    }
                 }
             });
 
             const totalCost = costSeries.reduce((sum, value) => sum + value, 0);
             const totalRevenue = revenueSeries.reduce((sum, value) => sum + value, 0);
-            const today = new Date();
-            const todayIndex = today.getFullYear() === year && (today.getMonth() + 1) === month
-                ? Math.min(days, today.getDate()) - 1
-                : days - 1;
-            const currentDayRevenue = revenueSeries[Math.max(0, todayIndex)] || 0;
+            let lastReportedDayIndex = -1;
+            for (let i = 0; i < days; i += 1) {
+                if (costSeries[i] > 0 || revenueSeries[i] > 0) {
+                    lastReportedDayIndex = i;
+                }
+            }
+            const reportDayIndex = lastReportedDayIndex >= 0 ? lastReportedDayIndex : 0;
+            const currentCost = costSeries.slice(0, reportDayIndex + 1).reduce((sum, value) => sum + value, 0);
+            const currentRevenue = revenueSeries.slice(0, reportDayIndex + 1).reduce((sum, value) => sum + value, 0);
 
             return {
                 labels: labels,
@@ -1112,7 +1219,11 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 revenueSeries: revenueSeries.map(function(value) { return Number((value / 1000000).toFixed(2)); }),
                 totalCost: totalCost,
                 totalRevenue: totalRevenue,
-                currentDayRevenue: currentDayRevenue,
+                currentCost: currentCost,
+                currentRevenue: currentRevenue,
+                reportDay: reportDayIndex + 1,
+                totalEmployees: employeeKeys.length,
+                employeePresence: employeePresence,
                 days: days
             };
         };
@@ -1142,10 +1253,17 @@ if (studioOutput && sidebarCategoryLinks.length) {
             return { month: month, year: year, employees: employees };
         };
 
-        if (insightWeeklyStamp) {
-            const now = new Date();
-            const weekNumber = getWeekNumber(now);
-            insightWeeklyStamp.textContent = 'Tuần ' + weekNumber + ' - ' + now.toLocaleDateString('vi-VN');
+        const initialDashboardState = loadDashboardState();
+        applyInsightRange(initialDashboardState.insightFrom, initialDashboardState.insightTo, false);
+        if (insightDateFromInput) {
+            insightDateFromInput.addEventListener('change', function() {
+                applyInsightRange(insightDateFromInput.value, insightDateToInput ? insightDateToInput.value : '', true);
+            });
+        }
+        if (insightDateToInput) {
+            insightDateToInput.addEventListener('change', function() {
+                applyInsightRange(insightDateFromInput ? insightDateFromInput.value : '', insightDateToInput.value, true);
+            });
         }
 
         const chart = new Chart(adsPerformanceChartCanvas, {
@@ -1178,7 +1296,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         fill: false
                     },
                     {
-                        label: 'Mốc KPI/ngày (triệu VNĐ)',
+                        label: 'Tổng KPI (triệu VNĐ)',
                         data: [],
                         tension: 0,
                         borderColor: '#3b82f6',
@@ -1252,7 +1370,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     y: {
                         title: {
                             display: true,
-                            text: 'Chi phí / Doanh thu theo ngày (triệu VNĐ)'
+                            text: 'Chi phí / Doanh thu theo ngày và Tổng KPI (triệu VNĐ)'
                         },
                         beginAtZero: true,
                         ticks: {
@@ -1269,7 +1387,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
             }
         });
 
-        const savedState = JSON.parse(localStorage.getItem(dashboardStorageKey) || '{}');
+        const savedState = loadDashboardState();
         if (savedState.revenue) {
             revenueInput.value = String(savedState.revenue);
         }
@@ -1280,26 +1398,32 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const applyChartSeries = function(series) {
             const totalKpiRevenue = parseNumber(revenueInput.value);
             const campaignCount = clampCampaign(campaignInput.value);
-            const kpiDailySeries = buildFlatSeriesInMillions(series.days ? (totalKpiRevenue / series.days) : 0, series.days || 30);
-            const currentCost = series.totalCost || 0;
-            const currentRevenue = series.totalRevenue || 0;
+            const kpiTotalSeries = buildFlatSeriesInMillions(totalKpiRevenue, series.days || 30);
+            const currentCost = series.currentCost || series.totalCost || 0;
+            const currentRevenue = series.currentRevenue || series.totalRevenue || 0;
 
             setRoasAlertContext(currentCost, currentRevenue);
 
             budgetInput.value = formatWithSeparator(currentCost);
-            dailyBudgetInput.value = formatWithSeparator(series.currentDayRevenue || currentRevenue);
+            dailyBudgetInput.value = formatWithSeparator(currentRevenue);
             revenueInput.value = formatWithSeparator(totalKpiRevenue);
             campaignInput.value = String(campaignCount);
 
-            localStorage.setItem(dashboardStorageKey, JSON.stringify({
+            if (reportEmployeeStat) {
+                const reportDay = Math.max(1, Math.min(series.reportDay || 1, series.days || 1));
+                const activeEmployees = Array.isArray(series.employeePresence) ? (series.employeePresence[reportDay - 1] || 0) : 0;
+                reportEmployeeStat.textContent = 'Tổng nhân viên: ' + (series.totalEmployees || 0) + ' | Có báo cáo ngày ' + reportDay + ': ' + activeEmployees;
+            }
+
+            saveDashboardState({
                 revenue: totalKpiRevenue,
                 campaign: campaignCount
-            }));
+            });
 
             chart.data.labels = series.labels;
             chart.data.datasets[0].data = series.costSeries;
             chart.data.datasets[1].data = series.revenueSeries;
-            chart.data.datasets[2].data = kpiDailySeries;
+            chart.data.datasets[2].data = kpiTotalSeries;
             chart.update();
         };
 

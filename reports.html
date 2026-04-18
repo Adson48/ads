@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marketing Ads - Báo Cáo Tháng</title>
-    <link rel="stylesheet" href="./assets/css/style.css?v=20260416-01">
+    <link rel="stylesheet" href="./assets/css/style.css?v=20260418-02">
     <style>
         body { background: #f4f6fb; }
         .rp-page { max-width:100%; padding:80px 1rem 3rem; min-height:100vh; }
@@ -26,6 +26,19 @@
         .rp-btn-save   { background:linear-gradient(135deg,#22c55e,#16a34a); color:#fff; }
         .rp-btn-export { background:linear-gradient(135deg,#3b82f6,#2563eb); color:#fff; }
         .rp-btn-clear  { background:#fff0f0; color:#dc2626; border:1.5px solid #fca5a5; }
+        .rp-save-status {
+            font-size:.78rem;
+            font-weight:800;
+            color:#6b7280;
+            background:#f3f4f6;
+            border:1px solid #e5e7eb;
+            border-radius:999px;
+            padding:.34rem .62rem;
+            white-space:nowrap;
+        }
+        .rp-save-status.saving { color:#1d4ed8; background:#eff6ff; border-color:#bfdbfe; }
+        .rp-save-status.good { color:#166534; background:#ecfdf5; border-color:#bbf7d0; }
+        .rp-save-status.bad { color:#b91c1c; background:#fef2f2; border-color:#fecaca; }
 
         /* Telegram sync bar */
         .rp-telebar {
@@ -461,9 +474,10 @@
                 </select>
                 <input id="rpYear" class="rp-year" type="number" value="2026" min="2020" max="2099">
                 <button class="rp-btn rp-btn-gen"    id="rpBtnGen">Tạo Bảng</button>
-                <button class="rp-btn rp-btn-save"   id="rpBtnSave">Lưu</button>
+                <button class="rp-btn rp-btn-save"   id="rpBtnSave">Lưu Chia Sẻ</button>
                 <button class="rp-btn rp-btn-export" id="rpBtnExport">Xuất CSV</button>
                 <button class="rp-btn rp-btn-clear"  id="rpBtnClear">Xóa Tháng</button>
+                <span id="rpSaveStatus" class="rp-save-status">Chưa lưu chia sẻ</span>
             </div>
         </div>
 
@@ -599,8 +613,8 @@ Doanh thu: 45000000</pre>
     </div>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-    <script src="./assets/js/firebase-config.js?v=20260417-01"></script>
-    <script src="./assets/js/script.js?v=20260417-01"></script>
+    <script src="./assets/js/firebase-config.js?v=20260418-02"></script>
+    <script src="./assets/js/script.js?v=20260418-02"></script>
     <script>
     (function(){
         var SK='rpData3',HIST_KEY='rpEditHistory',EMP_KEY='rpEmployeeListV1',TG_OFFSET_KEY='rpTelegramOffsetV1',TABLE_WIDTH_KEY='rpTableWidthsV1',TABLE_DENSITY_KEY='rpTableDensityV1';
@@ -614,6 +628,7 @@ Doanh thu: 45000000</pre>
         var monthCache={};
         var saveTimers={};
         var dirtyMonthKeys={};
+        var hasPendingLocalEdits=false;
         var isSuperadminUser=false;
 
         function initReportDb(){
@@ -737,8 +752,16 @@ Doanh thu: 45000000</pre>
                     updatedAt:Date.now()
                 },{merge:true});
                 delete dirtyMonthKeys[key];
+                if(currentMonthKey()===key){hasPendingLocalEdits=false;}
+                if(currentMonthKey()===key){
+                    setSaveStatus('Da luu chia se luc '+new Date().toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}),'good');
+                }
                 return true;
-            }catch(e){return false;}
+            }catch(e){
+                if(currentMonthKey()===key){hasPendingLocalEdits=true;}
+                if(currentMonthKey()===key){setSaveStatus('Loi luu chia se. Thu lai...','bad');}
+                return false;
+            }
         }
         function queueRemoteMonthSave(m,y){
             var key=cacheKey(m,y);
@@ -776,8 +799,10 @@ Doanh thu: 45000000</pre>
             monthRealtimeKey=key;
             monthRealtimeUnsub=db.collection(REPORT_COLL).doc(key).onSnapshot(function(snap){
                 if(!snap.exists){return;}
-                var remote=normalizeRemoteMonthStore(m,y,snap.data()||{});
                 var ck=cacheKey(m,y);
+                // Skip remote overwrite while local month data is pending upload.
+                if(dirtyMonthKeys[ck]){return;}
+                var remote=normalizeRemoteMonthStore(m,y,snap.data()||{});
                 var before=JSON.stringify((monthCache[ck]&&monthCache[ck].employees)||{});
                 monthCache[ck]=remote;
                 persistMonthStoreToLocal(m,y,remote);
@@ -1080,6 +1105,26 @@ Doanh thu: 45000000</pre>
         }
         var tt;function toast(msg){var t=document.getElementById('rpToast');if(!t)return;t.textContent=msg||'Đã lưu!';t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show');},2200);}
         var rt;function sched(){clearTimeout(rt);rt=setTimeout(recalcAll,60);}
+        var liveSaveTimer=null;
+        function setSaveStatus(msg,type){
+            var el=document.getElementById('rpSaveStatus');
+            if(!el)return;
+            el.textContent=msg||'Chưa lưu chia sẻ';
+            el.className='rp-save-status'+(type?(' '+type):'');
+        }
+        function currentMonthKey(){
+            var mv=getMY();
+            return cacheKey(mv.m,mv.y);
+        }
+        function scheduleLiveSharedSave(){
+            clearTimeout(liveSaveTimer);
+            hasPendingLocalEdits=true;
+            setSaveStatus('Đang lưu chia sẻ...','saving');
+            liveSaveTimer=setTimeout(function(){
+                var mv=getMY();
+                saveAll(mv.m,mv.y);
+            },850);
+        }
 
         function recalcAll(){
             var emps=loadReporters();
@@ -1274,7 +1319,7 @@ Doanh thu: 45000000</pre>
                         inp.className='rpf '+(cls||'rp-inp');
                         inp.value=val||'';
                         inp.dataset.empIdx=ei;
-                        inp.addEventListener('input',sched);
+                        inp.addEventListener('input',function(){sched();scheduleLiveSharedSave();});
                         return inp;
                     }
                     var lastInEmpGroup=ei===emps.length-1;
@@ -1378,6 +1423,8 @@ Doanh thu: 45000000</pre>
             renderReporterPick(list[0]);gen();toast('Đã xóa nhân viên khỏi danh sách.');
         });
         document.getElementById('rpBtnSave').addEventListener('click',function(){
+            hasPendingLocalEdits=true;
+            setSaveStatus('Đang lưu chia sẻ...','saving');
             var mv=getMY();saveAll(mv.m,mv.y);
             var rp=getReporter();
             pushHistory(mv.m,mv.y,JSON.parse(localStorage.getItem(skey(mv.m,mv.y,rp))||'{}'));
@@ -1778,7 +1825,11 @@ Doanh thu: 45000000</pre>
         bindTelegramConfigUi();
         applyTelegramAccessByRole();
 
-        setInterval(function(){var mv=getMY();saveAll(mv.m,mv.y);},40000);
+        setInterval(function(){
+            if(!hasPendingLocalEdits){return;}
+            var mv=getMY();
+            saveAll(mv.m,mv.y);
+        },40000);
         setInterval(function(){
             var mv=getMY();
             ensureMonthLoaded(mv.m,mv.y).then(function(changed){

@@ -1532,6 +1532,19 @@ header {
     font-weight: 800;
 }
 
+.chart-employee-stat {
+    display: inline-block;
+    margin-left: 0.55rem;
+    padding: 0.2rem 0.62rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: #6d2f49;
+    background: rgba(255, 230, 239, 0.95);
+    border: 1px solid rgba(201, 120, 151, 0.38);
+    vertical-align: middle;
+}
+
 .chart-panel {
     border-radius: 22px;
     border: 1px solid rgba(205, 148, 170, 0.34);
@@ -1577,6 +1590,45 @@ header {
     align-items: center;
     gap: 0.8rem;
     margin-bottom: 0.85rem;
+}
+
+.insight-range-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.34rem;
+}
+
+.insight-range-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.24rem 0.34rem;
+    border-radius: 9px;
+    background: rgba(255, 236, 243, 0.85);
+    border: 1px solid rgba(201, 120, 151, 0.28);
+}
+
+.insight-date-input {
+    border: 1px solid rgba(191, 132, 155, 0.38);
+    border-radius: 8px;
+    padding: 0.24rem 0.42rem;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #5a3441;
+    background: #fff;
+}
+
+.insight-date-input:focus {
+    outline: none;
+    border-color: #c7517c;
+    box-shadow: 0 0 0 2px rgba(199, 81, 124, 0.14);
+}
+
+.insight-range-sep {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #7f3052;
 }
 
 .insight-head h3 {
@@ -1775,6 +1827,14 @@ header {
         grid-template-columns: 1fr;
     }
 
+    .insight-range-wrap {
+        align-items: flex-start;
+    }
+
+    .insight-range-controls {
+        flex-wrap: wrap;
+    }
+
     .strategy-grid {
         grid-template-columns: 1fr;
     }
@@ -1808,6 +1868,12 @@ header {
 
     .overview-cards {
         grid-template-columns: 1fr;
+    }
+
+    .chart-employee-stat {
+        display: block;
+        margin: 0.45rem 0 0;
+        width: fit-content;
     }
 
     #adsPerformanceChart {

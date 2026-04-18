@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marketing Ads - Trang Chủ</title>
-    <link rel="stylesheet" href="./assets/css/style.css?v=20260416-01">
+    <link rel="stylesheet" href="./assets/css/style.css?v=20260418-02">
 </head>
 <body>
     <header>
@@ -51,7 +51,7 @@
         </section>
 
         <section class="section dashboard-chart-section">
-            <h2>Hiệu suất Ads theo thời gian</h2>
+            <h2>Hiệu suất Ads theo thời gian <span id="reportEmployeeStat" class="chart-employee-stat">Tổng nhân viên: 0</span></h2>
             <div class="chart-panel">
                 <canvas id="adsPerformanceChart" aria-label="Biểu đồ hiệu suất Ads theo thời gian"></canvas>
             </div>
@@ -62,7 +62,14 @@
                 <article class="insight-card">
                     <div class="insight-head">
                         <h3>INSIGHT KHÁCH HÀNG</h3>
-                        <span id="insightWeeklyStamp" class="insight-badge">Update theo tuần</span>
+                        <div class="insight-range-wrap">
+                            <span id="insightWeeklyStamp" class="insight-badge">Update theo tuần</span>
+                            <div class="insight-range-controls">
+                                <input id="insightDateFrom" class="insight-date-input" type="date" aria-label="Từ ngày Insight">
+                                <span class="insight-range-sep">đến</span>
+                                <input id="insightDateTo" class="insight-date-input" type="date" aria-label="Đến ngày Insight">
+                            </div>
+                        </div>
                     </div>
                     <div class="insight-form-grid">
                         <div>
@@ -223,8 +230,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-    <script src="./assets/js/firebase-config.js?v=20260417-01"></script>
-    <script src="./assets/js/script.js?v=20260417-01"></script>
+    <script src="./assets/js/firebase-config.js?v=20260418-02"></script>
+    <script src="./assets/js/script.js?v=20260418-02"></script>
     <script>
     // Force-check alert after all scripts settled
     setTimeout(function() {
