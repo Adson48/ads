@@ -1035,6 +1035,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const authAccountsKey = 'ma_accounts_v1';
         const topAreaSheetConfigCollection = 'ma_config';
         const topAreaSheetConfigDocId = 'home_top_area_sheet_v1';
+        const topAreaSharedResultField = 'latestTopAreaWeekly';
         let homeReportDb = null;
         let homeReportUnsub = null;
         let topAreaSheetConfigUnsub = null;
@@ -1132,15 +1133,21 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
         const canManageTopAreaSheet = function() {
             const access = resolveTopAreaSheetAccess();
-            return access.known ? access.isSuperadmin : true;
+            return access.known && access.isSuperadmin;
         };
 
         const applyTopAreaSheetAccessByRole = function() {
             const access = resolveTopAreaSheetAccess();
-            const isSuperadmin = access.known ? access.isSuperadmin : true;
+            const isSuperadmin = access.known && access.isSuperadmin;
             const linkRow = topAreaSheetUrlInput ? topAreaSheetUrlInput.closest('.sheet-link-row') : null;
             if (linkRow) {
                 linkRow.style.display = isSuperadmin ? '' : 'none';
+            }
+            if (topAreaSheetUrlInput) {
+                topAreaSheetUrlInput.disabled = !isSuperadmin;
+            }
+            if (topAreaSheetApplyBtn) {
+                topAreaSheetApplyBtn.disabled = !isSuperadmin;
             }
             if (topAreaSheetStatus && access.known && !isSuperadmin) {
                 setTopAreaStatus('Dữ liệu khu vực được đồng bộ bởi quản trị hệ thống.', '');
@@ -1159,6 +1166,32 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 updatedAt: Date.now(),
                 updatedBy: String((safeParseState(localStorage.getItem(authSessionKey)).userId) || '')
             }, { merge: true });
+            return true;
+        };
+
+        const saveTopAreaWeeklyResultRemote = async function(range, rows) {
+            const db = initHomeReportDb();
+            if (!db) {
+                return false;
+            }
+            const normalized = normalizeInsightRange(range && range.from, range && range.to);
+            const safeRows = (Array.isArray(rows) ? rows : []).slice(0, 3).map(function(item) {
+                return {
+                    area: String((item && item.area) || '').trim(),
+                    hd: Number((item && item.hd) || 0),
+                    revenue: Number((item && item.revenue) || 0),
+                    growthPct: Number((item && item.growthPct) || 0)
+                };
+            });
+            const payload = {};
+            payload[topAreaSharedResultField] = {
+                from: normalized.from,
+                to: normalized.to,
+                rows: safeRows,
+                updatedAt: Date.now(),
+                updatedBy: String((safeParseState(localStorage.getItem(authSessionKey)).userId) || '')
+            };
+            await db.collection(topAreaSheetConfigCollection).doc(topAreaSheetConfigDocId).set(payload, { merge: true });
             return true;
         };
 
@@ -1187,6 +1220,22 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         topAreaSheetUrlInput.value = nextUrl;
                     }
                     updateTopAreaFromSheet({ silent: true });
+                }
+
+                const sharedResult = (remoteCfg && remoteCfg[topAreaSharedResultField] && typeof remoteCfg[topAreaSharedResultField] === 'object')
+                    ? remoteCfg[topAreaSharedResultField]
+                    : null;
+                if (sharedResult && Array.isArray(sharedResult.rows) && sharedResult.rows.length) {
+                    const currentRange = normalizeInsightRange(
+                        insightDateFromInput ? insightDateFromInput.value : '',
+                        insightDateToInput ? insightDateToInput.value : ''
+                    );
+                    if (String(sharedResult.from || '') === currentRange.from && String(sharedResult.to || '') === currentRange.to) {
+                        applyTopAreaRowsToUi(sharedResult.rows);
+                        if (!canManageTopAreaSheet()) {
+                            setTopAreaStatus('Đã cập nhật dữ liệu top HĐ theo tuần mới nhất từ hệ thống.', 'good');
+                        }
+                    }
                 }
                 applyTopAreaSheetAccessByRole();
             });
@@ -1497,6 +1546,13 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 localStorage.setItem(topAreaSheetDataKey, JSON.stringify(normalized.rows));
                 const topRows = deriveTopAreaRows(normalized.rows, currentRange);
                 applyTopAreaRowsToUi(topRows);
+                if (canManageTopAreaSheet()) {
+                    try {
+                        await saveTopAreaWeeklyResultRemote(currentRange, topRows);
+                    } catch (e) {
+                        // Keep UI responsive even if Firestore write is temporarily unavailable.
+                    }
+                }
                 setTopAreaStatus('Đã đồng bộ Google Sheet theo tuần ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
                 return true;
             } catch (error) {
