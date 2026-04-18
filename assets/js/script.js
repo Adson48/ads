@@ -1005,7 +1005,14 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const reportCollection = 'ma_reports';
         const reportEmployeeStat = document.getElementById('reportEmployeeStat');
         const insightWeeklyStamp = document.getElementById('insightWeeklyStamp');
+        const insightAgeInput = document.getElementById('insightAgeInput');
+        const insightInterestInput = document.getElementById('insightInterestInput');
+        const insightBehaviorInput = document.getElementById('insightBehaviorInput');
         const weeklyStrategyWeekStamp = document.getElementById('weeklyStrategyWeekStamp');
+        const weeklyGoalInput = document.getElementById('weeklyGoalInput');
+        const weeklyAudienceInput = document.getElementById('weeklyAudienceInput');
+        const weeklyActionInput = document.getElementById('weeklyActionInput');
+        const weeklyOfferInput = document.getElementById('weeklyOfferInput');
         const weeklyStrategyWeekPicker = document.getElementById('weeklyStrategyWeekPicker');
         const insightDateFromInput = document.getElementById('insightDateFrom');
         const insightDateToInput = document.getElementById('insightDateTo');
@@ -1065,15 +1072,18 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const topAreaSheetConfigKey = 'homeTopAreaSheetConfigV1';
         const topAreaSheetDataKey = 'homeTopAreaSheetDataV1';
         const topAreaSharedResultKey = 'homeTopAreaSharedWeeklyV1';
+        const insightStrategyStorageKey = 'homeInsightStrategyContentV1';
         const authSessionKey = 'ma_session_v1';
         const authOwnerKey = 'ma_owner_id_v1';
         const authAccountsKey = 'ma_accounts_v1';
         const topAreaSheetConfigCollection = 'ma_config';
         const topAreaSheetConfigDocId = 'home_top_area_sheet_v1';
         const topAreaSharedResultField = 'latestTopAreaWeekly';
+        const insightStrategySharedField = 'latestInsightStrategyContent';
         let homeReportDb = null;
         let homeReportUnsub = null;
         let topAreaSheetConfigUnsub = null;
+        let insightStrategySyncTimer = null;
 
         const parseNumber = function(raw) {
             return Number(String(raw || '').replace(/[^0-9]/g, '')) || 0;
@@ -1127,6 +1137,16 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const saveTopAreaSharedResult = function(payload) {
             const normalizedPayload = (payload && typeof payload === 'object') ? payload : {};
             localStorage.setItem(topAreaSharedResultKey, JSON.stringify(normalizedPayload));
+            return normalizedPayload;
+        };
+
+        const loadInsightStrategyContent = function() {
+            return safeParseState(localStorage.getItem(insightStrategyStorageKey));
+        };
+
+        const saveInsightStrategyContent = function(payload) {
+            const normalizedPayload = (payload && typeof payload === 'object') ? payload : {};
+            localStorage.setItem(insightStrategyStorageKey, JSON.stringify(normalizedPayload));
             return normalizedPayload;
         };
 
@@ -1184,21 +1204,20 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const applyInsightStrategyEditAccessByRole = function() {
             const access = resolveTopAreaSheetAccess();
             const isSuperadmin = access.known && access.isSuperadmin;
-            const editableSelectors = [
-                '#insightAgeInput',
-                '#insightInterestInput',
-                '#insightBehaviorInput',
-                '#insightDateFrom',
-                '#insightDateTo',
-                '#weeklyGoalInput',
-                '#weeklyAudienceInput',
-                '#weeklyActionInput',
-                '#weeklyOfferInput',
-                '#weeklyStrategyWeekPicker'
+            const editableFields = [
+                insightAgeInput,
+                insightInterestInput,
+                insightBehaviorInput,
+                insightDateFromInput,
+                insightDateToInput,
+                weeklyGoalInput,
+                weeklyAudienceInput,
+                weeklyActionInput,
+                weeklyOfferInput,
+                weeklyStrategyWeekPicker
             ];
 
-            editableSelectors.forEach(function(selector) {
-                const field = document.querySelector(selector);
+            editableFields.forEach(function(field) {
                 if (!field) {
                     return;
                 }
@@ -1270,6 +1289,112 @@ if (studioOutput && sidebarCategoryLinks.length) {
             return true;
         };
 
+        const collectInsightStrategyContentFromUi = function() {
+            const currentRange = normalizeInsightRange(
+                insightDateFromInput ? insightDateFromInput.value : '',
+                insightDateToInput ? insightDateToInput.value : ''
+            );
+            return {
+                insightAge: String((insightAgeInput && insightAgeInput.value) || ''),
+                insightInterest: String((insightInterestInput && insightInterestInput.value) || ''),
+                insightBehavior: String((insightBehaviorInput && insightBehaviorInput.value) || ''),
+                weeklyGoal: String((weeklyGoalInput && weeklyGoalInput.value) || ''),
+                weeklyAudience: String((weeklyAudienceInput && weeklyAudienceInput.value) || ''),
+                weeklyAction: String((weeklyActionInput && weeklyActionInput.value) || ''),
+                weeklyOffer: String((weeklyOfferInput && weeklyOfferInput.value) || ''),
+                insightFrom: currentRange.from,
+                insightTo: currentRange.to
+            };
+        };
+
+        const applyInsightStrategyContentToUi = function(payload) {
+            const content = (payload && typeof payload === 'object') ? payload : {};
+            if (insightAgeInput && Object.prototype.hasOwnProperty.call(content, 'insightAge')) {
+                insightAgeInput.value = String(content.insightAge || '');
+            }
+            if (insightInterestInput && Object.prototype.hasOwnProperty.call(content, 'insightInterest')) {
+                insightInterestInput.value = String(content.insightInterest || '');
+            }
+            if (insightBehaviorInput && Object.prototype.hasOwnProperty.call(content, 'insightBehavior')) {
+                insightBehaviorInput.value = String(content.insightBehavior || '');
+            }
+            if (weeklyGoalInput && Object.prototype.hasOwnProperty.call(content, 'weeklyGoal')) {
+                weeklyGoalInput.value = String(content.weeklyGoal || '');
+            }
+            if (weeklyAudienceInput && Object.prototype.hasOwnProperty.call(content, 'weeklyAudience')) {
+                weeklyAudienceInput.value = String(content.weeklyAudience || '');
+            }
+            if (weeklyActionInput && Object.prototype.hasOwnProperty.call(content, 'weeklyAction')) {
+                weeklyActionInput.value = String(content.weeklyAction || '');
+            }
+            if (weeklyOfferInput && Object.prototype.hasOwnProperty.call(content, 'weeklyOffer')) {
+                weeklyOfferInput.value = String(content.weeklyOffer || '');
+            }
+
+            if (Object.prototype.hasOwnProperty.call(content, 'insightFrom') || Object.prototype.hasOwnProperty.call(content, 'insightTo')) {
+                applyInsightRange(content.insightFrom, content.insightTo, false);
+            }
+        };
+
+        const saveInsightStrategyContentRemote = async function(payload) {
+            const db = initHomeReportDb();
+            if (!db || !canManageTopAreaSheet()) {
+                return false;
+            }
+            const safePayload = (payload && typeof payload === 'object') ? payload : {};
+            const wrapper = {};
+            wrapper[insightStrategySharedField] = Object.assign({}, safePayload, {
+                updatedAt: Date.now(),
+                updatedBy: String((safeParseState(localStorage.getItem(authSessionKey)).userId) || '')
+            });
+            await db.collection(topAreaSheetConfigCollection).doc(topAreaSheetConfigDocId).set(wrapper, { merge: true });
+            return true;
+        };
+
+        const queueInsightStrategySync = function() {
+            if (!canManageTopAreaSheet()) {
+                return;
+            }
+            if (insightStrategySyncTimer) {
+                clearTimeout(insightStrategySyncTimer);
+                insightStrategySyncTimer = null;
+            }
+
+            const localPayload = collectInsightStrategyContentFromUi();
+            saveInsightStrategyContent(localPayload);
+
+            insightStrategySyncTimer = setTimeout(async function() {
+                insightStrategySyncTimer = null;
+                const latestPayload = collectInsightStrategyContentFromUi();
+                saveInsightStrategyContent(latestPayload);
+                try {
+                    await saveInsightStrategyContentRemote(latestPayload);
+                } catch (e) {
+                    // Keep local content available even when network is unstable.
+                }
+            }, 260);
+        };
+
+        const bindInsightStrategyInputSync = function() {
+            const syncFields = [
+                insightAgeInput,
+                insightInterestInput,
+                insightBehaviorInput,
+                weeklyGoalInput,
+                weeklyAudienceInput,
+                weeklyActionInput,
+                weeklyOfferInput
+            ];
+
+            syncFields.forEach(function(field) {
+                if (!field) {
+                    return;
+                }
+                field.addEventListener('input', queueInsightStrategySync);
+                field.addEventListener('change', queueInsightStrategySync);
+            });
+        };
+
         const bindTopAreaSheetConfigRealtime = function() {
             const db = initHomeReportDb();
             if (!db) {
@@ -1300,8 +1425,17 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 const sharedResult = (remoteCfg && remoteCfg[topAreaSharedResultField] && typeof remoteCfg[topAreaSharedResultField] === 'object')
                     ? remoteCfg[topAreaSharedResultField]
                     : null;
+                const sharedInsightStrategy = (remoteCfg && remoteCfg[insightStrategySharedField] && typeof remoteCfg[insightStrategySharedField] === 'object')
+                    ? remoteCfg[insightStrategySharedField]
+                    : null;
                 applyTopAreaSheetAccessByRole(true);
                 applyInsightStrategyEditAccessByRole();
+
+                if (sharedInsightStrategy) {
+                    saveInsightStrategyContent(sharedInsightStrategy);
+                    applyInsightStrategyContentToUi(sharedInsightStrategy);
+                }
+
                 if (sharedResult && Array.isArray(sharedResult.rows) && sharedResult.rows.length) {
                     saveTopAreaSharedResult(sharedResult);
                     if (!canManageTopAreaSheet()) {
@@ -2056,6 +2190,12 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     insightFrom: normalized.from,
                     insightTo: normalized.to
                 });
+                const localContentState = Object.assign({}, loadInsightStrategyContent(), {
+                    insightFrom: normalized.from,
+                    insightTo: normalized.to
+                });
+                saveInsightStrategyContent(localContentState);
+                queueInsightStrategySync();
                 updateTopAreaFromSheet({ silent: true });
             }
         };
@@ -2191,9 +2331,12 @@ if (studioOutput && sidebarCategoryLinks.length) {
         };
 
         const initialDashboardState = loadDashboardState();
+        const initialInsightStrategyState = loadInsightStrategyContent();
         populateDistrictSelectOptions();
         populateTopAreaWeekSelect();
         applyInsightRange(initialDashboardState.insightFrom, initialDashboardState.insightTo, false);
+        applyInsightStrategyContentToUi(initialInsightStrategyState);
+        bindInsightStrategyInputSync();
         const initialSheetCfg = loadTopAreaSheetConfig();
         applyTopAreaSheetAccessByRole();
         applyInsightStrategyEditAccessByRole();
@@ -2469,6 +2612,9 @@ if (studioOutput && sidebarCategoryLinks.length) {
             }
             if (key === topAreaSharedResultKey && !canManageTopAreaSheet()) {
                 updateTopAreaFromSheet({ silent: true });
+            }
+            if (key === insightStrategyStorageKey && !canManageTopAreaSheet()) {
+                applyInsightStrategyContentToUi(loadInsightStrategyContent());
             }
             if (key === authSessionKey || key === authOwnerKey) {
                 applyTopAreaSheetAccessByRole();
