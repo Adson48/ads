@@ -1369,6 +1369,73 @@ if (studioOutput && sidebarCategoryLinks.length) {
             return found || '';
         };
 
+        const findHeaderKeyByParts = function(headers, requiredParts, optionalParts) {
+            const headerList = Array.isArray(headers) ? headers : [];
+            const required = (requiredParts || []).map(normalizeHeader).filter(Boolean);
+            const optional = (optionalParts || []).map(normalizeHeader).filter(Boolean);
+            let bestHeader = '';
+            let bestScore = -1;
+
+            headerList.forEach(function(header) {
+                const normalizedHeader = normalizeHeader(header);
+                if (!normalizedHeader) {
+                    return;
+                }
+
+                const hasAllRequired = required.every(function(part) {
+                    return normalizedHeader.indexOf(part) !== -1;
+                });
+                if (!hasAllRequired) {
+                    return;
+                }
+
+                const score = optional.reduce(function(total, part) {
+                    return total + (normalizedHeader.indexOf(part) !== -1 ? 1 : 0);
+                }, 0);
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestHeader = header;
+                }
+            });
+
+            return bestHeader;
+        };
+
+        const parseSheetMetricNumber = function(raw) {
+            const text = String(raw || '').trim().toLowerCase();
+            if (!text) {
+                return 0;
+            }
+
+            const compact = text.replace(/\s+/g, '');
+            const hasNegative = /^-/.test(compact) || (/^\(.*\)$/.test(compact));
+            const unitMultiplier = compact.indexOf('ty') !== -1 ? 1000000000
+                : (compact.indexOf('trieu') !== -1 || compact.indexOf('tr') !== -1 ? 1000000
+                : (compact.indexOf('k') !== -1 ? 1000 : 1));
+            let normalizedNumber = compact.replace(/[^0-9,.-]/g, '');
+
+            if (normalizedNumber.indexOf('.') !== -1 && normalizedNumber.indexOf(',') !== -1) {
+                if (normalizedNumber.lastIndexOf(',') > normalizedNumber.lastIndexOf('.')) {
+                    normalizedNumber = normalizedNumber.replace(/\./g, '').replace(/,/g, '.');
+                } else {
+                    normalizedNumber = normalizedNumber.replace(/,/g, '');
+                }
+            } else {
+                normalizedNumber = normalizedNumber
+                    .replace(/\.(?=.*\.)/g, '')
+                    .replace(/,(?=\d{3}(\D|$))/g, '')
+                    .replace(/,(?=\d{1,2}(\D|$))/g, '.');
+            }
+
+            const numericValue = Number(normalizedNumber);
+            if (!Number.isNaN(numericValue) && normalizedNumber !== '') {
+                return (hasNegative ? -1 : 1) * numericValue * unitMultiplier;
+            }
+
+            return parseNumber(text);
+        };
+
         const parseFlexibleDate = function(raw) {
             const text = String(raw || '').trim();
             if (!text) {
@@ -1496,7 +1563,31 @@ if (studioOutput && sidebarCategoryLinks.length) {
             const dateKey = findHeaderKey(headers, ['ngay', 'date', 'report_date', 'ngaybao cao', 'ngaybaocao']);
             const areaKey = findHeaderKey(headers, ['khuvuc', 'khu vuc', 'quan', 'dia ban', 'district', 'area']);
             const hdKey = findHeaderKey(headers, ['hd', 'sohd', 'so hd', 'hopdong', 'hop dong', 'contracts']);
-            const revenueKey = findHeaderKey(headers, ['doanhthu', 'doanh thu', 'revenue', 'dt']);
+            const revenueKey = findHeaderKey(headers, [
+                'doanhthu',
+                'doanh thu',
+                'tongdoanhthu',
+                'tong doanh thu',
+                'doanhso',
+                'doanh so',
+                'tongdoanhso',
+                'tong doanh so',
+                'giatrihopdong',
+                'gia tri hop dong',
+                'tonggiatri',
+                'tong gia tri',
+                'contractvalue',
+                'contract value',
+                'amount',
+                'revenue',
+                'sales',
+                'value',
+                'dt',
+                'ds'
+            ]) || findHeaderKeyByParts(headers, ['doanh'], ['thu', 'so', 'tong'])
+                || findHeaderKeyByParts(headers, ['gia', 'tri'], ['hop', 'dong', 'tong'])
+                || findHeaderKeyByParts(headers, ['contract'], ['value', 'amount'])
+                || findHeaderKeyByParts(headers, ['amount'], ['contract', 'revenue', 'value']);
 
             if (!dateKey || !areaKey || !hdKey) {
                 return { ok: false, rows: [] };
@@ -1507,7 +1598,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     __date: row[dateKey],
                     __area: row[areaKey],
                     __hd: parseNumber(row[hdKey]),
-                    __revenue: parseNumber(revenueKey ? row[revenueKey] : '0')
+                    __revenue: parseSheetMetricNumber(revenueKey ? row[revenueKey] : '0')
                 };
             });
 
