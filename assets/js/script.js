@@ -1062,6 +1062,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const topAreaRefreshMs = 10 * 60 * 1000;
         const topAreaSheetConfigKey = 'homeTopAreaSheetConfigV1';
         const topAreaSheetDataKey = 'homeTopAreaSheetDataV1';
+        const topAreaSharedResultKey = 'homeTopAreaSharedWeeklyV1';
         const authSessionKey = 'ma_session_v1';
         const authOwnerKey = 'ma_owner_id_v1';
         const authAccountsKey = 'ma_accounts_v1';
@@ -1115,6 +1116,16 @@ if (studioOutput && sidebarCategoryLinks.length) {
             const next = Object.assign({}, base, patch || {});
             localStorage.setItem(topAreaSheetConfigKey, JSON.stringify(next));
             return next;
+        };
+
+        const loadTopAreaSharedResult = function() {
+            return safeParseState(localStorage.getItem(topAreaSharedResultKey));
+        };
+
+        const saveTopAreaSharedResult = function(payload) {
+            const normalizedPayload = (payload && typeof payload === 'object') ? payload : {};
+            localStorage.setItem(topAreaSharedResultKey, JSON.stringify(normalizedPayload));
+            return normalizedPayload;
         };
 
         const setTopAreaStatus = function(message, type) {
@@ -1258,6 +1269,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     ? remoteCfg[topAreaSharedResultField]
                     : null;
                 if (sharedResult && Array.isArray(sharedResult.rows) && sharedResult.rows.length) {
+                    saveTopAreaSharedResult(sharedResult);
                     const currentRange = normalizeInsightRange(
                         insightDateFromInput ? insightDateFromInput.value : '',
                         insightDateToInput ? insightDateToInput.value : ''
@@ -1766,6 +1778,28 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 insightDateFromInput ? insightDateFromInput.value : '',
                 insightDateToInput ? insightDateToInput.value : ''
             );
+            const sharedLocalResult = loadTopAreaSharedResult();
+
+            if (!canManageTopAreaSheet()) {
+                if (
+                    sharedLocalResult &&
+                    Array.isArray(sharedLocalResult.rows) &&
+                    sharedLocalResult.rows.length &&
+                    String(sharedLocalResult.from || '') === currentRange.from &&
+                    String(sharedLocalResult.to || '') === currentRange.to
+                ) {
+                    applyTopAreaRowsToUi(sharedLocalResult.rows);
+                    if (!(options && options.silent)) {
+                        setTopAreaStatus('Đã cập nhật dữ liệu top HĐ theo tuần mới nhất từ hệ thống.', 'good');
+                    }
+                    return true;
+                }
+
+                if (!(options && options.silent)) {
+                    setTopAreaStatus('Đang chờ dữ liệu realtime từ hệ thống...', '');
+                }
+                return false;
+            }
 
             if (!sheetId) {
                 return false;
@@ -2327,6 +2361,9 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 updateDashboardChart();
             }
             if (key === topAreaSheetConfigKey) {
+                updateTopAreaFromSheet({ silent: true });
+            }
+            if (key === topAreaSharedResultKey && !canManageTopAreaSheet()) {
                 updateTopAreaFromSheet({ silent: true });
             }
             if (key === authSessionKey || key === authOwnerKey) {
