@@ -58,6 +58,7 @@ body { background: #f4f6fb; }
 .ads-sync-pill.syncing { color:#1d4ed8;background:#eff6ff;border-color:#bfdbfe; }
 .ads-sync-pill.ok  { color:#166534;background:#ecfdf5;border-color:#bbf7d0; }
 .ads-sync-pill.err { color:#b91c1c;background:#fef2f2;border-color:#fecaca; }
+.ads-sync-pill.live { color:#7f1d1d;background:#fef2f2;border-color:#fecaca; }
 .ads-account-panel { background:#fff;border-radius:16px;border:1px solid #f0e8ed;box-shadow:0 2px 12px rgba(94,33,61,.07);padding:1rem 1.2rem;margin-bottom:1rem;display:none; }
 .ads-account-panel.open { display:block; }
 .ads-account-panel h3 { margin:0 0 .75rem;font-size:1rem;color:var(--ink);font-weight:700; }
@@ -117,6 +118,28 @@ body { background: #f4f6fb; }
 .num-cell.spend { font-weight:700;color:var(--ink); }
 .num-cell.zero  { color:#d1d5db; }
 .budget-cell { font-size:.8rem;color:#6b7280;text-align:left; }
+.status-toggle {
+    width:28px;
+    height:16px;
+    border-radius:999px;
+    position:relative;
+    display:inline-block;
+    background:#d1d5db;
+    vertical-align:middle;
+}
+.status-toggle::after {
+    content:'';
+    width:12px;
+    height:12px;
+    border-radius:50%;
+    background:#fff;
+    position:absolute;
+    top:2px;
+    left:2px;
+    box-shadow:0 1px 3px rgba(0,0,0,.25);
+}
+.status-toggle.on { background:#60a5fa; }
+.status-toggle.on::after { left:14px; }
 #ads-tfoot td { padding:.65rem .85rem;background:#fff5f8;font-weight:700;border-top:2px solid #f0e8ed;font-size:.82rem;color:var(--ink); }
 .ads-table-footer { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;padding:.65rem 1rem;border-top:1px solid #f0e8ed;background:#fdf8fa; }
 .ads-table-footer-text { font-size:.8rem;color:#9ca3af; }
@@ -256,38 +279,54 @@ body { background: #f4f6fb; }
                 <table id="ads-table">
                     <colgroup>
                         <col id="col-check"  style="width:36px;">
+                        <col id="col-toggle" style="width:56px;">
                         <col id="col-name"   style="width:260px;">
                         <col id="col-status" style="width:130px;">
+                        <col id="col-action" style="width:120px;">
                         <col id="col-budget" style="width:140px;">
-                        <col id="col-spend"  style="width:110px;">
+                        <col id="col-result-cost" style="width:150px;">
+                        <col id="col-spend"  style="width:120px;">
+                        <col id="col-contact" style="width:130px;">
+                        <col id="col-reply"  style="width:130px;">
                         <col id="col-imp"    style="width:100px;">
                         <col id="col-reach"  style="width:90px;">
                         <col id="col-click"  style="width:90px;">
                         <col id="col-result" style="width:90px;">
                         <col id="col-cpc"    style="width:90px;">
+                        <col id="col-cpm"    style="width:95px;">
+                        <col id="col-value"  style="width:140px;">
+                        <col id="col-checkout" style="width:130px;">
+                        <col id="col-cost-checkout" style="width:170px;">
                         <col id="col-ctr"    style="width:80px;">
-                        <col id="col-cpm"    style="width:85px;">
                         <col id="col-date"   style="width:100px;">
                     </colgroup>
                     <thead>
                         <tr>
                             <th><input type="checkbox" id="adsCheckAll"></th>
+                            <th>Bật/Tắt<div class="col-resize-handle" data-col="col-toggle"></div></th>
                             <th class="sortable" data-col="name">Chiến Dịch<div class="col-resize-handle" data-col="col-name"></div></th>
                             <th>Phân Phối<div class="col-resize-handle" data-col="col-status"></div></th>
+                            <th>Hành Động<div class="col-resize-handle" data-col="col-action"></div></th>
                             <th>Ngân Sách<div class="col-resize-handle" data-col="col-budget"></div></th>
+                            <th class="num-cell">Chi Phí/KQ<div class="col-resize-handle" data-col="col-result-cost"></div></th>
                             <th class="sortable num-cell" data-col="spend">Số Tiền Chi<div class="col-resize-handle" data-col="col-spend"></div></th>
+                            <th class="num-cell">Người Liên Hệ<div class="col-resize-handle" data-col="col-contact"></div></th>
+                            <th class="num-cell">Lượt Phản Hồi<div class="col-resize-handle" data-col="col-reply"></div></th>
                             <th class="num-cell">Lượt Hiển Thị<div class="col-resize-handle" data-col="col-imp"></div></th>
                             <th class="num-cell">Reach<div class="col-resize-handle" data-col="col-reach"></div></th>
                             <th class="num-cell">Lượt Click<div class="col-resize-handle" data-col="col-click"></div></th>
                             <th class="num-cell">Kết Quả<div class="col-resize-handle" data-col="col-result"></div></th>
                             <th class="sortable num-cell" data-col="cpc">CPC<div class="col-resize-handle" data-col="col-cpc"></div></th>
-                            <th class="num-cell">CTR (%)<div class="col-resize-handle" data-col="col-ctr"></div></th>
                             <th class="num-cell">CPM<div class="col-resize-handle" data-col="col-cpm"></div></th>
+                            <th class="num-cell">Giá Trị CĐ<div class="col-resize-handle" data-col="col-value"></div></th>
+                            <th class="num-cell">Bắt Đầu TT<div class="col-resize-handle" data-col="col-checkout"></div></th>
+                            <th class="num-cell">Chi Phí/BĐTT<div class="col-resize-handle" data-col="col-cost-checkout"></div></th>
+                            <th class="num-cell">CTR (%)<div class="col-resize-handle" data-col="col-ctr"></div></th>
                             <th>Ngày Tạo<div class="col-resize-handle" data-col="col-date"></div></th>
                         </tr>
                     </thead>
                     <tbody id="ads-tbody">
-                        <tr><td colspan="13" class="ads-empty-cell">Chọn tài khoản và nhấn "Cập Nhật".</td></tr>
+                        <tr><td colspan="21" class="ads-empty-cell">Chọn tài khoản và nhấn "Cập Nhật".</td></tr>
                     </tbody>
                     <tfoot id="ads-tfoot"></tfoot>
                 </table>
@@ -309,6 +348,6 @@ body { background: #f4f6fb; }
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
     <script src="./assets/js/firebase-config.js?v=20260418-24"></script>
     <script src="./assets/js/script.js?v=20260418-31"></script>
-    <script src="./assets/js/ads-manager.js?v=20260419-04"></script>
+    <script src="./assets/js/ads-manager.js?v=20260419-05"></script>
 </body>
 </html>

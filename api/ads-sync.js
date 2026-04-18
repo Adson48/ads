@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
             'created_time',
             'daily_budget',
             'lifetime_budget',
-            `insights.time_range({"since":"${since}","until":"${until}"}){spend,impressions,clicks,cpc,ctr,cpm,actions,reach}`
+            `insights.time_range({"since":"${since}","until":"${until}"}){spend,impressions,clicks,cpc,ctr,cpm,actions,action_values,cost_per_action_type,reach}`
         ].join(',');
 
         const url = `https://graph.facebook.com/${apiVersion}/${adAccountId}/campaigns` +
@@ -60,6 +60,8 @@ module.exports = async (req, res) => {
 
         const campaigns = (fbData.data || []).map(c => {
             const ins = (c.insights && c.insights.data && c.insights.data[0]) || {};
+            const actionValues = ins.action_values || [];
+            const costPerAction = ins.cost_per_action_type || [];
             const conversions = ins.actions
                 ? ins.actions
                     .filter(a => a.action_type === 'offsite_conversion.fb_pixel_purchase' || a.action_type === 'lead' || a.action_type === 'contact')
@@ -73,6 +75,21 @@ module.exports = async (req, res) => {
                 : c.lifetime_budget
                     ? (parseFloat(c.lifetime_budget) / 100) + 'đ trọn đời'
                     : 'Sử dụng ngân sách...';
+            const spend = parseFloat(ins.spend || 0);
+            const startCheckout = ins.actions
+                ? ins.actions
+                    .filter(a => a.action_type === 'omni_initiated_checkout' || a.action_type === 'initiate_checkout')
+                    .reduce((sum, a) => sum + parseFloat(a.value || 0), 0)
+                : 0;
+            const conversionValue = actionValues
+                .filter(v => v.action_type === 'omni_purchase' || v.action_type === 'offsite_conversion.fb_pixel_purchase')
+                .reduce((sum, v) => sum + parseFloat(v.value || 0), 0);
+            const costPerResult = conversions > 0
+                ? (spend / conversions)
+                : getCostByType(costPerAction, ['offsite_conversion.fb_pixel_purchase', 'lead', 'contact']);
+            const costPerCheckout = startCheckout > 0
+                ? (spend / startCheckout)
+                : getCostByType(costPerAction, ['omni_initiated_checkout', 'initiate_checkout']);
 
             return {
                 id: c.id,
@@ -80,7 +97,7 @@ module.exports = async (req, res) => {
                 status: c.status,
                 created_time: c.created_time,
                 budget: budget,
-                spend: parseFloat(ins.spend || 0),
+                spend: spend,
                 impressions: parseInt(ins.impressions || 0, 10),
                 reach: parseInt(ins.reach || 0, 10),
                 clicks: parseInt(ins.clicks || 0, 10),
@@ -89,6 +106,10 @@ module.exports = async (req, res) => {
                 cpm: parseFloat(ins.cpm || 0).toFixed(0),
                 conversions: conversions,
                 actions: allActions,
+                cost_per_result: costPerResult,
+                conversion_value: conversionValue,
+                start_checkout: startCheckout,
+                cost_per_checkout: costPerCheckout,
                 account: adAccountId,
                 since: since,
                 until: until,
@@ -112,3 +133,13 @@ module.exports = async (req, res) => {
         });
     }
 };
+
+function getCostByType(costPerAction, actionTypes) {
+    if (!Array.isArray(costPerAction)) return 0;
+    for (const item of costPerAction) {
+        if (actionTypes.includes(item.action_type)) {
+            return parseFloat(item.value || 0);
+        }
+    }
+    return 0;
+}

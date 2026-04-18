@@ -10,7 +10,8 @@
         firestoreCollection: 'ads_campaigns',
         accountsKey: 'ads_accounts_v2',
         syncTimeKey: 'ads_last_sync_time',
-        syncInterval: 3600000
+        syncInterval: 3600000,
+        realtimeIntervalMs: 30000
     };
 
     // ---- STATE ----
@@ -24,6 +25,7 @@
     var searchQuery = '';
     var syncTimer = null;
     var unsubscribe = null;
+    var isSyncing = false;
 
     // ---- INIT ----
     function init() {
@@ -328,6 +330,15 @@
         if (syncBtn) syncBtn.disabled = true;
         setPill('⏳ Đang đồng bộ...', 'syncing');
 
+        await runSync(accountId, since, until, false);
+
+        if (syncBtn) syncBtn.disabled = false;
+    }
+
+    async function runSync(accountId, since, until, fromRealtime) {
+        if (isSyncing) return;
+        isSyncing = true;
+
         try {
             var url = CFG.syncEndpoint + '?account=' + encodeURIComponent(accountId) + '&since=' + since + '&until=' + until;
             var res = await fetch(url);
@@ -354,17 +365,37 @@
             }
 
             localStorage.setItem(CFG.syncTimeKey, Date.now().toString());
-            setPill('✅ ' + result.message, 'ok');
+
+            if (fromRealtime) {
+                setPill('🔴 Realtime: 30s/lần | Lần cuối ' + new Date().toLocaleTimeString('vi-VN'), 'live');
+            } else {
+                setPill('✅ ' + result.message, 'ok');
+            }
 
             // Subscribe realtime for this account+date
             subscribeRealtime(accountId, since, until);
+
+            if (!fromRealtime) {
+                startRealtimeSync(accountId, since, until);
+            }
 
         } catch (err) {
             console.error('Sync error:', err);
             setPill('❌ ' + err.message, 'err');
         } finally {
-            if (syncBtn) syncBtn.disabled = false;
+            isSyncing = false;
         }
+    }
+
+    function startRealtimeSync(accountId, since, until) {
+        if (syncTimer) {
+            clearInterval(syncTimer);
+            syncTimer = null;
+        }
+
+        syncTimer = setInterval(function () {
+            runSync(accountId, since, until, true);
+        }, CFG.realtimeIntervalMs);
     }
 
     function getAccountName(id) {
@@ -400,7 +431,7 @@
         if (!tbody) return;
 
         if (!filteredCampaigns.length) {
-            tbody.innerHTML = '<tr><td colspan="13" class="ads-empty-cell">' +
+            tbody.innerHTML = '<tr><td colspan="21" class="ads-empty-cell">' +
                 (allCampaigns.length === 0 ? 'Chưa có dữ liệu. Nhấn "Cập Nhật" để tải.' : 'Không tìm thấy chiến dịch.') +
                 '</td></tr>';
             if (countEl) countEl.textContent = '';
@@ -421,21 +452,36 @@
             var cpm     = imp > 0 ? Math.round((spend / imp) * 1000) : 0;
             var created = c.created_time ? new Date(c.created_time).toLocaleDateString('vi-VN') : '—';
             var budget  = c.budget || '—';
+            var contacts = parseFloat(c.conversions || 0);
+            var replies = parseFloat(c.actions || 0);
+            var costPerResult = parseFloat(c.cost_per_result || 0);
+            var convValue = parseFloat(c.conversion_value || 0);
+            var checkout = parseFloat(c.start_checkout || 0);
+            var costPerCheckout = parseFloat(c.cost_per_checkout || 0);
+            var toggleCls = isActive ? 'on' : '';
 
             return '<tr>' +
                 '<td><input type="checkbox" class="ads-row-check"></td>' +
+                '<td><span class="status-toggle ' + toggleCls + '" title="' + (isActive ? 'Đang bật' : 'Đang tắt') + '"></span></td>' +
                 '<td><div class="camp-name-cell"><span class="status-dot ' + dotCls + '"></span>' +
                     '<span class="camp-name-text" title="' + esc(c.name||'') + '">' + esc(c.name||'—') + '</span></div></td>' +
                 '<td><span class="dist-badge ' + distCls + '">' + distTxt + '</span></td>' +
+                '<td style="color:#6b7280;">—</td>' +
                 '<td class="budget-cell">' + esc(budget) + '</td>' +
+                '<td class="num-cell">' + (costPerResult > 0 ? fmtCur(costPerResult) : '—') + '</td>' +
                 '<td class="num-cell spend' + (spend===0?' zero':'') + '">' + (spend>0 ? fmtCur(spend) : '—') + '</td>' +
+                '<td class="num-cell">' + (contacts > 0 ? fmtNum(contacts) : '—') + '</td>' +
+                '<td class="num-cell">' + (replies > 0 ? fmtNum(replies) : '—') + '</td>' +
                 '<td class="num-cell' + (imp===0?' zero':'') + '">' + (imp>0 ? fmtNum(imp) : '—') + '</td>' +
                 '<td class="num-cell' + (reach===0?' zero':'') + '">' + (reach>0 ? fmtNum(reach) : '—') + '</td>' +
                 '<td class="num-cell' + (clk===0?' zero':'') + '">' + (clk>0 ? fmtNum(clk) : '—') + '</td>' +
                 '<td class="num-cell">' + (c.actions > 0 ? c.actions : '—') + '</td>' +
                 '<td class="num-cell">' + (parseFloat(c.cpc)>0 ? fmtCur(c.cpc) : '—') + '</td>' +
-                '<td class="num-cell">' + (parseFloat(c.ctr)>0 ? c.ctr+'%' : '—') + '</td>' +
                 '<td class="num-cell">' + (cpm>0 ? fmtCur(cpm) : '—') + '</td>' +
+                '<td class="num-cell">' + (convValue > 0 ? fmtCur(convValue) : '—') + '</td>' +
+                '<td class="num-cell">' + (checkout > 0 ? fmtNum(checkout) : '—') + '</td>' +
+                '<td class="num-cell">' + (costPerCheckout > 0 ? fmtCur(costPerCheckout) : '—') + '</td>' +
+                '<td class="num-cell">' + (parseFloat(c.ctr)>0 ? c.ctr+'%' : '—') + '</td>' +
                 '<td style="color:#6b7280;font-size:.8rem;">' + created + '</td>' +
                 '</tr>';
         }).join('');
@@ -453,22 +499,35 @@
         var tr  = filteredCampaigns.reduce(function(s,c){ return s+parseInt(c.reach||0); }, 0);
         var tc  = filteredCampaigns.reduce(function(s,c){ return s+parseInt(c.clicks||0); }, 0);
         var tac = filteredCampaigns.reduce(function(s,c){ return s+parseFloat(c.actions||0); }, 0);
+        var tcr = filteredCampaigns.reduce(function(s,c){ return s+parseFloat(c.conversions||0); }, 0);
+        var tcv = filteredCampaigns.reduce(function(s,c){ return s+parseFloat(c.conversion_value||0); }, 0);
+        var tck = filteredCampaigns.reduce(function(s,c){ return s+parseFloat(c.start_checkout||0); }, 0);
         var avgCpc = tc > 0 ? (ts/tc).toFixed(0) : 0;
         var avgCtr = ti > 0 ? ((tc/ti)*100).toFixed(2) : 0;
         var totalCpm = ti > 0 ? Math.round((ts/ti)*1000) : 0;
+        var avgCostPerResult = tcr > 0 ? (ts/tcr) : 0;
+        var avgCostPerCheckout = tck > 0 ? (ts/tck) : 0;
 
         tfoot.innerHTML = '<tr><td></td>' +
+            '<td></td>' +
             '<td style="color:var(--ink);">Tổng ' + filteredCampaigns.length + ' chiến dịch</td>' +
             '<td></td>' +
             '<td></td>' +
+            '<td></td>' +
+            '<td class="num-cell">' + (avgCostPerResult > 0 ? fmtCur(avgCostPerResult) : '—') + '</td>' +
             '<td class="num-cell spend">' + fmtCur(ts) + '</td>' +
+            '<td class="num-cell">' + fmtNum(tcr) + '</td>' +
+            '<td class="num-cell">' + fmtNum(tac) + '</td>' +
             '<td class="num-cell">' + fmtNum(ti) + '</td>' +
             '<td class="num-cell">' + fmtNum(tr) + '</td>' +
             '<td class="num-cell">' + fmtNum(tc) + '</td>' +
             '<td class="num-cell">' + tac + '</td>' +
             '<td class="num-cell">' + fmtCur(avgCpc) + '</td>' +
-            '<td class="num-cell">' + avgCtr + '%</td>' +
             '<td class="num-cell">' + fmtCur(totalCpm) + '</td>' +
+            '<td class="num-cell">' + (tcv > 0 ? fmtCur(tcv) : '—') + '</td>' +
+            '<td class="num-cell">' + fmtNum(tck) + '</td>' +
+            '<td class="num-cell">' + (avgCostPerCheckout > 0 ? fmtCur(avgCostPerCheckout) : '—') + '</td>' +
+            '<td class="num-cell">' + avgCtr + '%</td>' +
             '<td></td></tr>';
 
         if (footEl) footEl.textContent = 'Hiển thị ' + filteredCampaigns.length + ' / ' + allCampaigns.length + ' chiến dịch';
@@ -499,10 +558,10 @@
 
     // ---- HELPERS ----
     function fmtNum(n) {
-        n = parseInt(n || 0);
+        n = parseFloat(n || 0);
         if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
         if (n >= 1000)    return (n/1000).toFixed(1) + 'K';
-        return n.toLocaleString('vi-VN');
+        return Math.round(n).toLocaleString('vi-VN');
     }
     function fmtCur(n) {
         return parseFloat(n||0).toLocaleString('vi-VN', {maximumFractionDigits:0}) + '₫';
