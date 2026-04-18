@@ -1026,6 +1026,38 @@ if (studioOutput && sidebarCategoryLinks.length) {
             document.getElementById('districtRevenue2'),
             document.getElementById('districtRevenue3')
         ];
+        const hanoiAreaOptions = [
+            'Ba Đình',
+            'Hoàn Kiếm',
+            'Tây Hồ',
+            'Long Biên',
+            'Cầu Giấy',
+            'Đống Đa',
+            'Hai Bà Trưng',
+            'Hoàng Mai',
+            'Thanh Xuân',
+            'Bắc Từ Liêm',
+            'Nam Từ Liêm',
+            'Hà Đông',
+            'Sơn Tây',
+            'Ba Vì',
+            'Chương Mỹ',
+            'Đan Phượng',
+            'Đông Anh',
+            'Gia Lâm',
+            'Hoài Đức',
+            'Mê Linh',
+            'Mỹ Đức',
+            'Phú Xuyên',
+            'Phúc Thọ',
+            'Quốc Oai',
+            'Sóc Sơn',
+            'Thạch Thất',
+            'Thanh Oai',
+            'Thanh Trì',
+            'Thường Tín',
+            'Ứng Hòa'
+        ];
         const chartRefreshMs = 6000;
         const topAreaRefreshMs = 10 * 60 * 1000;
         const topAreaSheetConfigKey = 'homeTopAreaSheetConfigV1';
@@ -1369,6 +1401,66 @@ if (studioOutput && sidebarCategoryLinks.length) {
             return found || '';
         };
 
+        const canonicalizeHanoiAreaName = function(rawArea) {
+            const original = String(rawArea || '').trim();
+            if (!original) {
+                return '';
+            }
+
+            const normalizedArea = normalizeHeader(original)
+                .replace(/^(quan|huyen|thixa)/, '');
+
+            const matched = hanoiAreaOptions.find(function(areaName) {
+                const normalizedKnown = normalizeHeader(areaName)
+                    .replace(/^(quan|huyen|thixa)/, '');
+                return normalizedKnown === normalizedArea;
+            });
+
+            return matched || original;
+        };
+
+        const ensureDistrictOptionExists = function(selectElement, areaName) {
+            if (!selectElement || !areaName) {
+                return;
+            }
+            const hasExactOption = Array.from(selectElement.options).some(function(option) {
+                return String(option.value || option.textContent || '').trim() === areaName;
+            });
+            if (!hasExactOption) {
+                const option = document.createElement('option');
+                option.value = areaName;
+                option.textContent = areaName;
+                selectElement.appendChild(option);
+            }
+        };
+
+        const populateDistrictSelectOptions = function() {
+            districtSelects.forEach(function(selectElement) {
+                if (!selectElement) {
+                    return;
+                }
+                const currentValue = canonicalizeHanoiAreaName(selectElement.value || '');
+                selectElement.innerHTML = '';
+
+                const placeholder = document.createElement('option');
+                placeholder.value = '';
+                placeholder.textContent = 'Chọn quận/huyện/thị xã';
+                selectElement.appendChild(placeholder);
+
+                hanoiAreaOptions.forEach(function(areaName) {
+                    const option = document.createElement('option');
+                    option.value = areaName;
+                    option.textContent = areaName;
+                    selectElement.appendChild(option);
+                });
+
+                if (currentValue) {
+                    ensureDistrictOptionExists(selectElement, currentValue);
+                    selectElement.value = currentValue;
+                }
+            });
+        };
+
         const findHeaderKeyByParts = function(headers, requiredParts, optionalParts) {
             const headerList = Array.isArray(headers) ? headers : [];
             const required = (requiredParts || []).map(normalizeHeader).filter(Boolean);
@@ -1544,8 +1636,10 @@ if (studioOutput && sidebarCategoryLinks.length) {
             const list = Array.isArray(rows) ? rows : [];
             for (let i = 0; i < 3; i += 1) {
                 const item = list[i] || null;
+                const areaName = item ? canonicalizeHanoiAreaName(item.area) : '';
                 if (districtSelects[i]) {
-                    districtSelects[i].value = item ? item.area : '';
+                    ensureDistrictOptionExists(districtSelects[i], areaName);
+                    districtSelects[i].value = areaName;
                 }
                 if (districtGrowthInputs[i]) {
                     districtGrowthInputs[i].value = item ? toAreaGrowthText(item.growthPct) : '';
@@ -1570,7 +1664,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
             const prevMap = {};
 
             (sourceRows || []).forEach(function(row) {
-                const area = String(row.__area || '').trim();
+                const area = canonicalizeHanoiAreaName(row.__area);
                 if (!area) {
                     return;
                 }
@@ -1971,6 +2065,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         };
 
         const initialDashboardState = loadDashboardState();
+        populateDistrictSelectOptions();
         populateTopAreaWeekSelect();
         applyInsightRange(initialDashboardState.insightFrom, initialDashboardState.insightTo, false);
         const initialSheetCfg = loadTopAreaSheetConfig();
