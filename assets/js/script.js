@@ -1029,6 +1029,8 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const topAreaRefreshMs = 10 * 60 * 1000;
         const topAreaSheetConfigKey = 'homeTopAreaSheetConfigV1';
         const topAreaSheetDataKey = 'homeTopAreaSheetDataV1';
+        const authSessionKey = 'ma_session_v1';
+        const authOwnerKey = 'ma_owner_id_v1';
         let homeReportDb = null;
         let homeReportUnsub = null;
 
@@ -1085,6 +1087,24 @@ if (studioOutput && sidebarCategoryLinks.length) {
             topAreaSheetStatus.style.color = (type === 'bad') ? '#b91c1c' : (type === 'good' ? '#166534' : '#7f3052');
         };
 
+        const canManageTopAreaSheet = function() {
+            const ownerId = String(localStorage.getItem(authOwnerKey) || '').trim();
+            const session = safeParseState(localStorage.getItem(authSessionKey));
+            return Boolean(ownerId && session && session.userId && session.userId === ownerId);
+        };
+
+        const applyTopAreaSheetAccessByRole = function() {
+            const isSuperadmin = canManageTopAreaSheet();
+            const linkRow = topAreaSheetUrlInput ? topAreaSheetUrlInput.closest('.sheet-link-row') : null;
+            if (linkRow) {
+                linkRow.style.display = isSuperadmin ? '' : 'none';
+            }
+            if (topAreaSheetStatus && !isSuperadmin) {
+                setTopAreaStatus('Dữ liệu khu vực được đồng bộ bởi quản trị hệ thống.', '');
+            }
+            return isSuperadmin;
+        };
+
         const extractSheetId = function(rawUrl) {
             const text = String(rawUrl || '').trim();
             if (!text) {
@@ -1094,12 +1114,61 @@ if (studioOutput && sidebarCategoryLinks.length) {
             return m ? m[1] : '';
         };
 
+        const extractSheetGid = function(rawUrl) {
+            const text = String(rawUrl || '').trim();
+            if (!text) {
+                return '0';
+            }
+            const m = text.match(/[?&]gid=(\d+)/i);
+            return m ? m[1] : '0';
+        };
+
         const buildSheetCsvUrl = function(sheetId, gid) {
             if (!sheetId) {
                 return '';
             }
             const safeGid = String(gid || '0').trim() || '0';
             return 'https://docs.google.com/spreadsheets/d/' + sheetId + '/export?format=csv&gid=' + encodeURIComponent(safeGid);
+        };
+
+        const unwrapMirrorText = function(rawText) {
+            const text = String(rawText || '');
+            const marker = 'Markdown Content:';
+            const markerIndex = text.indexOf(marker);
+            if (markerIndex === -1) {
+                return text;
+            }
+            return text.slice(markerIndex + marker.length).trim();
+        };
+
+        const fetchSheetCsvText = async function(sheetId, gid) {
+            const directUrl = buildSheetCsvUrl(sheetId, gid);
+            const mirrorUrl = 'https://r.jina.ai/http://docs.google.com/spreadsheets/d/' + sheetId + '/export?format=csv&gid=' + encodeURIComponent(String(gid || '0'));
+            const candidates = [
+                { url: directUrl, isMirror: false },
+                { url: mirrorUrl, isMirror: true }
+            ];
+
+            let lastError = null;
+            for (let i = 0; i < candidates.length; i += 1) {
+                const candidate = candidates[i];
+                try {
+                    const res = await fetch(candidate.url + '&_=' + Date.now());
+                    const text = await res.text();
+                    if (!res.ok) {
+                        throw new Error('HTTP ' + res.status);
+                    }
+                    const csvText = candidate.isMirror ? unwrapMirrorText(text) : text;
+                    if (!String(csvText || '').includes(',')) {
+                        throw new Error('Định dạng phản hồi không hợp lệ.');
+                    }
+                    return csvText;
+                } catch (err) {
+                    lastError = err;
+                }
+            }
+
+            throw lastError || new Error('Không thể kết nối Google Sheet.');
         };
 
         const parseCsvLine = function(line) {
@@ -1323,21 +1392,15 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 return false;
             }
 
-            const csvUrl = buildSheetCsvUrl(sheetId, gid) + '&_=' + Date.now();
             try {
-                if (topAreaSheetApplyBtn) {
+                if (topAreaSheetApplyBtn && canManageTopAreaSheet()) {
                     topAreaSheetApplyBtn.disabled = true;
                 }
                 if (!(options && options.silent)) {
                     setTopAreaStatus('Đang đọc dữ liệu Google Sheet...', '');
                 }
 
-                const response = await fetch(csvUrl);
-                const csvText = await response.text();
-                if (!response.ok) {
-                    throw new Error('Không đọc được Sheet (' + response.status + ').');
-                }
-
+                const csvText = await fetchSheetCsvText(sheetId, gid);
                 const parsed = parseCsvText(csvText);
                 const normalized = normalizeSheetRows(parsed);
                 if (!normalized.ok) {
@@ -1357,10 +1420,10 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     setTopAreaStatus('Google Sheet tạm lỗi, đang dùng dữ liệu đã lưu trước đó.', 'bad');
                     return true;
                 }
-                setTopAreaStatus('Không thể đồng bộ Google Sheet: ' + (error && error.message ? error.message : 'Lỗi không xác định'), 'bad');
+                setTopAreaStatus('Không thể đồng bộ Google Sheet: ' + (error && error.message ? error.message : 'Lỗi không xác định') + '. Hãy bật chia sẻ công khai cho Sheet.', 'bad');
                 return false;
             } finally {
-                if (topAreaSheetApplyBtn) {
+                if (topAreaSheetApplyBtn && canManageTopAreaSheet()) {
                     topAreaSheetApplyBtn.disabled = false;
                 }
             }
@@ -1578,13 +1641,18 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const initialDashboardState = loadDashboardState();
         applyInsightRange(initialDashboardState.insightFrom, initialDashboardState.insightTo, false);
         const initialSheetCfg = loadTopAreaSheetConfig();
+        applyTopAreaSheetAccessByRole();
         if (topAreaSheetUrlInput) {
             topAreaSheetUrlInput.value = String(initialSheetCfg.url || '');
         }
         if (topAreaSheetApplyBtn) {
             topAreaSheetApplyBtn.addEventListener('click', function() {
+                if (!canManageTopAreaSheet()) {
+                    applyTopAreaSheetAccessByRole();
+                    return;
+                }
                 const nextUrl = topAreaSheetUrlInput ? topAreaSheetUrlInput.value.trim() : '';
-                const nextGid = String((initialSheetCfg && initialSheetCfg.gid) || '0').trim() || '0';
+                const nextGid = extractSheetGid(nextUrl) || String((initialSheetCfg && initialSheetCfg.gid) || '0').trim() || '0';
                 saveTopAreaSheetConfig({ url: nextUrl, gid: nextGid });
                 updateTopAreaFromSheet({ silent: false });
             });
@@ -1812,6 +1880,12 @@ if (studioOutput && sidebarCategoryLinks.length) {
             }
             if (key.indexOf(reportPrefix + '_') === 0 || key === reportEmployeeKey || key === dashboardStorageKey) {
                 updateDashboardChart();
+            }
+            if (key === topAreaSheetConfigKey) {
+                updateTopAreaFromSheet({ silent: true });
+            }
+            if (key === authSessionKey || key === authOwnerKey) {
+                applyTopAreaSheetAccessByRole();
             }
         });
         setInterval(updateDashboardChart, chartRefreshMs);
