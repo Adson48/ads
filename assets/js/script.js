@@ -1031,8 +1031,12 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const topAreaSheetDataKey = 'homeTopAreaSheetDataV1';
         const authSessionKey = 'ma_session_v1';
         const authOwnerKey = 'ma_owner_id_v1';
+        const authAccountsKey = 'ma_accounts_v1';
+        const topAreaSheetConfigCollection = 'ma_config';
+        const topAreaSheetConfigDocId = 'home_top_area_sheet_v1';
         let homeReportDb = null;
         let homeReportUnsub = null;
+        let topAreaSheetConfigUnsub = null;
 
         const parseNumber = function(raw) {
             return Number(String(raw || '').replace(/[^0-9]/g, '')) || 0;
@@ -1087,22 +1091,98 @@ if (studioOutput && sidebarCategoryLinks.length) {
             topAreaSheetStatus.style.color = (type === 'bad') ? '#b91c1c' : (type === 'good' ? '#166534' : '#7f3052');
         };
 
-        const canManageTopAreaSheet = function() {
-            const ownerId = String(localStorage.getItem(authOwnerKey) || '').trim();
+        const resolveTopAreaSheetAccess = function() {
             const session = safeParseState(localStorage.getItem(authSessionKey));
-            return Boolean(ownerId && session && session.userId && session.userId === ownerId);
+            const userId = String((session && session.userId) || '').trim();
+            if (!userId) {
+                return { known: false, isSuperadmin: false };
+            }
+
+            const ownerId = String(localStorage.getItem(authOwnerKey) || '').trim();
+            if (ownerId && ownerId === userId) {
+                return { known: true, isSuperadmin: true };
+            }
+
+            const accounts = safeParseState(localStorage.getItem(authAccountsKey));
+            if (!Array.isArray(accounts)) {
+                return { known: false, isSuperadmin: false };
+            }
+
+            const currentUser = accounts.find(function(acc) {
+                return acc && acc.id === userId;
+            });
+            if (!currentUser) {
+                return { known: false, isSuperadmin: false };
+            }
+
+            const role = String(currentUser.role || '').toLowerCase();
+            const status = String(currentUser.status || 'active').toLowerCase();
+            return {
+                known: true,
+                isSuperadmin: role === 'superadmin' && status === 'active'
+            };
+        };
+
+        const canManageTopAreaSheet = function() {
+            const access = resolveTopAreaSheetAccess();
+            return access.known ? access.isSuperadmin : true;
         };
 
         const applyTopAreaSheetAccessByRole = function() {
-            const isSuperadmin = canManageTopAreaSheet();
+            const access = resolveTopAreaSheetAccess();
+            const isSuperadmin = access.known ? access.isSuperadmin : true;
             const linkRow = topAreaSheetUrlInput ? topAreaSheetUrlInput.closest('.sheet-link-row') : null;
             if (linkRow) {
                 linkRow.style.display = isSuperadmin ? '' : 'none';
             }
-            if (topAreaSheetStatus && !isSuperadmin) {
+            if (topAreaSheetStatus && access.known && !isSuperadmin) {
                 setTopAreaStatus('Dữ liệu khu vực được đồng bộ bởi quản trị hệ thống.', '');
             }
             return isSuperadmin;
+        };
+
+        const saveTopAreaSheetConfigRemote = async function(config) {
+            const db = initHomeReportDb();
+            if (!db) {
+                return false;
+            }
+            await db.collection(topAreaSheetConfigCollection).doc(topAreaSheetConfigDocId).set({
+                url: String((config && config.url) || '').trim(),
+                gid: String((config && config.gid) || '0').trim() || '0',
+                updatedAt: Date.now(),
+                updatedBy: String((safeParseState(localStorage.getItem(authSessionKey)).userId) || '')
+            }, { merge: true });
+            return true;
+        };
+
+        const bindTopAreaSheetConfigRealtime = function() {
+            const db = initHomeReportDb();
+            if (!db) {
+                return;
+            }
+
+            if (topAreaSheetConfigUnsub) {
+                topAreaSheetConfigUnsub();
+                topAreaSheetConfigUnsub = null;
+            }
+
+            topAreaSheetConfigUnsub = db.collection(topAreaSheetConfigCollection).doc(topAreaSheetConfigDocId).onSnapshot(function(snapshot) {
+                if (!snapshot.exists) {
+                    return;
+                }
+                const remoteCfg = snapshot.data() || {};
+                const nextUrl = String(remoteCfg.url || '').trim();
+                const nextGid = String(remoteCfg.gid || '0').trim() || '0';
+                const currentCfg = loadTopAreaSheetConfig();
+                if (String(currentCfg.url || '').trim() !== nextUrl || String(currentCfg.gid || '0').trim() !== nextGid) {
+                    saveTopAreaSheetConfig({ url: nextUrl, gid: nextGid });
+                    if (topAreaSheetUrlInput) {
+                        topAreaSheetUrlInput.value = nextUrl;
+                    }
+                    updateTopAreaFromSheet({ silent: true });
+                }
+                applyTopAreaSheetAccessByRole();
+            });
         };
 
         const extractSheetId = function(rawUrl) {
@@ -1646,14 +1726,20 @@ if (studioOutput && sidebarCategoryLinks.length) {
             topAreaSheetUrlInput.value = String(initialSheetCfg.url || '');
         }
         if (topAreaSheetApplyBtn) {
-            topAreaSheetApplyBtn.addEventListener('click', function() {
+            topAreaSheetApplyBtn.addEventListener('click', async function() {
                 if (!canManageTopAreaSheet()) {
                     applyTopAreaSheetAccessByRole();
+                    setTopAreaStatus('Chỉ superadmin mới có quyền liên kết Google Sheet.', 'bad');
                     return;
                 }
                 const nextUrl = topAreaSheetUrlInput ? topAreaSheetUrlInput.value.trim() : '';
                 const nextGid = extractSheetGid(nextUrl) || String((initialSheetCfg && initialSheetCfg.gid) || '0').trim() || '0';
-                saveTopAreaSheetConfig({ url: nextUrl, gid: nextGid });
+                const nextCfg = saveTopAreaSheetConfig({ url: nextUrl, gid: nextGid });
+                try {
+                    await saveTopAreaSheetConfigRemote(nextCfg);
+                } catch (e) {
+                    setTopAreaStatus('Đã lưu cục bộ, nhưng chưa đồng bộ được cấu hình lên Firestore.', 'bad');
+                }
                 updateTopAreaFromSheet({ silent: false });
             });
         }
@@ -1887,6 +1973,9 @@ if (studioOutput && sidebarCategoryLinks.length) {
             if (key === authSessionKey || key === authOwnerKey) {
                 applyTopAreaSheetAccessByRole();
             }
+            if (key === authAccountsKey) {
+                applyTopAreaSheetAccessByRole();
+            }
         });
         setInterval(updateDashboardChart, chartRefreshMs);
         setInterval(function() {
@@ -1894,6 +1983,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         }, topAreaRefreshMs);
 
         bindHomeReportRealtime();
+        bindTopAreaSheetConfigRealtime();
         hydrateHomeAlerts();
         adsPerformanceChartCanvas.dataset.chartReady = '1';
         return true;
