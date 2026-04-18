@@ -11,7 +11,7 @@
         accountsKey: 'ads_accounts_v2',
         syncTimeKey: 'ads_last_sync_time',
         syncInterval: 3600000,
-        realtimeIntervalMs: 30000
+        realtimeIntervalMs: 30000,
     };
 
     // ---- STATE ----
@@ -184,6 +184,11 @@
             document.querySelectorAll('.ads-row-check').forEach(function (cb) { cb.checked = checkAll.checked; });
         });
 
+                // Tắt hoàn toàn auto-refresh sau khi cập nhật
+                if (syncTimer) {
+                    clearInterval(syncTimer);
+                    syncTimer = null;
+                }
         var manageBtn = document.getElementById('adsManageAccountsBtn');
         if (manageBtn) manageBtn.addEventListener('click', function () {
             var panel = document.getElementById('adsAccountPanel');
@@ -240,9 +245,7 @@
                 panel.classList.remove('open');
             }
         });
-    }
-
-    function applyDatePreset(range) {
+                // Đã tắt hoàn toàn auto-refresh realtime
         var fromEl = document.getElementById('adsDateFrom');
         var toEl = document.getElementById('adsDateTo');
         if (!fromEl || !toEl) return;

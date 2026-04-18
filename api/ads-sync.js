@@ -70,10 +70,16 @@ module.exports = async (req, res) => {
             const allActions = ins.actions
                 ? ins.actions.reduce((sum, a) => sum + parseFloat(a.value || 0), 0)
                 : 0;
+            // Facebook trả về ngân sách (daily_budget, lifetime_budget) là số nguyên đơn vị VND (không cần chia 100)
+            function fmtBudget(val, type) {
+                if (!val) return '';
+                let n = parseInt(val, 10);
+                return n.toLocaleString('vi-VN') + '₫' + (type === 'daily' ? '/ngày' : type === 'lifetime' ? ' trọn đời' : '');
+            }
             const budget = c.daily_budget
-                ? (parseFloat(c.daily_budget) / 100) + 'đ/ngày'
+                ? fmtBudget(c.daily_budget, 'daily')
                 : c.lifetime_budget
-                    ? (parseFloat(c.lifetime_budget) / 100) + 'đ trọn đời'
+                    ? fmtBudget(c.lifetime_budget, 'lifetime')
                     : 'Sử dụng ngân sách...';
             const spend = parseFloat(ins.spend || 0);
             const startCheckout = ins.actions
