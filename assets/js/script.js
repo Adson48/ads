@@ -1079,6 +1079,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const authAccountsKey = 'ma_accounts_v1';
         const topAreaSheetConfigCollection = 'ma_config';
         const topAreaSheetConfigDocId = 'home_top_area_sheet_v1';
+        const topAreaSharedBridgeDocId = 'home_top_area_shared_v1';
         const topAreaSharedResultField = 'latestTopAreaWeekly';
         const topAreaSharedHistoryField = 'latestTopAreaWeeklyHistory';
         const topAreaSharedHistoryLimit = 40;
@@ -1315,12 +1316,14 @@ if (studioOutput && sidebarCategoryLinks.length) {
             if (!db) {
                 return false;
             }
-            await db.collection(topAreaSheetConfigCollection).doc(topAreaSheetConfigDocId).set({
+            const payload = {
                 url: String((config && config.url) || '').trim(),
                 gid: String((config && config.gid) || '0').trim() || '0',
                 updatedAt: Date.now(),
                 updatedBy: String((safeParseState(localStorage.getItem(authSessionKey)).userId) || '')
-            }, { merge: true });
+            };
+            await db.collection(topAreaSheetConfigCollection).doc(topAreaSheetConfigDocId).set(payload, { merge: true });
+            await db.collection(reportCollection).doc(topAreaSharedBridgeDocId).set(payload, { merge: true });
             return true;
         };
 
@@ -1364,7 +1367,11 @@ if (studioOutput && sidebarCategoryLinks.length) {
             const payload = {};
             payload[topAreaSharedResultField] = entryPayload;
             payload[topAreaSharedHistoryField] = mergedHistory;
+            const cfg = loadTopAreaSheetConfig();
+            payload.url = String((cfg && cfg.url) || '').trim();
+            payload.gid = String((cfg && cfg.gid) || '0').trim() || '0';
             await db.collection(topAreaSheetConfigCollection).doc(topAreaSheetConfigDocId).set(payload, { merge: true });
+            await db.collection(reportCollection).doc(topAreaSharedBridgeDocId).set(payload, { merge: true });
             return true;
         };
 
@@ -1599,6 +1606,8 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         }
                     }
                 }
+            }, function() {
+                updateTopAreaFromSheet({ silent: true });
             });
         };
 
@@ -2133,6 +2142,54 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         setTopAreaStatus('Đã đồng bộ dữ liệu top HĐ từ ' + toViDate(sharedLocalResult.from) + ' đến ' + toViDate(sharedLocalResult.to) + '.', 'good');
                     }
                     return true;
+                }
+
+                try {
+                    const db = initHomeReportDb();
+                    if (db) {
+                        const bridgeSnap = await db.collection(reportCollection).doc(topAreaSharedBridgeDocId).get();
+                        if (bridgeSnap.exists) {
+                            const bridgeData = bridgeSnap.data() || {};
+                            const bridgeUrl = String(bridgeData.url || '').trim();
+                            const bridgeGid = String(bridgeData.gid || '0').trim() || '0';
+                            if (bridgeUrl) {
+                                saveTopAreaSheetConfig({ url: bridgeUrl, gid: bridgeGid });
+                            }
+
+                            if (bridgeData && typeof bridgeData[topAreaSharedHistoryField] === 'object') {
+                                const mergedHistory = Object.assign({}, loadTopAreaSharedHistory(), bridgeData[topAreaSharedHistoryField]);
+                                saveTopAreaSharedHistory(mergedHistory);
+                                const mergedEntry = mergedHistory[historyKey];
+                                if (mergedEntry && Array.isArray(mergedEntry.rows) && mergedEntry.rows.length) {
+                                    applyTopAreaRowsToUi(mergedEntry.rows);
+                                    if (!(options && options.silent)) {
+                                        setTopAreaStatus('Đã tải dữ liệu tuần từ ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
+                                    }
+                                    return true;
+                                }
+                            }
+
+                            const bridgeLatest = (bridgeData && bridgeData[topAreaSharedResultField] && typeof bridgeData[topAreaSharedResultField] === 'object')
+                                ? bridgeData[topAreaSharedResultField]
+                                : null;
+                            if (
+                                bridgeLatest &&
+                                Array.isArray(bridgeLatest.rows) &&
+                                bridgeLatest.rows.length &&
+                                String(bridgeLatest.from || '') === currentRange.from &&
+                                String(bridgeLatest.to || '') === currentRange.to
+                            ) {
+                                saveTopAreaSharedResult(bridgeLatest);
+                                applyTopAreaRowsToUi(bridgeLatest.rows);
+                                if (!(options && options.silent)) {
+                                    setTopAreaStatus('Đã đồng bộ dữ liệu top HĐ từ ' + toViDate(bridgeLatest.from) + ' đến ' + toViDate(bridgeLatest.to) + '.', 'good');
+                                }
+                                return true;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // Continue to direct sheet fetch / cache fallback below.
                 }
 
                 // Staff can fetch and calculate from the shared Google Sheet link in read-only mode.
