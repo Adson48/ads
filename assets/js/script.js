@@ -1436,6 +1436,42 @@ if (studioOutput && sidebarCategoryLinks.length) {
             return parseNumber(text);
         };
 
+        const looksLikeMoneyValue = function(raw) {
+            const text = String(raw || '').trim().toLowerCase();
+            if (!text) {
+                return false;
+            }
+
+            if (/d|vnd|vnđ|trieu|tr|ty|k/.test(text)) {
+                return true;
+            }
+
+            const cleaned = text.replace(/\s+/g, '');
+            if ((cleaned.match(/[.,]/g) || []).length >= 2) {
+                return true;
+            }
+
+            const numericValue = parseSheetMetricNumber(text);
+            return numericValue >= 1000;
+        };
+
+        const shouldUseHdColumnAsRevenue = function(rows, hdKey, revenueKey) {
+            if (revenueKey || !hdKey) {
+                return false;
+            }
+
+            const sampleRows = (Array.isArray(rows) ? rows : []).slice(0, 12);
+            if (!sampleRows.length) {
+                return false;
+            }
+
+            const moneyLikeCount = sampleRows.reduce(function(total, row) {
+                return total + (looksLikeMoneyValue(row && row[hdKey]) ? 1 : 0);
+            }, 0);
+
+            return moneyLikeCount >= Math.ceil(sampleRows.length / 2);
+        };
+
         const parseFlexibleDate = function(raw) {
             const text = String(raw || '').trim();
             if (!text) {
@@ -1588,17 +1624,19 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 || findHeaderKeyByParts(headers, ['gia', 'tri'], ['hop', 'dong', 'tong'])
                 || findHeaderKeyByParts(headers, ['contract'], ['value', 'amount'])
                 || findHeaderKeyByParts(headers, ['amount'], ['contract', 'revenue', 'value']);
+            const hdActsAsRevenue = shouldUseHdColumnAsRevenue(rows, hdKey, revenueKey);
 
             if (!dateKey || !areaKey || !hdKey) {
                 return { ok: false, rows: [] };
             }
 
             const normalizedRows = rows.map(function(row) {
+                const revenueSource = revenueKey ? row[revenueKey] : (hdActsAsRevenue ? row[hdKey] : '0');
                 return {
                     __date: row[dateKey],
                     __area: row[areaKey],
                     __hd: parseNumber(row[hdKey]),
-                    __revenue: parseSheetMetricNumber(revenueKey ? row[revenueKey] : '0')
+                    __revenue: parseSheetMetricNumber(revenueSource)
                 };
             });
 
