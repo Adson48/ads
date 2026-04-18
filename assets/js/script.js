@@ -636,12 +636,13 @@ function displayNotifications() {
     notifications.forEach(notification => {
         const notificationDiv = document.createElement('div');
         notificationDiv.className = 'notification-item';
+        const canDelete = isSessionSuperadmin();
         notificationDiv.innerHTML = `
             <h3>${notification.title}</h3>
             <p class="notification-date">${notification.date}</p>
             <p class="notification-content">${notification.content}</p>
             ${notification.image ? `<img src="${notification.image}" style="max-width:100%;max-height:280px;border-radius:12px;margin-bottom:1rem;border:1px solid rgba(199,81,124,0.2);">` : ''}
-            <button class="btn-delete-notification" onclick="deleteNotification(${notification.id})">🗑️ Xóa</button>
+            ${canDelete ? `<button class="btn-delete-notification" onclick="deleteNotification(${notification.id})">🗑️ Xóa</button>` : ''}
         `;
         notificationList.appendChild(notificationDiv);
     });
@@ -649,6 +650,7 @@ function displayNotifications() {
 
 // Function to delete notification
 function deleteNotification(id) {
+    if (!isSessionSuperadmin()) { return; }
     const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
     const filtered = notifications.filter(n => n.id !== id);
     localStorage.setItem('notifications', JSON.stringify(filtered));
@@ -3975,6 +3977,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
             .then(function () { return getCurrentUser(); })
             .then(function (currentUser) {
                 mountAuthBadge(currentUser);
+                applySharedStateRoleUi();
                 hideLoading();
                 if (!currentUser) {
                     setSiteLocked(true);
