@@ -59,9 +59,14 @@ export default async function handler(req, res) {
         const data = await response.json().catch(function() { return {}; });
 
         if (!response.ok) {
-            return res.status(response.status || 502).json({
-                error: (data && data.error && data.error.message) ? data.error.message : 'openai-request-failed'
-            });
+            var apiError = (data && data.error && data.error.message) ? data.error.message : 'openai-request-failed';
+            if (response.status === 401) {
+                apiError = 'OpenAI API key không hợp lệ hoặc đã bị thu hồi.';
+            } else if (response.status === 429) {
+                apiError = 'Tài khoản OpenAI đang hết quota hoặc vượt giới hạn tốc độ. Vui lòng kiểm tra billing/quota.';
+            }
+
+            return res.status(response.status || 502).json({ error: apiError });
         }
 
         const reply = (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content)
