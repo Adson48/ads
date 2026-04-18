@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Ads - N?i Dung</title>
+    <title>Marketing Ads - Nội Dung</title>
     <link rel="stylesheet" href="./assets/css/style.css?v=20260418-27">
     <style>
         .content-empty-page { max-width: 1240px; margin: 0 auto; padding: 90px 1rem 2rem; min-height: 60vh; }
@@ -135,12 +135,12 @@
         <nav>
             <div class="logo">Marketing Ads</div>
             <ul class="nav-links">
-                <li><a href="./index.html">Trang Ch?</a></li>
-                <li><a href="./reports.html">B�o C�o</a></li>
-                <li><a href="./notifications.html">Th�ng B�o</a></li>
-                <li><a href="./ideas.html">� Tu?ng</a></li>
-                <li><a href="./content.html">N?i Dung</a></li>
-                <li><a href="./resource-admin.html">Qu?n tr? t�i nguy�n</a></li>
+                <li><a href="./index.html">Trang Chủ</a></li>
+                <li><a href="./reports.html">Báo Cáo</a></li>
+                <li><a href="./notifications.html">Thông Báo</a></li>
+                <li><a href="./ideas.html">Ý Tưởng</a></li>
+                <li><a href="./content.html">Nội Dung</a></li>
+                <li><a href="./resource-admin.html">Quản trị tài nguyên</a></li>
             </ul>
         </nav>
     </header>
@@ -149,36 +149,36 @@
         <section class="ai-panel">
             <div class="ai-head">
                 <div>
-                    <h2 class="ai-title">Tro ly ChatGPT cho doi noi dung</h2>
-                    <p class="ai-hint">Website goi qua endpoint proxy cua ban. Khong dat OpenAI key truc tiep len frontend.</p>
+                    <h2 class="ai-title">Trợ lý ChatGPT cho đội nội dung</h2>
+                    <p class="ai-hint">Website gọi qua endpoint proxy của bạn. Không đặt OpenAI key trực tiếp lên frontend.</p>
                 </div>
             </div>
 
             <div class="ai-endpoint">
                 <input id="gptEndpointInput" class="ai-input" type="text" placeholder="https://your-proxy-domain.com/api/chat">
-                <button id="saveGptEndpointBtn" class="ai-btn secondary" type="button">Luu endpoint</button>
+                <button id="saveGptEndpointBtn" class="ai-btn secondary" type="button">Lưu endpoint</button>
             </div>
-            <p id="gptStatus" class="ai-status">Chua cau hinh endpoint.</p>
+            <p id="gptStatus" class="ai-status">Chưa cấu hình endpoint.</p>
 
             <div id="gptChat" class="ai-chat"></div>
 
             <div class="ai-controls">
-                <textarea id="gptPromptInput" class="ai-textarea" placeholder="Nhap yeu cau: Viet 3 tieu de quang cao cho me bau..." aria-label="Prompt"></textarea>
-                <button id="sendGptBtn" class="ai-btn" type="button">Gui</button>
-                <button id="clearGptBtn" class="ai-btn secondary" type="button">Xoa hoi thoai</button>
+                <textarea id="gptPromptInput" class="ai-textarea" placeholder="Nhập yêu cầu: Viết 3 tiêu đề quảng cáo cho mẹ bầu..." aria-label="Prompt"></textarea>
+                <button id="sendGptBtn" class="ai-btn" type="button">Gửi</button>
+                <button id="clearGptBtn" class="ai-btn secondary" type="button">Xóa hội thoại</button>
             </div>
 
             <div class="ai-quick">
-                <button class="ai-chip" type="button" data-prompt="Viet 5 tieu de quang cao Facebook cho sua bau theo phong cach ngan gon.">Tieu de quang cao</button>
-                <button class="ai-chip" type="button" data-prompt="Viet 1 bai post 150 tu de tu van me bau lan dau, giong than thien.">Bai post ngan</button>
-                <button class="ai-chip" type="button" data-prompt="Cho 10 y tuong video ngan de tang tin nhan tu khach me bau.">Y tuong video</button>
-                <button class="ai-chip" type="button" data-prompt="Rut gon doan van sau thanh 3 cau de doc tren social media.">Rut gon noi dung</button>
+                <button class="ai-chip" type="button" data-prompt="Viết 5 tiêu đề quảng cáo Facebook cho sữa bầu theo phong cách ngắn gọn.">Tiêu đề quảng cáo</button>
+                <button class="ai-chip" type="button" data-prompt="Viết 1 bài post 150 từ để tư vấn mẹ bầu lần đầu, giọng thân thiện.">Bài post ngắn</button>
+                <button class="ai-chip" type="button" data-prompt="Cho 10 ý tưởng video ngắn để tăng tin nhắn từ khách mẹ bầu.">Ý tưởng video</button>
+                <button class="ai-chip" type="button" data-prompt="Rút gọn đoạn văn sau thành 3 câu để đọc trên social media.">Rút gọn nội dung</button>
             </div>
         </section>
     </main>
 
     <footer>
-        <p>&copy; 2024 Marketing Ads. T?t c? quy?n du?c b?o luu.</p>
+        <p>&copy; 2024 Marketing Ads. Tất cả quyền được bảo lưu.</p>
     </footer>
 
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
@@ -246,7 +246,7 @@
 
             var renderHistory = function() {
                 if (!history.length) {
-                    chatEl.innerHTML = '<div class="ai-msg assistant">Xin chao. Hay cau hinh endpoint va gui yeu cau de bat dau.</div>';
+                    chatEl.innerHTML = '<div class="ai-msg assistant">Xin chào. Hãy cấu hình endpoint và gửi yêu cầu để bắt đầu.</div>';
                     return;
                 }
 
@@ -281,14 +281,14 @@
             var sendPrompt = async function() {
                 var endpoint = getEndpoint();
                 if (!endpoint) {
-                    setStatus('Vui long nhap endpoint proxy truoc khi gui.', 'bad');
+                    setStatus('Vui lòng nhập endpoint proxy trước khi gửi.', 'bad');
                     endpointInput.focus();
                     return;
                 }
 
                 var prompt = String(promptInput.value || '').trim();
                 if (!prompt) {
-                    setStatus('Ban chua nhap noi dung can hoi.', 'bad');
+                    setStatus('Bạn chưa nhập nội dung cần hỏi.', 'bad');
                     promptInput.focus();
                     return;
                 }
@@ -298,7 +298,7 @@
                 saveHistory();
                 promptInput.value = '';
                 sendBtn.disabled = true;
-                setStatus('Dang goi ChatGPT...', '');
+                setStatus('Đang gọi ChatGPT...', '');
 
                 try {
                     var response = await fetch(endpoint, {
@@ -320,9 +320,9 @@
                     history.push({ role: 'assistant', content: reply });
                     renderHistory();
                     saveHistory();
-                    setStatus('Da nhan phan hoi tu ChatGPT.', 'good');
+                    setStatus('Đã nhận phản hồi từ ChatGPT.', 'good');
                 } catch (err) {
-                    setStatus('Loi ket noi ChatGPT: ' + (err && err.message ? err.message : 'unknown'), 'bad');
+                    setStatus('Lỗi kết nối ChatGPT: ' + (err && err.message ? err.message : 'unknown'), 'bad');
                 } finally {
                     sendBtn.disabled = false;
                 }
@@ -332,20 +332,20 @@
             history = safeLoadHistory();
             renderHistory();
             if (endpointInput.value) {
-                setStatus('Endpoint da san sang.', 'good');
+                setStatus('Endpoint đã sẵn sàng.', 'good');
             } else {
-                setStatus('Dang chay tren GitHub Pages: vui long nhap endpoint backend (Vercel/Worker).', '');
+                setStatus('Đang chạy trên GitHub Pages: vui lòng nhập endpoint backend (Vercel/Worker).', '');
             }
 
             saveEndpointBtn.addEventListener('click', function() {
                 var endpoint = String(endpointInput.value || '').trim();
                 if (!endpoint) {
                     localStorage.removeItem(ENDPOINT_KEY);
-                    setStatus('Da xoa endpoint.', '');
+                    setStatus('Đã xóa endpoint.', '');
                     return;
                 }
                 localStorage.setItem(ENDPOINT_KEY, endpoint);
-                setStatus('Da luu endpoint thanh cong.', 'good');
+                setStatus('Đã lưu endpoint thành công.', 'good');
             });
 
             sendBtn.addEventListener('click', sendPrompt);
@@ -360,7 +360,7 @@
                 history = [];
                 localStorage.removeItem(HISTORY_KEY);
                 renderHistory();
-                setStatus('Da xoa lich su hoi dap tren trinh duyet nay.', '');
+                setStatus('Đã xóa lịch sử hỏi đáp trên trình duyệt này.', '');
             });
 
             document.querySelectorAll('.ai-chip[data-prompt]').forEach(function(btn) {
