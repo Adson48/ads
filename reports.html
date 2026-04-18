@@ -715,13 +715,13 @@ Doanh thu: 45000000</pre>
             return out;
         }
         function persistMonthStoreToLocal(m,y,store){
-            var names=loadReporters();
             var emps=(store&&store.employees)||{};
+            var names=[];
             Object.keys(emps).forEach(function(rid){
                 var item=emps[rid]||{};
                 var n=normReporter(item.name||'');
                 if(!n){return;}
-                if(names.indexOf(n)===-1){names.push(n);}
+                names.push(n);
                 localStorage.setItem(skey(m,y,n),JSON.stringify((item.data&&typeof item.data==='object')?item.data:{}));
             });
             saveReporters(names);
@@ -750,7 +750,7 @@ Doanh thu: 45000000</pre>
                     year:y,
                     employees:(store&&store.employees)||{},
                     updatedAt:Date.now()
-                },{merge:true});
+                });
                 delete dirtyMonthKeys[key];
                 if(currentMonthKey()===key){hasPendingLocalEdits=false;}
                 if(currentMonthKey()===key){
@@ -1398,29 +1398,48 @@ Doanh thu: 45000000</pre>
             // dropdown now just tracks which employee to rename/delete
         });
         document.getElementById('rpBtnAddReporter').addEventListener('click',function(){
+            if(!isSuperadminUser){alert('Chỉ quản trị cao nhất mới được thêm nhân viên.');return;}
             var nv=getNewReporterInput();
             if(!nv){alert('Vui lòng nhập tên nhân viên mới.');return;}
             ensureReporterExists(nv);
             var inp=document.getElementById('rpReporterNew');if(inp){inp.value='';}
             renderReporterPick(nv);
             gen();
+            hasPendingLocalEdits=true;
+            setSaveStatus('Đang lưu chia sẻ...','saving');
+            var mv=getMY();
+            saveAll(mv.m,mv.y);
             toast('Đã thêm nhân viên "'+nv+'" — bảng mới hiển thị bên phải.');
         });
         document.getElementById('rpBtnRenameReporter').addEventListener('click',function(){
+            if(!isSuperadminUser){alert('Chỉ quản trị cao nhất mới được đổi tên nhân viên.');return;}
             var oldName=getReporter();var newName=getNewReporterInput();
             if(!newName){alert('Nhập tên mới vào ô nhập liệu bên cạnh.');return;}
             if(!confirm('Đổi tên "'+oldName+'" → "'+newName+'"?\nDữ liệu cũ sẽ chuyển sang tên mới.'))return;
             var nn=renameReporter(oldName,newName);
             if(!nn){alert('Tên không hợp lệ hoặc đã tồn tại.');return;}
             var inp=document.getElementById('rpReporterNew');if(inp)inp.value='';
-            renderReporterPick(nn);gen();toast('Đã đổi tên thành "'+nn+'"!');
+            renderReporterPick(nn);
+            gen();
+            hasPendingLocalEdits=true;
+            setSaveStatus('Đang lưu chia sẻ...','saving');
+            var mv=getMY();
+            saveAll(mv.m,mv.y);
+            toast('Đã đổi tên thành "'+nn+'"!');
         });
         document.getElementById('rpBtnDelReporter').addEventListener('click',function(){
+            if(!isSuperadminUser){alert('Chỉ quản trị cao nhất mới được xóa nhân viên.');return;}
             var current=getReporter();var list=loadReporters();
             if(list.length<=1){alert('Cần giữ lại ít nhất 1 nhân viên.');return;}
             if(!confirm('Xóa nhân viên "'+current+'" khỏi danh sách?')){return;}
             list=list.filter(function(n){return n!==current;});saveReporters(list);
-            renderReporterPick(list[0]);gen();toast('Đã xóa nhân viên khỏi danh sách.');
+            renderReporterPick(list[0]);
+            gen();
+            hasPendingLocalEdits=true;
+            setSaveStatus('Đang lưu chia sẻ...','saving');
+            var mv=getMY();
+            saveAll(mv.m,mv.y);
+            toast('Đã xóa nhân viên khỏi danh sách.');
         });
         document.getElementById('rpBtnSave').addEventListener('click',function(){
             hasPendingLocalEdits=true;
