@@ -1007,7 +1007,28 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const insightWeeklyStamp = document.getElementById('insightWeeklyStamp');
         const insightDateFromInput = document.getElementById('insightDateFrom');
         const insightDateToInput = document.getElementById('insightDateTo');
+        const topAreaSheetUrlInput = document.getElementById('topAreaSheetUrl');
+        const topAreaSheetApplyBtn = document.getElementById('topAreaSheetApply');
+        const topAreaSheetStatus = document.getElementById('topAreaSheetStatus');
+        const districtSelects = [
+            document.getElementById('districtSelect1'),
+            document.getElementById('districtSelect2'),
+            document.getElementById('districtSelect3')
+        ];
+        const districtGrowthInputs = [
+            document.getElementById('districtGrowth1'),
+            document.getElementById('districtGrowth2'),
+            document.getElementById('districtGrowth3')
+        ];
+        const districtRevenueInputs = [
+            document.getElementById('districtRevenue1'),
+            document.getElementById('districtRevenue2'),
+            document.getElementById('districtRevenue3')
+        ];
         const chartRefreshMs = 6000;
+        const topAreaRefreshMs = 10 * 60 * 1000;
+        const topAreaSheetConfigKey = 'homeTopAreaSheetConfigV1';
+        const topAreaSheetDataKey = 'homeTopAreaSheetDataV1';
         let homeReportDb = null;
         let homeReportUnsub = null;
 
@@ -1043,6 +1064,306 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
         const loadDashboardState = function() {
             return safeParseState(localStorage.getItem(dashboardStorageKey));
+        };
+
+        const loadTopAreaSheetConfig = function() {
+            return safeParseState(localStorage.getItem(topAreaSheetConfigKey));
+        };
+
+        const saveTopAreaSheetConfig = function(patch) {
+            const base = loadTopAreaSheetConfig();
+            const next = Object.assign({}, base, patch || {});
+            localStorage.setItem(topAreaSheetConfigKey, JSON.stringify(next));
+            return next;
+        };
+
+        const setTopAreaStatus = function(message, type) {
+            if (!topAreaSheetStatus) {
+                return;
+            }
+            topAreaSheetStatus.textContent = message || 'Chưa liên kết Google Sheet. Hệ thống đang dùng dữ liệu nhập tay.';
+            topAreaSheetStatus.style.color = (type === 'bad') ? '#b91c1c' : (type === 'good' ? '#166534' : '#7f3052');
+        };
+
+        const extractSheetId = function(rawUrl) {
+            const text = String(rawUrl || '').trim();
+            if (!text) {
+                return '';
+            }
+            const m = text.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+            return m ? m[1] : '';
+        };
+
+        const buildSheetCsvUrl = function(sheetId, gid) {
+            if (!sheetId) {
+                return '';
+            }
+            const safeGid = String(gid || '0').trim() || '0';
+            return 'https://docs.google.com/spreadsheets/d/' + sheetId + '/export?format=csv&gid=' + encodeURIComponent(safeGid);
+        };
+
+        const parseCsvLine = function(line) {
+            const out = [];
+            let current = '';
+            let inQuotes = false;
+            for (let i = 0; i < line.length; i += 1) {
+                const ch = line[i];
+                if (ch === '"') {
+                    if (inQuotes && line[i + 1] === '"') {
+                        current += '"';
+                        i += 1;
+                    } else {
+                        inQuotes = !inQuotes;
+                    }
+                    continue;
+                }
+                if (ch === ',' && !inQuotes) {
+                    out.push(current);
+                    current = '';
+                    continue;
+                }
+                current += ch;
+            }
+            out.push(current);
+            return out;
+        };
+
+        const parseCsvText = function(csvText) {
+            const lines = String(csvText || '').replace(/\r/g, '').split('\n').filter(function(line) {
+                return String(line || '').trim() !== '';
+            });
+            if (!lines.length) {
+                return { headers: [], rows: [] };
+            }
+            const headers = parseCsvLine(lines[0]).map(function(h) { return String(h || '').trim(); });
+            const rows = lines.slice(1).map(function(line) {
+                const cells = parseCsvLine(line);
+                const row = {};
+                headers.forEach(function(header, idx) {
+                    row[header] = String(cells[idx] || '').trim();
+                });
+                return row;
+            });
+            return { headers: headers, rows: rows };
+        };
+
+        const normalizeHeader = function(text) {
+            return String(text || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/đ/g, 'd')
+                .replace(/[^a-z0-9]/g, '');
+        };
+
+        const findHeaderKey = function(headers, aliases) {
+            const normalizedAliases = (aliases || []).map(normalizeHeader);
+            const found = (headers || []).find(function(header) {
+                return normalizedAliases.indexOf(normalizeHeader(header)) !== -1;
+            });
+            return found || '';
+        };
+
+        const parseFlexibleDate = function(raw) {
+            const text = String(raw || '').trim();
+            if (!text) {
+                return null;
+            }
+            let m = text.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+            if (m) {
+                return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+            }
+            m = text.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+            if (m) {
+                return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+            }
+            m = text.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+            if (m) {
+                return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+            }
+            const parsed = new Date(text);
+            if (!Number.isNaN(parsed.getTime())) {
+                return new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+            }
+            return null;
+        };
+
+        const toDateAtStart = function(inputDate) {
+            const m = String(inputDate || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+            if (!m) {
+                return null;
+            }
+            return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+        };
+
+        const addDays = function(dateObj, days) {
+            const d = new Date(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate());
+            d.setDate(d.getDate() + Number(days || 0));
+            return d;
+        };
+
+        const toAreaMoney = function(value) {
+            return (Number(value) || 0).toLocaleString('vi-VN');
+        };
+
+        const toAreaGrowthText = function(value) {
+            const num = Number(value) || 0;
+            const sign = num > 0 ? '+' : '';
+            return sign + num.toFixed(1) + '%';
+        };
+
+        const applyTopAreaRowsToUi = function(rows) {
+            const list = Array.isArray(rows) ? rows : [];
+            for (let i = 0; i < 3; i += 1) {
+                const item = list[i] || null;
+                if (districtSelects[i]) {
+                    districtSelects[i].value = item ? item.area : '';
+                }
+                if (districtGrowthInputs[i]) {
+                    districtGrowthInputs[i].value = item ? toAreaGrowthText(item.growthPct) : '';
+                }
+                if (districtRevenueInputs[i]) {
+                    districtRevenueInputs[i].value = item ? toAreaMoney(item.revenue) : '';
+                }
+            }
+        };
+
+        const deriveTopAreaRows = function(sourceRows, range) {
+            const fromDate = toDateAtStart(range && range.from);
+            const toDate = toDateAtStart(range && range.to);
+            if (!fromDate || !toDate) {
+                return [];
+            }
+
+            const dateDiffDays = Math.max(0, Math.round((toDate - fromDate) / 86400000));
+            const prevFrom = addDays(fromDate, -(dateDiffDays + 1));
+            const prevTo = addDays(fromDate, -1);
+            const curMap = {};
+            const prevMap = {};
+
+            (sourceRows || []).forEach(function(row) {
+                const area = String(row.__area || '').trim();
+                if (!area) {
+                    return;
+                }
+                const date = parseFlexibleDate(row.__date);
+                if (!date) {
+                    return;
+                }
+                const hd = Number(row.__hd || 0);
+                const revenue = Number(row.__revenue || 0);
+                if (date >= fromDate && date <= toDate) {
+                    if (!curMap[area]) {
+                        curMap[area] = { area: area, hd: 0, revenue: 0 };
+                    }
+                    curMap[area].hd += hd;
+                    curMap[area].revenue += revenue;
+                } else if (date >= prevFrom && date <= prevTo) {
+                    if (!prevMap[area]) {
+                        prevMap[area] = { area: area, hd: 0 };
+                    }
+                    prevMap[area].hd += hd;
+                }
+            });
+
+            return Object.keys(curMap).map(function(area) {
+                const cur = curMap[area] || { hd: 0, revenue: 0 };
+                const prevHd = (prevMap[area] && prevMap[area].hd) || 0;
+                const growthPct = prevHd > 0 ? ((cur.hd - prevHd) / prevHd) * 100 : (cur.hd > 0 ? 100 : 0);
+                return {
+                    area: area,
+                    hd: cur.hd,
+                    revenue: cur.revenue,
+                    growthPct: growthPct
+                };
+            }).sort(function(a, b) {
+                if (b.hd !== a.hd) {
+                    return b.hd - a.hd;
+                }
+                return b.revenue - a.revenue;
+            }).slice(0, 3);
+        };
+
+        const normalizeSheetRows = function(parsed) {
+            const headers = parsed && parsed.headers ? parsed.headers : [];
+            const rows = parsed && parsed.rows ? parsed.rows : [];
+
+            const dateKey = findHeaderKey(headers, ['ngay', 'date', 'report_date', 'ngaybao cao', 'ngaybaocao']);
+            const areaKey = findHeaderKey(headers, ['khuvuc', 'khu vuc', 'quan', 'dia ban', 'district', 'area']);
+            const hdKey = findHeaderKey(headers, ['hd', 'sohd', 'so hd', 'hopdong', 'hop dong', 'contracts']);
+            const revenueKey = findHeaderKey(headers, ['doanhthu', 'doanh thu', 'revenue', 'dt']);
+
+            if (!dateKey || !areaKey || !hdKey) {
+                return { ok: false, rows: [] };
+            }
+
+            const normalizedRows = rows.map(function(row) {
+                return {
+                    __date: row[dateKey],
+                    __area: row[areaKey],
+                    __hd: parseNumber(row[hdKey]),
+                    __revenue: parseNumber(revenueKey ? row[revenueKey] : '0')
+                };
+            });
+
+            return { ok: true, rows: normalizedRows };
+        };
+
+        const updateTopAreaFromSheet = async function(options) {
+            const cfg = loadTopAreaSheetConfig();
+            const sheetUrl = String((cfg && cfg.url) || '').trim();
+            const sheetId = extractSheetId(sheetUrl);
+            const gid = String((cfg && cfg.gid) || '0').trim() || '0';
+            const currentRange = normalizeInsightRange(
+                insightDateFromInput ? insightDateFromInput.value : '',
+                insightDateToInput ? insightDateToInput.value : ''
+            );
+
+            if (!sheetId) {
+                return false;
+            }
+
+            const csvUrl = buildSheetCsvUrl(sheetId, gid) + '&_=' + Date.now();
+            try {
+                if (topAreaSheetApplyBtn) {
+                    topAreaSheetApplyBtn.disabled = true;
+                }
+                if (!(options && options.silent)) {
+                    setTopAreaStatus('Đang đọc dữ liệu Google Sheet...', '');
+                }
+
+                const response = await fetch(csvUrl);
+                const csvText = await response.text();
+                if (!response.ok) {
+                    throw new Error('Không đọc được Sheet (' + response.status + ').');
+                }
+
+                const parsed = parseCsvText(csvText);
+                const normalized = normalizeSheetRows(parsed);
+                if (!normalized.ok) {
+                    throw new Error('Thiếu cột bắt buộc: Ngày, Khu vực, HĐ.');
+                }
+
+                localStorage.setItem(topAreaSheetDataKey, JSON.stringify(normalized.rows));
+                const topRows = deriveTopAreaRows(normalized.rows, currentRange);
+                applyTopAreaRowsToUi(topRows);
+                setTopAreaStatus('Đã đồng bộ Google Sheet theo tuần ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
+                return true;
+            } catch (error) {
+                const cachedRows = safeParseState(localStorage.getItem(topAreaSheetDataKey));
+                const fallbackRows = Array.isArray(cachedRows) ? cachedRows : [];
+                if (fallbackRows.length) {
+                    applyTopAreaRowsToUi(deriveTopAreaRows(fallbackRows, currentRange));
+                    setTopAreaStatus('Google Sheet tạm lỗi, đang dùng dữ liệu đã lưu trước đó.', 'bad');
+                    return true;
+                }
+                setTopAreaStatus('Không thể đồng bộ Google Sheet: ' + (error && error.message ? error.message : 'Lỗi không xác định'), 'bad');
+                return false;
+            } finally {
+                if (topAreaSheetApplyBtn) {
+                    topAreaSheetApplyBtn.disabled = false;
+                }
+            }
         };
 
         const saveDashboardState = function(patch) {
@@ -1120,6 +1441,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     insightFrom: normalized.from,
                     insightTo: normalized.to
                 });
+                updateTopAreaFromSheet({ silent: true });
             }
         };
 
@@ -1255,6 +1577,21 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
         const initialDashboardState = loadDashboardState();
         applyInsightRange(initialDashboardState.insightFrom, initialDashboardState.insightTo, false);
+        const initialSheetCfg = loadTopAreaSheetConfig();
+        if (topAreaSheetUrlInput) {
+            topAreaSheetUrlInput.value = String(initialSheetCfg.url || '');
+        }
+        if (topAreaSheetApplyBtn) {
+            topAreaSheetApplyBtn.addEventListener('click', function() {
+                const nextUrl = topAreaSheetUrlInput ? topAreaSheetUrlInput.value.trim() : '';
+                const nextGid = String((initialSheetCfg && initialSheetCfg.gid) || '0').trim() || '0';
+                saveTopAreaSheetConfig({ url: nextUrl, gid: nextGid });
+                updateTopAreaFromSheet({ silent: false });
+            });
+        }
+        if (String(initialSheetCfg.url || '').trim()) {
+            updateTopAreaFromSheet({ silent: true });
+        }
         if (insightDateFromInput) {
             insightDateFromInput.addEventListener('change', function() {
                 applyInsightRange(insightDateFromInput.value, insightDateToInput ? insightDateToInput.value : '', true);
@@ -1478,6 +1815,9 @@ if (studioOutput && sidebarCategoryLinks.length) {
             }
         });
         setInterval(updateDashboardChart, chartRefreshMs);
+        setInterval(function() {
+            updateTopAreaFromSheet({ silent: true });
+        }, topAreaRefreshMs);
 
         bindHomeReportRealtime();
         hydrateHomeAlerts();

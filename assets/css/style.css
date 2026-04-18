@@ -1797,6 +1797,26 @@ header {
     margin-top: 0.55rem;
 }
 
+.sheet-link-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.5rem;
+    margin-bottom: 0.45rem;
+}
+
+.sheet-link-btn {
+    border: none;
+    cursor: pointer;
+    justify-content: center;
+}
+
+.sheet-link-status {
+    margin: 0 0 0.6rem;
+    font-size: 0.76rem;
+    font-weight: 700;
+    color: #7f3052;
+}
+
 .area-name {
     margin: 0 0 0.2rem;
     font-size: 0.95rem;
@@ -1881,6 +1901,10 @@ header {
     }
 
     .area-input-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .sheet-link-row {
         grid-template-columns: 1fr;
     }
 

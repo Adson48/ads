@@ -92,6 +92,11 @@
                         <h3>Top khu vực ký HĐ cao</h3>
                         <span class="insight-badge">3 quận tại Hà Nội</span>
                     </div>
+                    <div class="sheet-link-row">
+                        <input id="topAreaSheetUrl" class="area-input" type="url" placeholder="Dán link Google Sheet (public) để tự động cập nhật theo tuần">
+                        <button id="topAreaSheetApply" class="insight-badge sheet-link-btn" type="button">Liên kết Sheet</button>
+                    </div>
+                    <p id="topAreaSheetStatus" class="sheet-link-status">Chưa liên kết Google Sheet. Hệ thống đang dùng dữ liệu nhập tay.</p>
                     <div class="area-metrics">
                         <div class="area-item">
                             <label class="area-field-label" for="districtSelect1">Khu vực</label>
@@ -111,8 +116,8 @@
                                 <option>Hà Đông</option>
                             </select>
                             <div class="area-input-grid">
-                                <input class="area-input" type="text" inputmode="decimal" placeholder="% tăng trưởng">
-                                <input class="area-input" type="text" inputmode="numeric" placeholder="Doanh thu">
+                                <input id="districtGrowth1" class="area-input" type="text" inputmode="decimal" placeholder="% tăng trưởng">
+                                <input id="districtRevenue1" class="area-input" type="text" inputmode="numeric" placeholder="Doanh thu">
                             </div>
                         </div>
                         <div class="area-item">
@@ -133,8 +138,8 @@
                                 <option>Hà Đông</option>
                             </select>
                             <div class="area-input-grid">
-                                <input class="area-input" type="text" inputmode="decimal" placeholder="% tăng trưởng">
-                                <input class="area-input" type="text" inputmode="numeric" placeholder="Doanh thu">
+                                <input id="districtGrowth2" class="area-input" type="text" inputmode="decimal" placeholder="% tăng trưởng">
+                                <input id="districtRevenue2" class="area-input" type="text" inputmode="numeric" placeholder="Doanh thu">
                             </div>
                         </div>
                         <div class="area-item">
@@ -155,8 +160,8 @@
                                 <option>Hà Đông</option>
                             </select>
                             <div class="area-input-grid">
-                                <input class="area-input" type="text" inputmode="decimal" placeholder="% tăng trưởng">
-                                <input class="area-input" type="text" inputmode="numeric" placeholder="Doanh thu">
+                                <input id="districtGrowth3" class="area-input" type="text" inputmode="decimal" placeholder="% tăng trưởng">
+                                <input id="districtRevenue3" class="area-input" type="text" inputmode="numeric" placeholder="Doanh thu">
                             </div>
                         </div>
                     </div>
