@@ -1,0 +1,347 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Ads - Quan Tri Tai Nguyen</title>
+    <link rel="stylesheet" href="./assets/css/style.css?v=20260418-11">
+    <style>
+        .resource-page { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
+        .resource-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; }
+        .resource-title { margin:0; font-size:1.6rem; font-weight:800; color:#5f2d47; }
+        .resource-sub { margin:0; color:#6f4b5c; font-weight:600; font-size:.95rem; }
+        .resource-tabs { display:flex; gap:.65rem; flex-wrap:wrap; margin-bottom:1rem; }
+        .resource-tab-btn { border:1px solid rgba(199,81,124,.28); background:#fff; color:#7b3858; font-weight:700; border-radius:999px; padding:.5rem .95rem; cursor:pointer; font-family:inherit; }
+        .resource-tab-btn.active { background:linear-gradient(135deg,#c7517c,#a93c63); color:#fff; border-color:transparent; }
+        .resource-card { background:#fff; border:1px solid rgba(199,81,124,.2); border-radius:18px; box-shadow:0 10px 28px rgba(94,33,61,.08); padding:1rem; }
+        .resource-section { display:none; }
+        .resource-section.active { display:block; }
+        .resource-form { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; margin-bottom:1rem; }
+        .resource-form .field { display:grid; gap:.35rem; }
+        .resource-form .field.full { grid-column:1 / -1; }
+        .resource-label { font-size:.8rem; font-weight:800; color:#6f3a56; text-transform:uppercase; letter-spacing:.04em; }
+        .resource-input,.resource-select,.resource-textarea { width:100%; border:1px solid rgba(199,81,124,.3); border-radius:10px; padding:.55rem .65rem; font-size:.9rem; font-family:inherit; background:#fff; color:#2f2430; outline:none; }
+        .resource-textarea { min-height:70px; resize:vertical; }
+        .resource-actions { grid-column:1 / -1; display:flex; gap:.55rem; flex-wrap:wrap; }
+        .resource-btn { border:none; border-radius:10px; padding:.58rem .95rem; font-size:.87rem; font-weight:700; cursor:pointer; font-family:inherit; }
+        .resource-btn.primary { background:linear-gradient(135deg,#c7517c,#a93c63); color:#fff; }
+        .resource-btn.gray { background:#f5f2f4; color:#6d5a62; border:1px solid #e5d9de; }
+        .resource-table-wrap { overflow-x:auto; border:1px solid rgba(199,81,124,.22); border-radius:14px; background:#fff; }
+        .resource-table { width:100%; border-collapse:collapse; min-width:1150px; }
+        .resource-table th,.resource-table td { border-bottom:1px solid rgba(199,81,124,.14); padding:.52rem .58rem; text-align:left; vertical-align:top; font-size:.84rem; color:#3b2b34; white-space:nowrap; }
+        .resource-table th { background:#fff3f8; color:#7a3052; font-weight:800; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; position:sticky; top:0; z-index:1; }
+        .resource-table td.note-cell { white-space:normal; min-width:220px; max-width:340px; }
+        .resource-table .danger-btn { border:none; background:#fee2e2; color:#b91c1c; border-radius:8px; padding:.35rem .5rem; cursor:pointer; font-weight:700; font-size:.78rem; }
+        .resource-empty { padding:.9rem; color:#7c6a73; font-weight:600; font-size:.9rem; }
+        @media (max-width: 980px) { .resource-form { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+        @media (max-width: 640px) { .resource-form { grid-template-columns:1fr; } }
+    </style>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Marketing Ads</div>
+            <ul class="nav-links">
+                <li><a href="./index.html">Trang Chu</a></li>
+                <li><a href="./reports.html">Bao Cao</a></li>
+                <li><a href="./notifications.html">Thong Bao</a></li>
+                <li><a href="./ideas.html">Y Tuong</a></li>
+                <li><a href="./content.html">Noi Dung</a></li>
+                <li><a href="./resource-admin.html">Quan Tri Tai Nguyen</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="resource-page">
+        <div class="resource-head">
+            <h1 class="resource-title">Quan tri tai nguyen</h1>
+            <p class="resource-sub">Quan ly sheet thong tin via va sheet quan ly tai khoan quang cao</p>
+        </div>
+
+        <div class="resource-tabs">
+            <button class="resource-tab-btn active" type="button" data-tab="viaSection">Sheet thong tin via</button>
+            <button class="resource-tab-btn" type="button" data-tab="adSection">Sheet thong tin quan ly tai khoan quang cao</button>
+        </div>
+
+        <section id="viaSection" class="resource-section active resource-card">
+            <form id="viaForm" class="resource-form">
+                <div class="field"><label class="resource-label" for="viaId">ID VIA</label><input id="viaId" class="resource-input" type="text" required></div>
+                <div class="field"><label class="resource-label" for="viaUid">UID Facebook</label><input id="viaUid" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaOldPass">Mat khau cu</label><input id="viaOldPass" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaCurrentPass">Mat khau hien tai</label><input id="viaCurrentPass" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="via2fa">2FA (ma hoac key)</label><input id="via2fa" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaCheckDate">Ngay check</label><input id="viaCheckDate" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="viaOperator">Nguoi thuc hien</label><input id="viaOperator" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaStatus">Tinh trang</label>
+                    <select id="viaStatus" class="resource-select">
+                        <option value="Live">Live</option>
+                        <option value="Die">Die</option>
+                        <option value="Checkpoint">Checkpoint</option>
+                        <option value="Limit Ads">Limit Ads</option>
+                    </select>
+                </div>
+                <div class="field"><label class="resource-label" for="viaSource">Nguon mua</label><input id="viaSource" class="resource-input" type="text"></div>
+                <div class="field full"><label class="resource-label" for="viaNote">Ghi chu</label><textarea id="viaNote" class="resource-textarea"></textarea></div>
+                <div class="resource-actions">
+                    <button class="resource-btn primary" type="submit">Them via</button>
+                    <button class="resource-btn gray" type="reset">Lam moi form</button>
+                </div>
+            </form>
+            <div class="resource-table-wrap">
+                <table class="resource-table">
+                    <thead>
+                        <tr>
+                            <th>ID VIA</th>
+                            <th>UID Facebook</th>
+                            <th>Mat khau cu</th>
+                            <th>Mat khau hien tai</th>
+                            <th>2FA</th>
+                            <th>Ngay check</th>
+                            <th>Nguoi thuc hien</th>
+                            <th>Tinh trang</th>
+                            <th>Nguon mua</th>
+                            <th>Ghi chu</th>
+                            <th>Thao tac</th>
+                        </tr>
+                    </thead>
+                    <tbody id="viaTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <section id="adSection" class="resource-section resource-card">
+            <form id="adForm" class="resource-form">
+                <div class="field"><label class="resource-label" for="adId">ID Account</label><input id="adId" class="resource-input" type="text" required></div>
+                <div class="field"><label class="resource-label" for="adName">Ten tai khoan</label><input id="adName" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adBmId">ID BM (Business Manager)</label><input id="adBmId" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adPlatform">Nen tang</label>
+                    <select id="adPlatform" class="resource-select">
+                        <option value="Facebook">Facebook</option>
+                        <option value="TikTok">TikTok</option>
+                        <option value="Google">Google</option>
+                    </select>
+                </div>
+                <div class="field"><label class="resource-label" for="adCountry">Quoc gia</label><input id="adCountry" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adCurrency">Tien te</label><input id="adCurrency" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adThreshold">Nguong thanh toan</label><input id="adThreshold" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adPayMethod">Phuong thuc thanh toan</label><input id="adPayMethod" class="resource-input" type="text" placeholder="Visa / PayPal..."></div>
+                <div class="field"><label class="resource-label" for="adCardLast4">4 so cuoi the</label><input id="adCardLast4" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adCardOwner">Chu the</label><input id="adCardOwner" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adAddDate">Ngay add</label><input id="adAddDate" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="adStatus">Trang thai</label>
+                    <select id="adStatus" class="resource-select">
+                        <option value="Active">Active</option>
+                        <option value="Disabled">Disabled</option>
+                        <option value="Limit">Limit</option>
+                        <option value="Die">Die</option>
+                    </select>
+                </div>
+                <div class="field"><label class="resource-label" for="adManager">Nguoi quan ly</label><input id="adManager" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adLink">Link truy cap</label><input id="adLink" class="resource-input" type="url"></div>
+                <div class="field"><label class="resource-label" for="adGrantDate">Ngay cap quyen</label><input id="adGrantDate" class="resource-input" type="date"></div>
+                <div class="field full"><label class="resource-label" for="adNote">Ghi chu</label><textarea id="adNote" class="resource-textarea"></textarea></div>
+                <div class="resource-actions">
+                    <button class="resource-btn primary" type="submit">Them tai khoan quang cao</button>
+                    <button class="resource-btn gray" type="reset">Lam moi form</button>
+                </div>
+            </form>
+            <div class="resource-table-wrap">
+                <table class="resource-table">
+                    <thead>
+                        <tr>
+                            <th>ID Account</th>
+                            <th>Ten tai khoan</th>
+                            <th>ID BM</th>
+                            <th>Nen tang</th>
+                            <th>Quoc gia</th>
+                            <th>Tien te</th>
+                            <th>Nguong thanh toan</th>
+                            <th>Phuong thuc thanh toan</th>
+                            <th>4 so cuoi the</th>
+                            <th>Chu the</th>
+                            <th>Ngay add</th>
+                            <th>Trang thai</th>
+                            <th>Nguoi quan ly</th>
+                            <th>Link truy cap</th>
+                            <th>Ngay cap quyen</th>
+                            <th>Ghi chu</th>
+                            <th>Thao tac</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="./assets/js/firebase-config.js?v=20260418-24"></script>
+    <script src="./assets/js/script.js?v=20260418-24"></script>
+    <script>
+        (function () {
+            var viaKey = 'resourceViaSheetV1';
+            var adKey = 'resourceAdAccountSheetV1';
+            var viaForm = document.getElementById('viaForm');
+            var viaTableBody = document.getElementById('viaTableBody');
+            var adForm = document.getElementById('adForm');
+            var adTableBody = document.getElementById('adTableBody');
+            var tabButtons = document.querySelectorAll('[data-tab]');
+
+            tabButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var target = this.getAttribute('data-tab');
+                    document.querySelectorAll('.resource-section').forEach(function (sec) {
+                        sec.classList.toggle('active', sec.id === target);
+                    });
+                    tabButtons.forEach(function (b) { b.classList.toggle('active', b === btn); });
+                });
+            });
+
+            var safeRead = function (key) {
+                try {
+                    var arr = JSON.parse(localStorage.getItem(key) || '[]');
+                    return Array.isArray(arr) ? arr : [];
+                } catch (e) {
+                    return [];
+                }
+            };
+
+            var safeWrite = function (key, rows) {
+                localStorage.setItem(key, JSON.stringify(rows || []));
+            };
+
+            var toCell = function (val) {
+                return String(val || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            };
+
+            var renderVia = function () {
+                if (!viaTableBody) { return; }
+                var rows = safeRead(viaKey);
+                if (!rows.length) {
+                    viaTableBody.innerHTML = '<tr><td colspan="11" class="resource-empty">Chua co du lieu via.</td></tr>';
+                    return;
+                }
+                viaTableBody.innerHTML = rows.map(function (row) {
+                    return '<tr>' +
+                        '<td>' + toCell(row.idVia) + '</td>' +
+                        '<td>' + toCell(row.uidFacebook) + '</td>' +
+                        '<td>' + toCell(row.oldPassword) + '</td>' +
+                        '<td>' + toCell(row.currentPassword) + '</td>' +
+                        '<td>' + toCell(row.twoFA) + '</td>' +
+                        '<td>' + toCell(row.checkDate) + '</td>' +
+                        '<td>' + toCell(row.operator) + '</td>' +
+                        '<td>' + toCell(row.status) + '</td>' +
+                        '<td>' + toCell(row.source) + '</td>' +
+                        '<td class="note-cell">' + toCell(row.note) + '</td>' +
+                        '<td><button class="danger-btn" type="button" data-via-del="' + toCell(row.id) + '">Xoa</button></td>' +
+                    '</tr>';
+                }).join('');
+
+                viaTableBody.querySelectorAll('[data-via-del]').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var id = this.getAttribute('data-via-del');
+                        var next = safeRead(viaKey).filter(function (r) { return String(r.id) !== String(id); });
+                        safeWrite(viaKey, next);
+                        renderVia();
+                    });
+                });
+            };
+
+            var renderAd = function () {
+                if (!adTableBody) { return; }
+                var rows = safeRead(adKey);
+                if (!rows.length) {
+                    adTableBody.innerHTML = '<tr><td colspan="17" class="resource-empty">Chua co du lieu tai khoan quang cao.</td></tr>';
+                    return;
+                }
+                adTableBody.innerHTML = rows.map(function (row) {
+                    return '<tr>' +
+                        '<td>' + toCell(row.idAccount) + '</td>' +
+                        '<td>' + toCell(row.accountName) + '</td>' +
+                        '<td>' + toCell(row.bmId) + '</td>' +
+                        '<td>' + toCell(row.platform) + '</td>' +
+                        '<td>' + toCell(row.country) + '</td>' +
+                        '<td>' + toCell(row.currency) + '</td>' +
+                        '<td>' + toCell(row.paymentThreshold) + '</td>' +
+                        '<td>' + toCell(row.paymentMethod) + '</td>' +
+                        '<td>' + toCell(row.cardLast4) + '</td>' +
+                        '<td>' + toCell(row.cardOwner) + '</td>' +
+                        '<td>' + toCell(row.addDate) + '</td>' +
+                        '<td>' + toCell(row.status) + '</td>' +
+                        '<td>' + toCell(row.manager) + '</td>' +
+                        '<td><a href="' + toCell(row.accessLink) + '" target="_blank" rel="noopener noreferrer">Mo link</a></td>' +
+                        '<td>' + toCell(row.grantDate) + '</td>' +
+                        '<td class="note-cell">' + toCell(row.note) + '</td>' +
+                        '<td><button class="danger-btn" type="button" data-ad-del="' + toCell(row.id) + '">Xoa</button></td>' +
+                    '</tr>';
+                }).join('');
+
+                adTableBody.querySelectorAll('[data-ad-del]').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        var id = this.getAttribute('data-ad-del');
+                        var next = safeRead(adKey).filter(function (r) { return String(r.id) !== String(id); });
+                        safeWrite(adKey, next);
+                        renderAd();
+                    });
+                });
+            };
+
+            if (viaForm) {
+                viaForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    var rows = safeRead(viaKey);
+                    rows.unshift({
+                        id: Date.now() + '_' + Math.random().toString(36).slice(2),
+                        idVia: document.getElementById('viaId').value.trim(),
+                        uidFacebook: document.getElementById('viaUid').value.trim(),
+                        oldPassword: document.getElementById('viaOldPass').value.trim(),
+                        currentPassword: document.getElementById('viaCurrentPass').value.trim(),
+                        twoFA: document.getElementById('via2fa').value.trim(),
+                        checkDate: document.getElementById('viaCheckDate').value,
+                        operator: document.getElementById('viaOperator').value.trim(),
+                        status: document.getElementById('viaStatus').value,
+                        source: document.getElementById('viaSource').value.trim(),
+                        note: document.getElementById('viaNote').value.trim()
+                    });
+                    safeWrite(viaKey, rows);
+                    viaForm.reset();
+                    renderVia();
+                });
+            }
+
+            if (adForm) {
+                adForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    var rows = safeRead(adKey);
+                    rows.unshift({
+                        id: Date.now() + '_' + Math.random().toString(36).slice(2),
+                        idAccount: document.getElementById('adId').value.trim(),
+                        accountName: document.getElementById('adName').value.trim(),
+                        bmId: document.getElementById('adBmId').value.trim(),
+                        platform: document.getElementById('adPlatform').value,
+                        country: document.getElementById('adCountry').value.trim(),
+                        currency: document.getElementById('adCurrency').value.trim(),
+                        paymentThreshold: document.getElementById('adThreshold').value.trim(),
+                        paymentMethod: document.getElementById('adPayMethod').value.trim(),
+                        cardLast4: document.getElementById('adCardLast4').value.trim(),
+                        cardOwner: document.getElementById('adCardOwner').value.trim(),
+                        addDate: document.getElementById('adAddDate').value,
+                        status: document.getElementById('adStatus').value,
+                        manager: document.getElementById('adManager').value.trim(),
+                        accessLink: document.getElementById('adLink').value.trim(),
+                        grantDate: document.getElementById('adGrantDate').value,
+                        note: document.getElementById('adNote').value.trim()
+                    });
+                    safeWrite(adKey, rows);
+                    adForm.reset();
+                    renderAd();
+                });
+            }
+
+            renderVia();
+            renderAd();
+        }());
+    </script>
+</body>
+</html>
