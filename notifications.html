@@ -1,0 +1,90 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Ads - Thông Báo</title>
+    <link rel="stylesheet" href="./assets/css/style.css?v=20260416-01">
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">Marketing Ads</div>
+            <ul class="nav-links">
+                <li><a href="./index.html">Trang Chủ</a></li>
+                <li><a href="./reports.html">Báo Cáo</a></li>
+                <li><a href="./notifications.html">Thông Báo</a></li>
+                <li><a href="./ideas.html">Ý Tưởng</a></li>
+                <li><a href="./content.html">Nội Dung</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="hero-content">
+                <h1>Thông Báo Quan Trọng</h1>
+                <p>Cập nhật tin tức và thông báo mới nhất về marketing và quảng cáo</p>
+            </div>
+        </section>
+
+        <div class="notifications-container">
+            <section class="section notification-section notification-section-list">
+                <h2>Danh Sách Thông Báo</h2>
+                <div class="notification-list" id="notificationList">
+                    <!-- Thông báo sẽ được hiển thị ở đây -->
+                </div>
+            </section>
+
+            <section class="section notification-section notification-section-form">
+                <h2>Đăng Thông Báo Mới</h2>
+                <div class="notification-form">
+                    <form id="notificationForm">
+                        <div class="form-group">
+                            <label for="title">Tiêu Đề Thông Báo</label>
+                            <input type="text" id="title" name="title" placeholder="Nhập tiêu đề thông báo..." required class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="content">Nội Dung Thông Báo</label>
+                            <textarea id="content" name="content" placeholder="Nhập nội dung thông báo..." rows="6" required class="form-textarea"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="notifImage">Chèn Ảnh (tuỳ chọn)</label>
+                            <input type="file" id="notifImage" name="notifImage" accept="image/*" class="form-input" style="padding:0.45rem 0.75rem;cursor:pointer;">
+                            <div id="imagePreview" style="margin-top:0.6rem;"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="telegramBotToken">Telegram Bot Token</label>
+                            <input type="text" id="telegramBotToken" name="telegramBotToken" placeholder="VD: 123456:ABC-DEF..." class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="telegramChatId">Telegram Chat ID</label>
+                            <input type="text" id="telegramChatId" name="telegramChatId" placeholder="VD: -1001234567890" class="form-input">
+                        </div>
+                        <div class="form-group" style="display:flex;align-items:center;gap:0.55rem;">
+                            <input type="checkbox" id="sendToTelegram" checked style="width:18px;height:18px;accent-color:#c7517c;cursor:pointer;">
+                            <label for="sendToTelegram" style="margin:0;cursor:pointer;">Gửi thông báo lên Telegram sau khi đăng</label>
+                        </div>
+                        <div class="form-group" style="margin-top:-0.3rem;">
+                            <button type="button" id="saveTelegramConfigBtn" class="submit-btn" style="padding:0.72rem 1.2rem;">Lưu cấu hình Telegram</button>
+                            <button type="button" id="testTelegramBtn" class="submit-btn" style="padding:0.72rem 1.2rem;margin-left:0.5rem;">Test Telegram</button>
+                            <p id="telegramConfigStatus" style="margin:0.55rem 0 0;color:#7d3650;font-weight:600;font-size:0.9rem;"></p>
+                            <pre id="telegramDebugOutput" style="margin:0.55rem 0 0;padding:0.65rem 0.75rem;max-height:180px;overflow:auto;border-radius:10px;background:#fff7fa;border:1px solid rgba(199,81,124,0.2);font-size:0.82rem;color:#5f2c3c;white-space:pre-wrap;"></pre>
+                        </div>
+                        <button type="submit" class="submit-btn">Đăng Thông Báo</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Marketing Ads. Tất cả quyền được bảo lưu.</p>
+    </footer>
+
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
+    <script src="./assets/js/firebase-config.js?v=20260418-18"></script>
+    <script src="./assets/js/script.js?v=20260418-18"></script>
+</body>
+</html>

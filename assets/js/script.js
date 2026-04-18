@@ -2135,8 +2135,42 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     return true;
                 }
 
+                // Staff can fetch and calculate from the shared Google Sheet link in read-only mode.
+                if (sheetId) {
+                    try {
+                        const csvText = await fetchSheetCsvText(sheetId, gid);
+                        const parsed = parseCsvText(csvText);
+                        const normalized = normalizeSheetRows(parsed);
+                        if (!normalized.ok) {
+                            throw new Error('Thiếu cột bắt buộc: Ngày, Khu vực, HĐ.');
+                        }
+
+                        localStorage.setItem(topAreaSheetDataKey, JSON.stringify(normalized.rows));
+                        const rowsFromSheet = deriveTopAreaRows(normalized.rows, currentRange);
+                        if (rowsFromSheet.length) {
+                            applyTopAreaRowsToUi(rowsFromSheet);
+                            if (!(options && options.silent)) {
+                                setTopAreaStatus('Đã tải dữ liệu Google Sheet tuần từ ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
+                            }
+                            return true;
+                        }
+                    } catch (e) {
+                        // Continue to fallback from cached rows below.
+                    }
+                }
+
+                const cachedRowsForStaff = safeParseState(localStorage.getItem(topAreaSheetDataKey));
+                const cachedListForStaff = Array.isArray(cachedRowsForStaff) ? cachedRowsForStaff : [];
+                if (cachedListForStaff.length) {
+                    applyTopAreaRowsToUi(deriveTopAreaRows(cachedListForStaff, currentRange));
+                    if (!(options && options.silent)) {
+                        setTopAreaStatus('Đang dùng dữ liệu Google Sheet đã lưu để thống kê tuần ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', '');
+                    }
+                    return true;
+                }
+
                 if (!(options && options.silent)) {
-                    setTopAreaStatus('Tuần này chưa có dữ liệu thống kê sẵn. Hãy chọn tuần khác hoặc chờ superadmin cập nhật.', '');
+                    setTopAreaStatus('Không lấy được dữ liệu Google Sheet cho tuần đang chọn. Vui lòng thử lại hoặc chọn tuần khác.', 'bad');
                 }
                 return false;
             }
