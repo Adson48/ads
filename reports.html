@@ -1125,6 +1125,15 @@ Doanh thu: 45000000</pre>
                 saveAll(mv.m,mv.y);
             },850);
         }
+        async function saveCurrentMonthImmediately(){
+            var mv=getMY();
+            var key=cacheKey(mv.m,mv.y);
+            hasPendingLocalEdits=true;
+            setSaveStatus('Đang lưu chia sẻ...','saving');
+            saveAll(mv.m,mv.y);
+            clearTimeout(saveTimers[key]);
+            return saveRemoteMonthStore(mv.m,mv.y,getMonthStoreSync(mv.m,mv.y));
+        }
 
         function recalcAll(){
             var emps=loadReporters();
@@ -1397,7 +1406,7 @@ Doanh thu: 45000000</pre>
         document.getElementById('rpReporterPick').addEventListener('change',function(){
             // dropdown now just tracks which employee to rename/delete
         });
-        document.getElementById('rpBtnAddReporter').addEventListener('click',function(){
+        document.getElementById('rpBtnAddReporter').addEventListener('click',async function(){
             if(!isSuperadminUser){alert('Chỉ quản trị cao nhất mới được thêm nhân viên.');return;}
             var nv=getNewReporterInput();
             if(!nv){alert('Vui lòng nhập tên nhân viên mới.');return;}
@@ -1405,13 +1414,11 @@ Doanh thu: 45000000</pre>
             var inp=document.getElementById('rpReporterNew');if(inp){inp.value='';}
             renderReporterPick(nv);
             gen();
-            hasPendingLocalEdits=true;
-            setSaveStatus('Đang lưu chia sẻ...','saving');
-            var mv=getMY();
-            saveAll(mv.m,mv.y);
+            var ok=await saveCurrentMonthImmediately();
+            if(!ok){toast('Thêm NV nhưng chưa đồng bộ shared. Thử lại.');return;}
             toast('Đã thêm nhân viên "'+nv+'" — bảng mới hiển thị bên phải.');
         });
-        document.getElementById('rpBtnRenameReporter').addEventListener('click',function(){
+        document.getElementById('rpBtnRenameReporter').addEventListener('click',async function(){
             if(!isSuperadminUser){alert('Chỉ quản trị cao nhất mới được đổi tên nhân viên.');return;}
             var oldName=getReporter();var newName=getNewReporterInput();
             if(!newName){alert('Nhập tên mới vào ô nhập liệu bên cạnh.');return;}
@@ -1421,13 +1428,11 @@ Doanh thu: 45000000</pre>
             var inp=document.getElementById('rpReporterNew');if(inp)inp.value='';
             renderReporterPick(nn);
             gen();
-            hasPendingLocalEdits=true;
-            setSaveStatus('Đang lưu chia sẻ...','saving');
-            var mv=getMY();
-            saveAll(mv.m,mv.y);
+            var ok=await saveCurrentMonthImmediately();
+            if(!ok){toast('Đổi tên NV nhưng chưa đồng bộ shared. Thử lại.');return;}
             toast('Đã đổi tên thành "'+nn+'"!');
         });
-        document.getElementById('rpBtnDelReporter').addEventListener('click',function(){
+        document.getElementById('rpBtnDelReporter').addEventListener('click',async function(){
             if(!isSuperadminUser){alert('Chỉ quản trị cao nhất mới được xóa nhân viên.');return;}
             var current=getReporter();var list=loadReporters();
             if(list.length<=1){alert('Cần giữ lại ít nhất 1 nhân viên.');return;}
@@ -1435,10 +1440,8 @@ Doanh thu: 45000000</pre>
             list=list.filter(function(n){return n!==current;});saveReporters(list);
             renderReporterPick(list[0]);
             gen();
-            hasPendingLocalEdits=true;
-            setSaveStatus('Đang lưu chia sẻ...','saving');
-            var mv=getMY();
-            saveAll(mv.m,mv.y);
+            var ok=await saveCurrentMonthImmediately();
+            if(!ok){toast('Xóa NV nhưng chưa đồng bộ shared. Thử lại.');return;}
             toast('Đã xóa nhân viên khỏi danh sách.');
         });
         document.getElementById('rpBtnSave').addEventListener('click',function(){
