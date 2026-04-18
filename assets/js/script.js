@@ -2160,6 +2160,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
             const sheetUrl = String((cfg && cfg.url) || '').trim();
             const sheetId = extractSheetId(sheetUrl);
             const gid = String((cfg && cfg.gid) || '0').trim() || '0';
+            const forceSyncFromSheet = !!(options && options.forceSyncFromSheet);
             const currentRange = normalizeInsightRange(
                 insightDateFromInput ? insightDateFromInput.value : '',
                 insightDateToInput ? insightDateToInput.value : ''
@@ -2272,7 +2273,49 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 return false;
             }
 
+            if (!forceSyncFromSheet) {
+                if (historyEntry && Array.isArray(historyEntry.rows) && historyEntry.rows.length) {
+                    applyTopAreaRowsToUi(historyEntry.rows);
+                    if (!(options && options.silent)) {
+                        setTopAreaStatus('Đã tải dữ liệu tuần từ ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
+                    }
+                    return true;
+                }
+
+                if (
+                    sharedLocalResult &&
+                    Array.isArray(sharedLocalResult.rows) &&
+                    sharedLocalResult.rows.length &&
+                    String(sharedLocalResult.from || '') === currentRange.from &&
+                    String(sharedLocalResult.to || '') === currentRange.to
+                ) {
+                    applyTopAreaRowsToUi(sharedLocalResult.rows);
+                    if (!(options && options.silent)) {
+                        setTopAreaStatus('Đã đồng bộ dữ liệu top HĐ từ ' + toViDate(sharedLocalResult.from) + ' đến ' + toViDate(sharedLocalResult.to) + '.', 'good');
+                    }
+                    return true;
+                }
+
+                const cachedRowsForAdmin = safeParseState(localStorage.getItem(topAreaSheetDataKey));
+                const cachedListForAdmin = Array.isArray(cachedRowsForAdmin) ? cachedRowsForAdmin : [];
+                if (cachedListForAdmin.length) {
+                    applyTopAreaRowsToUi(deriveTopAreaRows(cachedListForAdmin, currentRange));
+                    if (!(options && options.silent)) {
+                        setTopAreaStatus('Đang hiển thị dữ liệu đã đồng bộ trước đó. Bấm "Đồng bộ Sheet" để lấy dữ liệu mới.', '');
+                    }
+                    return true;
+                }
+
+                if (!(options && options.silent)) {
+                    setTopAreaStatus('Đã liên kết Google Sheet. Bấm "Đồng bộ Sheet" để cập nhật dữ liệu mới nhất.', '');
+                }
+                return false;
+            }
+
             if (!sheetId) {
+                if (!(options && options.silent)) {
+                    setTopAreaStatus('Vui lòng liên kết Google Sheet trước khi bấm Đồng bộ.', 'bad');
+                }
                 return false;
             }
 
@@ -2662,7 +2705,8 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 } catch (e) {
                     setTopAreaStatus('Đã lưu cục bộ, nhưng chưa đồng bộ được cấu hình lên Firestore.', 'bad');
                 }
-                updateTopAreaFromSheet({ silent: false });
+                setTopAreaStatus('Đã liên kết Google Sheet. Bấm "Đồng bộ Sheet" để cập nhật dữ liệu mới nhất.', '');
+                updateTopAreaFromSheet({ silent: true });
             });
         }
         if (topAreaSheetSyncBtn) {
@@ -2678,10 +2722,10 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     setTopAreaStatus('Vui lòng liên kết Google Sheet trước khi bấm Đồng bộ.', 'bad');
                     return;
                 }
-                updateTopAreaFromSheet({ silent: false });
+                updateTopAreaFromSheet({ silent: false, forceSyncFromSheet: true });
             });
         }
-        // Always try to apply cached shared result or fetch from sheet on init
+        // On init only apply available local/realtime data; do not auto-fetch Sheet.
         updateTopAreaFromSheet({ silent: true });
         if (insightDateFromInput) {
             insightDateFromInput.addEventListener('change', function() {
