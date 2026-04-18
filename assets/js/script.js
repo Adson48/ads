@@ -1072,6 +1072,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const topAreaSheetConfigKey = 'homeTopAreaSheetConfigV1';
         const topAreaSheetDataKey = 'homeTopAreaSheetDataV1';
         const topAreaSharedResultKey = 'homeTopAreaSharedWeeklyV1';
+        const topAreaSharedHistoryKey = 'homeTopAreaSharedWeeklyHistoryV1';
         const insightStrategyStorageKey = 'homeInsightStrategyContentV1';
         const authSessionKey = 'ma_session_v1';
         const authOwnerKey = 'ma_owner_id_v1';
@@ -1079,11 +1080,15 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const topAreaSheetConfigCollection = 'ma_config';
         const topAreaSheetConfigDocId = 'home_top_area_sheet_v1';
         const topAreaSharedResultField = 'latestTopAreaWeekly';
+        const topAreaSharedHistoryField = 'latestTopAreaWeeklyHistory';
+        const topAreaSharedHistoryLimit = 40;
         const insightStrategySharedField = 'latestInsightStrategyContent';
         let homeReportDb = null;
         let homeReportUnsub = null;
         let topAreaSheetConfigUnsub = null;
         let insightStrategySyncTimer = null;
+        let topAreaManualSyncTimer = null;
+        let topAreaCurrentRowsCache = [];
 
         const parseNumber = function(raw) {
             return Number(String(raw || '').replace(/[^0-9]/g, '')) || 0;
@@ -1138,6 +1143,42 @@ if (studioOutput && sidebarCategoryLinks.length) {
             const normalizedPayload = (payload && typeof payload === 'object') ? payload : {};
             localStorage.setItem(topAreaSharedResultKey, JSON.stringify(normalizedPayload));
             return normalizedPayload;
+        };
+
+        const loadTopAreaSharedHistory = function() {
+            const history = safeParseState(localStorage.getItem(topAreaSharedHistoryKey));
+            return (history && typeof history === 'object') ? history : {};
+        };
+
+        const saveTopAreaSharedHistory = function(history) {
+            const safeHistory = (history && typeof history === 'object') ? history : {};
+            localStorage.setItem(topAreaSharedHistoryKey, JSON.stringify(safeHistory));
+            return safeHistory;
+        };
+
+        const buildTopAreaHistoryKey = function(range) {
+            const normalized = normalizeInsightRange(range && range.from, range && range.to);
+            return normalized.from + '|' + normalized.to;
+        };
+
+        const upsertTopAreaHistory = function(history, entryPayload) {
+            const safeHistory = (history && typeof history === 'object') ? Object.assign({}, history) : {};
+            const entry = (entryPayload && typeof entryPayload === 'object') ? entryPayload : null;
+            if (!entry || !Array.isArray(entry.rows)) {
+                return safeHistory;
+            }
+            const key = buildTopAreaHistoryKey(entry);
+            safeHistory[key] = entry;
+            const orderedKeys = Object.keys(safeHistory).sort(function(a, b) {
+                const aTs = Number((safeHistory[a] && safeHistory[a].updatedAt) || 0);
+                const bTs = Number((safeHistory[b] && safeHistory[b].updatedAt) || 0);
+                return bTs - aTs;
+            });
+            const trimmed = {};
+            orderedKeys.slice(0, topAreaSharedHistoryLimit).forEach(function(k) {
+                trimmed[k] = safeHistory[k];
+            });
+            return trimmed;
         };
 
         const loadInsightStrategyContent = function() {
@@ -1234,6 +1275,26 @@ if (studioOutput && sidebarCategoryLinks.length) {
             if (linkRow) {
                 linkRow.style.display = isSuperadmin ? '' : 'none';
             }
+
+            districtSelects.forEach(function(selectElement) {
+                if (selectElement) {
+                    selectElement.disabled = !isSuperadmin;
+                }
+            });
+            districtGrowthInputs.forEach(function(inputElement) {
+                if (inputElement) {
+                    inputElement.disabled = !isSuperadmin;
+                }
+            });
+            districtRevenueInputs.forEach(function(inputElement) {
+                if (inputElement) {
+                    inputElement.disabled = !isSuperadmin;
+                }
+            });
+            if (topAreaWeekSelect) {
+                topAreaWeekSelect.disabled = false;
+            }
+
             if (topAreaSheetUrlInput) {
                 topAreaSheetUrlInput.disabled = !isSuperadmin;
             }
@@ -1277,16 +1338,96 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     growthPct: Number((item && item.growthPct) || 0)
                 };
             });
-            const payload = {};
-            payload[topAreaSharedResultField] = {
+            const entryPayload = {
                 from: normalized.from,
                 to: normalized.to,
                 rows: safeRows,
                 updatedAt: Date.now(),
                 updatedBy: String((safeParseState(localStorage.getItem(authSessionKey)).userId) || '')
             };
+
+            let baseHistory = loadTopAreaSharedHistory();
+            try {
+                const remoteSnap = await db.collection(topAreaSheetConfigCollection).doc(topAreaSheetConfigDocId).get();
+                const remoteCfg = remoteSnap && remoteSnap.exists ? (remoteSnap.data() || {}) : {};
+                if (remoteCfg && typeof remoteCfg[topAreaSharedHistoryField] === 'object') {
+                    baseHistory = Object.assign({}, remoteCfg[topAreaSharedHistoryField]);
+                }
+            } catch (e) {
+                // Keep syncing with local history if reading remote snapshot fails.
+            }
+
+            const mergedHistory = upsertTopAreaHistory(baseHistory, entryPayload);
+            saveTopAreaSharedResult(entryPayload);
+            saveTopAreaSharedHistory(mergedHistory);
+
+            const payload = {};
+            payload[topAreaSharedResultField] = entryPayload;
+            payload[topAreaSharedHistoryField] = mergedHistory;
             await db.collection(topAreaSheetConfigCollection).doc(topAreaSheetConfigDocId).set(payload, { merge: true });
             return true;
+        };
+
+        const parseGrowthPctInput = function(raw) {
+            const text = String(raw || '').trim().replace('%', '').replace(',', '.');
+            const normalized = text.replace(/[^0-9.-]/g, '');
+            const num = Number(normalized);
+            return Number.isFinite(num) ? num : 0;
+        };
+
+        const collectTopAreaRowsFromUi = function() {
+            return [0, 1, 2].map(function(index) {
+                const existing = topAreaCurrentRowsCache[index] || {};
+                const area = districtSelects[index] ? String(districtSelects[index].value || '').trim() : '';
+                return {
+                    area: area,
+                    hd: Number(existing.hd || 0),
+                    revenue: districtRevenueInputs[index] ? parseSheetMetricNumber(districtRevenueInputs[index].value) : Number(existing.revenue || 0),
+                    growthPct: districtGrowthInputs[index] ? parseGrowthPctInput(districtGrowthInputs[index].value) : Number(existing.growthPct || 0)
+                };
+            }).filter(function(item) {
+                return !!item.area;
+            });
+        };
+
+        const queueTopAreaManualSync = function() {
+            if (!canManageTopAreaSheet()) {
+                return;
+            }
+            if (topAreaManualSyncTimer) {
+                clearTimeout(topAreaManualSyncTimer);
+                topAreaManualSyncTimer = null;
+            }
+            topAreaManualSyncTimer = setTimeout(async function() {
+                topAreaManualSyncTimer = null;
+                const currentRange = normalizeInsightRange(
+                    insightDateFromInput ? insightDateFromInput.value : '',
+                    insightDateToInput ? insightDateToInput.value : ''
+                );
+                const rows = collectTopAreaRowsFromUi();
+                applyTopAreaRowsToUi(rows);
+                try {
+                    await saveTopAreaWeeklyResultRemote(currentRange, rows);
+                    setTopAreaStatus('Đã cập nhật top HĐ theo thời gian thực cho tuần ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
+                } catch (e) {
+                    setTopAreaStatus('Đã lưu cục bộ top HĐ, đang chờ đồng bộ lên hệ thống.', 'bad');
+                }
+            }, 260);
+        };
+
+        const bindTopAreaManualSyncByRole = function() {
+            const editableFields = districtSelects
+                .concat(districtGrowthInputs)
+                .concat(districtRevenueInputs);
+
+            editableFields.forEach(function(field) {
+                if (!field || field.dataset.topAreaSyncBound === '1') {
+                    return;
+                }
+                field.dataset.topAreaSyncBound = '1';
+                field.addEventListener('input', queueTopAreaManualSync);
+                field.addEventListener('change', queueTopAreaManualSync);
+            });
         };
 
         const collectInsightStrategyContentFromUi = function() {
@@ -1425,6 +1566,9 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 const sharedResult = (remoteCfg && remoteCfg[topAreaSharedResultField] && typeof remoteCfg[topAreaSharedResultField] === 'object')
                     ? remoteCfg[topAreaSharedResultField]
                     : null;
+                const sharedHistory = (remoteCfg && remoteCfg[topAreaSharedHistoryField] && typeof remoteCfg[topAreaSharedHistoryField] === 'object')
+                    ? remoteCfg[topAreaSharedHistoryField]
+                    : null;
                 const sharedInsightStrategy = (remoteCfg && remoteCfg[insightStrategySharedField] && typeof remoteCfg[insightStrategySharedField] === 'object')
                     ? remoteCfg[insightStrategySharedField]
                     : null;
@@ -1436,13 +1580,15 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     applyInsightStrategyContentToUi(sharedInsightStrategy);
                 }
 
+                if (sharedHistory) {
+                    saveTopAreaSharedHistory(sharedHistory);
+                }
+
                 if (sharedResult && Array.isArray(sharedResult.rows) && sharedResult.rows.length) {
                     saveTopAreaSharedResult(sharedResult);
+                    saveTopAreaSharedHistory(upsertTopAreaHistory(loadTopAreaSharedHistory(), sharedResult));
                     if (!canManageTopAreaSheet()) {
-                        // For staff: always sync date range and apply rows from shared result
-                        applyInsightRange(sharedResult.from, sharedResult.to, false);
-                        applyTopAreaRowsToUi(sharedResult.rows);
-                        setTopAreaStatus('Đã đồng bộ dữ liệu top HĐ từ ' + toViDate(sharedResult.from) + ' đến ' + toViDate(sharedResult.to) + '.', 'good');
+                        updateTopAreaFromSheet({ silent: true });
                     } else {
                         const currentRange = normalizeInsightRange(
                             insightDateFromInput ? insightDateFromInput.value : '',
@@ -1817,6 +1963,14 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
         const applyTopAreaRowsToUi = function(rows) {
             const list = Array.isArray(rows) ? rows : [];
+            topAreaCurrentRowsCache = list.slice(0, 3).map(function(item) {
+                return {
+                    area: String((item && item.area) || '').trim(),
+                    hd: Number((item && item.hd) || 0),
+                    revenue: Number((item && item.revenue) || 0),
+                    growthPct: Number((item && item.growthPct) || 0)
+                };
+            });
             for (let i = 0; i < 3; i += 1) {
                 const item = list[i] || null;
                 const areaName = item ? canonicalizeHanoiAreaName(item.area) : '';
@@ -1950,15 +2104,30 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 insightDateToInput ? insightDateToInput.value : ''
             );
             const sharedLocalResult = loadTopAreaSharedResult();
+            const sharedHistory = loadTopAreaSharedHistory();
+            const historyKey = buildTopAreaHistoryKey(currentRange);
+            const historyEntry = sharedHistory && sharedHistory[historyKey] ? sharedHistory[historyKey] : null;
 
             if (!canManageTopAreaSheet()) {
                 if (
+                    historyEntry &&
+                    Array.isArray(historyEntry.rows) &&
+                    historyEntry.rows.length
+                ) {
+                    applyTopAreaRowsToUi(historyEntry.rows);
+                    if (!(options && options.silent)) {
+                        setTopAreaStatus('Đã tải dữ liệu tuần từ ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
+                    }
+                    return true;
+                }
+
+                if (
                     sharedLocalResult &&
                     Array.isArray(sharedLocalResult.rows) &&
-                    sharedLocalResult.rows.length
+                    sharedLocalResult.rows.length &&
+                    String(sharedLocalResult.from || '') === currentRange.from &&
+                    String(sharedLocalResult.to || '') === currentRange.to
                 ) {
-                    // Always sync date range to match shared result so staff sees the same week as superadmin
-                    applyInsightRange(sharedLocalResult.from, sharedLocalResult.to, false);
                     applyTopAreaRowsToUi(sharedLocalResult.rows);
                     if (!(options && options.silent)) {
                         setTopAreaStatus('Đã đồng bộ dữ liệu top HĐ từ ' + toViDate(sharedLocalResult.from) + ' đến ' + toViDate(sharedLocalResult.to) + '.', 'good');
@@ -1967,7 +2136,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 }
 
                 if (!(options && options.silent)) {
-                    setTopAreaStatus('Đang chờ dữ liệu realtime từ hệ thống...', '');
+                    setTopAreaStatus('Tuần này chưa có dữ liệu thống kê sẵn. Hãy chọn tuần khác hoặc chờ superadmin cập nhật.', '');
                 }
                 return false;
             }
@@ -2068,8 +2237,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         };
 
         const buildWeekOptionLabel = function(fromDate, toDate) {
-            const weekNo = getWeekNumber(toDate);
-            return 'Tuần ' + weekNo + ' (' + toViDate(toInputDate(fromDate)) + ' - ' + toViDate(toInputDate(toDate)) + ')';
+            return 'Tuần từ ngày ' + toViDate(toInputDate(fromDate)) + ' đến ' + toViDate(toInputDate(toDate));
         };
 
         const toIsoWeekValue = function(dateObj) {
@@ -2113,7 +2281,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 return;
             }
             const previousValue = String(topAreaWeekSelect.value || '').trim();
-            topAreaWeekSelect.innerHTML = '<option value="custom">Theo khoảng ngày đang chọn</option>';
+            topAreaWeekSelect.innerHTML = '<option value="custom">Theo khoảng ngày bạn đang chọn</option>';
 
             const today = new Date();
             for (let i = 0; i < 16; i += 1) {
@@ -2334,6 +2502,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const initialInsightStrategyState = loadInsightStrategyContent();
         populateDistrictSelectOptions();
         populateTopAreaWeekSelect();
+        bindTopAreaManualSyncByRole();
         applyInsightRange(initialDashboardState.insightFrom, initialDashboardState.insightTo, false);
         applyInsightStrategyContentToUi(initialInsightStrategyState);
         bindInsightStrategyInputSync();
