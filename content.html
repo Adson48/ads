@@ -1,136 +1,101 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Ads - Nội Dung</title>
+    <title>Marketing Ads - Quản Lý Quảng Cáo</title>
     <link rel="stylesheet" href="./assets/css/style.css?v=20260418-27">
     <style>
-        .ads-page { max-width: 1400px; margin: 0 auto; padding: 80px 1rem 2rem; min-height: 80vh; }
-
-        /* ---- TOOLBAR ---- */
-        .ads-toolbar {
-            display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: 10px; margin-bottom: 16px;
-        }
-        .ads-toolbar h2 { margin: 0; font-size: 1.4rem; color: #1f2937; font-weight: 700; }
-        .ads-toolbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-
-        /* ---- BUTTONS ---- */
-        .ads-btn {
-            border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;
-            font-size: 0.88rem; font-weight: 500; transition: all .2s;
-        }
-        .ads-btn-primary { background: #1877f2; color: #fff; }
-        .ads-btn-primary:hover:not(:disabled) { background: #1558b0; }
-        .ads-btn-outline { background: #fff; color: #374151; border: 1px solid #d1d5db; }
-        .ads-btn-outline:hover { background: #f9fafb; }
-        .ads-btn:disabled { opacity: .6; cursor: not-allowed; }
-
-        /* ---- SEARCH ---- */
-        .ads-search-wrap { position: relative; }
-        .ads-search-wrap input {
-            border: 1px solid #d1d5db; border-radius: 6px; padding: 7px 12px 7px 32px;
-            font-size: 0.88rem; outline: none; width: 220px; background: #fff;
-        }
-        .ads-search-wrap::before {
-            content: '🔍'; position: absolute; left: 9px; top: 50%;
-            transform: translateY(-50%); font-size: .8rem; pointer-events: none;
-        }
-
-        /* ---- STATUS BAR ---- */
-        #adsSyncStatus {
-            padding: 10px 14px; border-radius: 6px; font-size: .88rem;
-            margin-bottom: 12px; display: none;
-        }
-        .ads-status-info    { background: #eff6ff; color: #1d4ed8; border-left: 4px solid #1d4ed8; }
-        .ads-status-success { background: #f0fdf4; color: #15803d; border-left: 4px solid #15803d; }
-        .ads-status-error   { background: #fef2f2; color: #b91c1c; border-left: 4px solid #b91c1c; }
-
-        /* ---- STAT CARDS ---- */
-        .ads-stats {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(160px,1fr));
-            gap: 12px; margin-bottom: 18px;
-        }
-        .stat-card {
-            background: #fff; border-radius: 8px; padding: 16px 18px;
-            border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,.06);
-        }
-        .stat-label { font-size: .78rem; color: #6b7280; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 6px; }
-        .stat-value { font-size: 1.6rem; font-weight: 700; color: #111827; }
-        .stat-delta { font-size: .78rem; color: #16a34a; margin-top: 2px; }
-
-        /* ---- FILTER TABS ---- */
-        .ads-filter-tabs { display: flex; gap: 0; margin-bottom: 0; border-bottom: 2px solid #e5e7eb; }
-        .filter-tab {
-            padding: 9px 16px; font-size: .88rem; cursor: pointer; color: #6b7280;
-            border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all .2s;
-            background: none; border-top: none; border-left: none; border-right: none;
-        }
-        .filter-tab.active { color: #1877f2; border-bottom-color: #1877f2; font-weight: 600; }
-        .filter-tab:hover:not(.active) { color: #374151; }
-
-        /* ---- TABLE CONTAINER ---- */
-        .ads-table-card {
-            background: #fff; border-radius: 8px; border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 3px rgba(0,0,0,.06); overflow: hidden;
-        }
-        .ads-table-topbar {
-            display: flex; align-items: center; gap: 8px; padding: 10px 14px;
-            border-bottom: 1px solid #e5e7eb; flex-wrap: wrap;
-        }
-        .ads-table-wrapper { overflow-x: auto; }
-
-        /* ---- TABLE ---- */
-        #ads-table { width: 100%; border-collapse: collapse; font-size: .85rem; min-width: 900px; }
-        #ads-table thead { background: #f9fafb; }
-        #ads-table th {
-            padding: 10px 12px; text-align: left; font-weight: 600; color: #374151;
-            border-bottom: 1px solid #e5e7eb; white-space: nowrap; font-size: .8rem;
-            user-select: none;
-        }
-        #ads-table th.sortable { cursor: pointer; }
-        #ads-table th.sortable:hover { background: #f3f4f6; }
-        #ads-table td { padding: 10px 12px; border-bottom: 1px solid #f3f4f6; white-space: nowrap; }
-        #ads-table tbody tr:last-child td { border-bottom: none; }
-        #ads-table tbody tr:hover { background: #f9fafb; }
-
-        /* ---- STATUS DOT ---- */
-        .camp-name-cell { display: flex; align-items: center; gap: 8px; max-width: 260px; }
-        .camp-name-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #1877f2; font-weight: 500; }
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-        .status-dot.active   { background: #16a34a; box-shadow: 0 0 0 2px #dcfce7; }
-        .status-dot.inactive { background: #9ca3af; box-shadow: 0 0 0 2px #f3f4f6; }
-        .status-dot.paused   { background: #f59e0b; box-shadow: 0 0 0 2px #fef3c7; }
-
-        /* ---- DISTRIBUTION BADGE ---- */
-        .dist-badge {
-            display: inline-flex; align-items: center; gap: 4px;
-            font-size: .78rem; padding: 3px 8px; border-radius: 12px; font-weight: 500;
-        }
-        .dist-active   { background: #dcfce7; color: #15803d; }
-        .dist-inactive { background: #f3f4f6; color: #6b7280; }
-        .dist-paused   { background: #fef9c3; color: #92400e; }
-
-        /* ---- NUMBER CELLS ---- */
-        .num-cell { text-align: right; color: #374151; }
-        .num-cell.spend { font-weight: 600; color: #111827; }
-        .num-cell.zero  { color: #9ca3af; }
-
-        /* ---- FOOTER ROW ---- */
-        .table-footer { padding: 10px 14px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e5e7eb; }
-        .table-footer-text { font-size: .82rem; color: #6b7280; }
-        #lastSyncTime { font-size: .8rem; color: #9ca3af; }
-
-        /* ---- EMPTY / LOADING ---- */
-        .ads-empty { text-align: center; padding: 50px 20px; color: #9ca3af; font-size: .95rem; }
-        .ads-empty svg { display: block; margin: 0 auto 12px; opacity: .3; }
-
-        /* ---- RESPONSIVE ---- */
-        @media (max-width: 640px) {
-            .ads-toolbar { flex-direction: column; align-items: flex-start; }
-            .ads-search-wrap input { width: 100%; }
-        }
+body { background: #f4f6fb; }
+.ads-page { max-width: 100%; padding: 80px 1rem 3rem; min-height: 100vh; }
+.ads-topbar { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;background:#fff;border-radius:16px;padding:.85rem 1.2rem;box-shadow:0 2px 12px rgba(94,33,61,.08);margin-bottom:1rem; }
+.ads-topbar-left { display:flex;align-items:center;gap:.6rem; }
+.ads-topbar-right { display:flex;align-items:center;gap:.5rem;flex-wrap:wrap; }
+.ads-title { font-size:1.2rem;font-weight:800;color:var(--ink);display:flex;align-items:center;gap:.4rem; }
+.ads-title span { color:var(--brand); }
+.ads-ctrl { padding:.42rem .75rem;border:1.5px solid var(--line);border-radius:9px;font-size:.88rem;font-weight:600;color:var(--ink);background:#fff;cursor:pointer;outline:none;font-family:inherit; }
+.ads-ctrl:focus { border-color:var(--brand); }
+.ads-ctrl-account { min-width:190px; }
+.ads-date-range { display:flex;align-items:center;gap:4px; }
+.ads-date-range .ads-ctrl { width:135px; }
+.ads-date-sep { color:#9ca3af;font-size:.85rem; }
+.ads-btn { padding:.44rem 1rem;border:none;border-radius:9px;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;transition:transform .12s,box-shadow .12s;white-space:nowrap; }
+.ads-btn:hover:not(:disabled) { transform:translateY(-1px);box-shadow:0 4px 14px rgba(169,60,99,.22); }
+.ads-btn:disabled { opacity:.55;cursor:not-allowed; }
+.ads-btn-primary { background:linear-gradient(135deg,#c7517c,#a93c63);color:#fff; }
+.ads-btn-outline { background:#fff;color:var(--ink);border:1.5px solid var(--line); }
+.ads-btn-outline:hover:not(:disabled) { background:#fdf8fa; }
+.ads-sync-pill { font-size:.78rem;font-weight:700;color:#6b7280;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:999px;padding:.3rem .65rem;white-space:nowrap; }
+.ads-sync-pill.syncing { color:#1d4ed8;background:#eff6ff;border-color:#bfdbfe; }
+.ads-sync-pill.ok  { color:#166534;background:#ecfdf5;border-color:#bbf7d0; }
+.ads-sync-pill.err { color:#b91c1c;background:#fef2f2;border-color:#fecaca; }
+.ads-account-panel { background:#fff;border-radius:16px;border:1px solid #f0e8ed;box-shadow:0 2px 12px rgba(94,33,61,.07);padding:1rem 1.2rem;margin-bottom:1rem;display:none; }
+.ads-account-panel.open { display:block; }
+.ads-account-panel h3 { margin:0 0 .75rem;font-size:1rem;color:var(--ink);font-weight:700; }
+.ads-account-list { display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.75rem; }
+.ads-account-chip { display:flex;align-items:center;gap:.4rem;padding:.35rem .8rem;border:1.5px solid var(--line);border-radius:999px;font-size:.82rem;font-weight:600;color:var(--ink);background:#fff;cursor:pointer;transition:all .15s; }
+.ads-account-chip.active { background:var(--brand);color:#fff;border-color:var(--brand); }
+.ads-account-chip:hover:not(.active) { background:#fdf8fa;border-color:var(--brand); }
+.ads-account-add-row { display:flex;gap:.5rem;align-items:center;flex-wrap:wrap; }
+.ads-account-add-row input { flex:1;min-width:160px;border:1.5px solid var(--line);border-radius:9px;padding:.4rem .75rem;font-size:.86rem;outline:none;font-family:inherit; }
+.ads-account-add-row input:focus { border-color:var(--brand); }
+.ads-account-notice { background:linear-gradient(135deg,#fff8fa,#fff);border:1px solid var(--line);border-radius:12px;padding:.7rem 1rem;margin-bottom:.85rem;font-size:.85rem;color:var(--ink-muted);display:flex;align-items:center;gap:.4rem; }
+.ads-stats { display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:1rem; }
+.ads-stat-card { background:#fff;border-radius:14px;padding:1rem 1.1rem;border:1px solid #f0e8ed;box-shadow:0 2px 8px rgba(94,33,61,.06);transition:transform .15s,box-shadow .15s; }
+.ads-stat-card:hover { transform:translateY(-2px);box-shadow:0 6px 18px rgba(94,33,61,.1); }
+.ads-stat-card.accent-green  { border-left:4px solid #22c55e; }
+.ads-stat-card.accent-brand  { border-left:4px solid var(--brand); }
+.ads-stat-card.accent-blue   { border-left:4px solid #3b82f6; }
+.ads-stat-label { font-size:.72rem;color:#9ca3af;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;font-weight:600; }
+.ads-stat-val { font-size:1.55rem;font-weight:800;color:var(--ink);line-height:1.1; }
+.ads-stat-sub { font-size:.74rem;color:#6b7280;margin-top:3px; }
+.ads-filter-row { display:flex;align-items:center;gap:0;margin-bottom:0; }
+.ads-filter-tab { padding:.65rem 1.1rem;font-size:.88rem;cursor:pointer;color:#6b7280;border:none;border-bottom:2px solid transparent;background:none;font-family:inherit;font-weight:500;transition:all .15s;margin-bottom:-2px; }
+.ads-filter-tab.active { color:var(--brand);border-bottom-color:var(--brand);font-weight:700; }
+.ads-filter-tab:hover:not(.active) { color:var(--ink);background:#fdf8fa;border-radius:8px 8px 0 0; }
+.ads-table-card { background:#fff;border-radius:0 16px 16px 16px;border:1px solid #f0e8ed;box-shadow:0 2px 12px rgba(94,33,61,.07);overflow:hidden; }
+.ads-table-topbar { display:flex;align-items:center;gap:.6rem;padding:.7rem 1rem;border-bottom:1px solid #f3e8ef;flex-wrap:wrap;background:#fdf8fa; }
+.ads-search-wrap { position:relative; }
+.ads-search-wrap input { border:1.5px solid var(--line);border-radius:9px;padding:.38rem .75rem .38rem 2rem;font-size:.86rem;outline:none;width:200px;background:#fff;font-family:inherit; }
+.ads-search-wrap input:focus { border-color:var(--brand); }
+.ads-search-wrap::before { content:'🔍';position:absolute;left:.5rem;top:50%;transform:translateY(-50%);font-size:.75rem;pointer-events:none; }
+.ads-table-info { font-size:.82rem;color:#9ca3af;margin-left:auto; }
+.ads-table-wrapper { overflow-x:auto; }
+#ads-table { width:100%;border-collapse:collapse;font-size:.84rem;table-layout:fixed; }
+#ads-table col { min-width:60px; }
+#ads-table thead { background:#fdf8fa; }
+#ads-table th { padding:.65rem .85rem;text-align:left;font-weight:700;color:#6b7280;border-bottom:2px solid #f0e8ed;white-space:nowrap;font-size:.78rem;text-transform:uppercase;letter-spacing:.4px;user-select:none;position:relative;overflow:hidden; }
+#ads-table th.sortable { cursor:pointer; }
+#ads-table th.sortable:hover { background:#fff0f4;color:var(--brand); }
+#ads-table th.sorted-asc::after  { content:' ▲';color:var(--brand);font-size:.7rem; }
+#ads-table th.sorted-desc::after { content:' ▼';color:var(--brand);font-size:.7rem; }
+.col-resize-handle { position:absolute;right:0;top:0;bottom:0;width:5px;cursor:col-resize;z-index:3;user-select:none;border-radius:2px; }
+.col-resize-handle:hover,.col-resize-handle.dragging { background:var(--brand);opacity:.5; }
+#ads-table td { padding:.65rem .85rem;border-bottom:1px solid #faf0f4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+#ads-table tbody tr:last-child td { border-bottom:none; }
+#ads-table tbody tr:hover { background:#fff8fa; }
+.camp-name-cell { display:flex;align-items:center;gap:.5rem;min-width:0; }
+.status-dot { width:9px;height:9px;border-radius:50%;flex-shrink:0; }
+.status-dot.active   { background:#16a34a;box-shadow:0 0 0 2px #dcfce7; }
+.status-dot.paused   { background:#f59e0b;box-shadow:0 0 0 2px #fef3c7; }
+.status-dot.inactive { background:#d1d5db;box-shadow:0 0 0 2px #f3f4f6; }
+.camp-name-text { overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#be185d;font-weight:600;font-size:.86rem; }
+.dist-badge { display:inline-flex;align-items:center;gap:4px;font-size:.75rem;padding:.25rem .65rem;border-radius:12px;font-weight:600; }
+.dist-active   { background:#dcfce7;color:#15803d; }
+.dist-inactive { background:#f3f4f6;color:#6b7280; }
+.dist-paused   { background:#fef9c3;color:#92400e; }
+.num-cell { text-align:right; }
+.num-cell.spend { font-weight:700;color:var(--ink); }
+.num-cell.zero  { color:#d1d5db; }
+.budget-cell { font-size:.8rem;color:#6b7280;text-align:left; }
+#ads-tfoot td { padding:.65rem .85rem;background:#fff5f8;font-weight:700;border-top:2px solid #f0e8ed;font-size:.82rem;color:var(--ink); }
+.ads-table-footer { display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;padding:.65rem 1rem;border-top:1px solid #f0e8ed;background:#fdf8fa; }
+.ads-table-footer-text { font-size:.8rem;color:#9ca3af; }
+.ads-empty-cell { text-align:center;padding:50px 20px;color:#9ca3af;font-size:.92rem; }
+@media(max-width:640px) {
+    .ads-topbar { flex-direction:column;align-items:flex-start; }
+    .ads-date-range .ads-ctrl { width:100px; }
+}
     </style>
 </head>
 <body>
@@ -150,91 +115,140 @@
 
     <main class="ads-page">
 
-        <!-- TOOLBAR -->
-        <div class="ads-toolbar">
-            <h2>📊 Trình Quản Lý Quảng Cáo</h2>
-            <div class="ads-toolbar-right">
-                <div class="ads-search-wrap">
-                    <input type="text" id="adsSearchInput" placeholder="Tìm kiếm chiến dịch...">
+        <!-- TOP BAR -->
+        <div class="ads-topbar">
+            <div class="ads-topbar-left">
+                <div class="ads-title">📊 <span>Trình Quản Lý</span> Quảng Cáo</div>
+            </div>
+            <div class="ads-topbar-right">
+                <select class="ads-ctrl ads-ctrl-account" id="adsAccountSelect">
+                    <option value="">Chọn tài khoản quảng cáo...</option>
+                </select>
+                <div class="ads-date-range">
+                    <input type="date" class="ads-ctrl" id="adsDateFrom">
+                    <span class="ads-date-sep">→</span>
+                    <input type="date" class="ads-ctrl" id="adsDateTo">
                 </div>
-                <button class="ads-btn ads-btn-outline" id="adsSyncBtn" type="button">🔄 Đồng Bộ</button>
-                <span id="lastSyncTime"></span>
+                <button class="ads-btn ads-btn-primary" id="adsSyncBtn" type="button">🔄 Cập Nhật</button>
+                <span class="ads-sync-pill" id="adsSyncPill">Chờ đồng bộ</span>
+                <button class="ads-btn ads-btn-outline" id="adsManageAccountsBtn" type="button">⚙️ TK</button>
             </div>
         </div>
 
-        <!-- STATUS MESSAGE -->
-        <div id="adsSyncStatus"></div>
+        <!-- ACCOUNT MANAGER PANEL -->
+        <div class="ads-account-panel" id="adsAccountPanel">
+            <h3>⚙️ Quản Lý Tài Khoản Quảng Cáo</h3>
+            <div class="ads-account-list" id="adsAccountChips"></div>
+            <div class="ads-account-add-row">
+                <input type="text" id="adsNewAccountId" placeholder="act_123456789 — nhập Ad Account ID">
+                <input type="text" id="adsNewAccountName" placeholder="Tên hiển thị (vd: Tài khoản chính)">
+                <button class="ads-btn ads-btn-primary" id="adsAddAccountBtn" type="button">+ Thêm</button>
+            </div>
+        </div>
+
+        <!-- ACCOUNT NOTICE -->
+        <div class="ads-account-notice" id="adsAccountNotice">
+            <span>📋</span>
+            <span id="adsAccountNoticeText">Chọn tài khoản và khoảng thời gian, sau đó nhấn <strong>Cập Nhật</strong>.</span>
+        </div>
 
         <!-- STAT CARDS -->
         <div class="ads-stats">
-            <div class="stat-card">
-                <div class="stat-label">Số Tiền Đã Chi</div>
-                <div class="stat-value" id="statsTotalSpend">₫0</div>
-                <div class="stat-delta" id="statsActiveCamp">0 chiến dịch đang chạy</div>
+            <div class="ads-stat-card accent-green">
+                <div class="ads-stat-label">Đang Chạy</div>
+                <div class="ads-stat-val" id="statsActiveCamp">0</div>
+                <div class="ads-stat-sub" id="statsTotalCamp">/ 0 tổng</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Lượt Hiển Thị</div>
-                <div class="stat-value" id="statsImpressions">0</div>
+            <div class="ads-stat-card accent-brand">
+                <div class="ads-stat-label">Tổng Chi Phí</div>
+                <div class="ads-stat-val" id="statsTotalSpend">₫0</div>
+                <div class="ads-stat-sub" id="statsDateRange">—</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Lượt Click</div>
-                <div class="stat-value" id="statsClicks">0</div>
+            <div class="ads-stat-card">
+                <div class="ads-stat-label">Lượt Hiển Thị</div>
+                <div class="ads-stat-val" id="statsImpressions">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">CPC Trung Bình</div>
-                <div class="stat-value" id="statsCpc">₫0</div>
+            <div class="ads-stat-card">
+                <div class="ads-stat-label">Reach</div>
+                <div class="ads-stat-val" id="statsReach">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">CTR Trung Bình</div>
-                <div class="stat-value" id="statsCtr">0%</div>
+            <div class="ads-stat-card">
+                <div class="ads-stat-label">Lượt Click</div>
+                <div class="ads-stat-val" id="statsClicks">0</div>
             </div>
-            <div class="stat-card">
-                <div class="stat-label">Chuyển Đổi</div>
-                <div class="stat-value" id="statsConversions">0</div>
+            <div class="ads-stat-card accent-blue">
+                <div class="ads-stat-label">CPC TB</div>
+                <div class="ads-stat-val" id="statsCpc">₫0</div>
+            </div>
+            <div class="ads-stat-card">
+                <div class="ads-stat-label">CTR TB</div>
+                <div class="ads-stat-val" id="statsCtr">0%</div>
+            </div>
+            <div class="ads-stat-card">
+                <div class="ads-stat-label">Kết Quả</div>
+                <div class="ads-stat-val" id="statsConversions">0</div>
             </div>
         </div>
 
         <!-- FILTER TABS -->
-        <div class="ads-filter-tabs">
-            <button class="filter-tab active" data-filter="all">Tất cả quảng cáo</button>
-            <button class="filter-tab" data-filter="ACTIVE">Đang hoạt động</button>
-            <button class="filter-tab" data-filter="PAUSED">Tạm dừng</button>
-            <button class="filter-tab" data-filter="DELETED">Đã tắt</button>
+        <div class="ads-filter-row">
+            <button class="ads-filter-tab active" data-filter="all">Tất cả</button>
+            <button class="ads-filter-tab" data-filter="ACTIVE">🟢 Đang chạy</button>
+            <button class="ads-filter-tab" data-filter="PAUSED">⏸ Tạm dừng</button>
+            <button class="ads-filter-tab" data-filter="DELETED">○ Đã tắt</button>
         </div>
 
         <!-- TABLE CARD -->
         <div class="ads-table-card">
             <div class="ads-table-topbar">
-                <span id="adsTableCount" style="font-size:.85rem;color:#6b7280;"></span>
+                <div class="ads-search-wrap">
+                    <input type="text" id="adsSearchInput" placeholder="Tìm kiếm chiến dịch...">
+                </div>
+                <span class="ads-table-info" id="adsTableCount"></span>
             </div>
             <div class="ads-table-wrapper">
                 <table id="ads-table">
+                    <colgroup>
+                        <col id="col-check"  style="width:36px;">
+                        <col id="col-name"   style="width:260px;">
+                        <col id="col-status" style="width:130px;">
+                        <col id="col-budget" style="width:140px;">
+                        <col id="col-spend"  style="width:110px;">
+                        <col id="col-imp"    style="width:100px;">
+                        <col id="col-reach"  style="width:90px;">
+                        <col id="col-click"  style="width:90px;">
+                        <col id="col-result" style="width:90px;">
+                        <col id="col-cpc"    style="width:90px;">
+                        <col id="col-ctr"    style="width:80px;">
+                        <col id="col-cpm"    style="width:85px;">
+                        <col id="col-date"   style="width:100px;">
+                    </colgroup>
                     <thead>
                         <tr>
-                            <th style="width:36px;"><input type="checkbox" id="adsCheckAll"></th>
-                            <th class="sortable" data-col="name">Chiến Dịch ↕</th>
-                            <th>Phân Phối</th>
-                            <th class="sortable num-cell" data-col="spend">Số Tiền Chi ↕</th>
-                            <th class="num-cell">Lượt Hiển Thị</th>
-                            <th class="num-cell">Lượt Click</th>
-                            <th class="num-cell">Kết Quả</th>
-                            <th class="num-cell sortable" data-col="cpc">CPC ↕</th>
-                            <th class="num-cell">CTR (%)</th>
-                            <th class="num-cell">CPM</th>
-                            <th>Ngày Tạo</th>
+                            <th><input type="checkbox" id="adsCheckAll"></th>
+                            <th class="sortable" data-col="name">Chiến Dịch<div class="col-resize-handle" data-col="col-name"></div></th>
+                            <th>Phân Phối<div class="col-resize-handle" data-col="col-status"></div></th>
+                            <th>Ngân Sách<div class="col-resize-handle" data-col="col-budget"></div></th>
+                            <th class="sortable num-cell" data-col="spend">Số Tiền Chi<div class="col-resize-handle" data-col="col-spend"></div></th>
+                            <th class="num-cell">Lượt Hiển Thị<div class="col-resize-handle" data-col="col-imp"></div></th>
+                            <th class="num-cell">Reach<div class="col-resize-handle" data-col="col-reach"></div></th>
+                            <th class="num-cell">Lượt Click<div class="col-resize-handle" data-col="col-click"></div></th>
+                            <th class="num-cell">Kết Quả<div class="col-resize-handle" data-col="col-result"></div></th>
+                            <th class="sortable num-cell" data-col="cpc">CPC<div class="col-resize-handle" data-col="col-cpc"></div></th>
+                            <th class="num-cell">CTR (%)<div class="col-resize-handle" data-col="col-ctr"></div></th>
+                            <th class="num-cell">CPM<div class="col-resize-handle" data-col="col-cpm"></div></th>
+                            <th>Ngày Tạo<div class="col-resize-handle" data-col="col-date"></div></th>
                         </tr>
                     </thead>
                     <tbody id="ads-tbody">
-                        <tr>
-                            <td colspan="11" class="ads-empty">⏳ Đang tải dữ liệu...</td>
-                        </tr>
+                        <tr><td colspan="13" class="ads-empty-cell">Chọn tài khoản và nhấn "Cập Nhật".</td></tr>
                     </tbody>
                     <tfoot id="ads-tfoot"></tfoot>
                 </table>
             </div>
-            <div class="table-footer">
-                <div class="table-footer-text" id="adsFooterText"></div>
-                <div style="font-size:.78rem;color:#9ca3af;">💡 Ctrl+Shift+A để đồng bộ nhanh</div>
+            <div class="ads-table-footer">
+                <div class="ads-table-footer-text" id="adsFooterText"></div>
+                <div style="font-size:.78rem;color:#9ca3af;">💡 Ctrl+Shift+A để cập nhật nhanh</div>
             </div>
         </div>
 
@@ -249,254 +263,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
     <script src="./assets/js/firebase-config.js?v=20260418-24"></script>
     <script src="./assets/js/script.js?v=20260418-31"></script>
-    <script src="./assets/js/ads-manager.js?v=20260419-02"></script>
+    <script src="./assets/js/ads-manager.js?v=20260419-03"></script>
 </body>
 </html>
-    <style>
-        .content-empty-page { max-width: 1240px; margin: 0 auto; padding: 90px 1rem 2rem; min-height: 60vh; }
-        
-        #ads-container {
-            background: #fff;
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        
-        .ads-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        
-        .ads-header h2 {
-            margin: 0;
-            font-size: 1.5rem;
-            color: #1f2937;
-        }
-        
-        #adsSyncBtn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        #adsSyncBtn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-        
-        #adsSyncBtn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        .ads-status {
-            padding: 12px 16px;
-            border-radius: 6px;
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            display: none;
-        }
-        
-        .ads-status-info {
-            background: #e3f2fd;
-            color: #1565c0;
-            border-left: 4px solid #1565c0;
-        }
-        
-        .ads-status-success {
-            background: #e8f5e9;
-            color: #2e7d32;
-            border-left: 4px solid #2e7d32;
-        }
-        
-        .ads-status-error {
-            background: #ffebee;
-            color: #c62828;
-            border-left: 4px solid #c62828;
-        }
-        
-        .ads-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 25px;
-        }
-        
-        .stat-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        
-        .stat-label {
-            font-size: 0.85rem;
-            opacity: 0.9;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: bold;
-        }
-        
-        .ads-table-wrapper {
-            overflow-x: auto;
-        }
-        
-        #ads-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.9rem;
-        }
-        
-        #ads-table th {
-            background: #f3f4f6;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            color: #374151;
-            border-bottom: 2px solid #e5e7eb;
-        }
-        
-        #ads-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e5e7eb;
-        }
-        
-        #ads-table tbody tr:hover {
-            background: #fafafa;
-        }
-        
-        .status-active {
-            color: #16a34a;
-            font-weight: 500;
-        }
-        
-        .status-inactive {
-            color: #dc2626;
-            font-weight: 500;
-        }
-        
-        #lastSyncTime {
-            font-size: 0.85rem;
-            color: #666;
-            margin-top: 15px;
-            text-align: right;
-        }
-        
-        .ads-hint {
-            font-size: 0.8rem;
-            color: #999;
-            margin-top: 10px;
-            text-align: center;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <nav>
-            <div class="logo">Marketing Ads</div>
-            <ul class="nav-links">
-                <li><a href="./index.html">Trang Chủ</a></li>
-                <li><a href="./reports.html">Báo Cáo</a></li>
-                <li><a href="./notifications.html">Thông Báo</a></li>
-                <li><a href="./ideas.html">Ý Tưởng</a></li>
-                <li><a href="./content.html">Nội Dung</a></li>
-                <li><a href="./resource-admin.html">Quản trị tài nguyên</a></li>
-            </ul>
-        </nav>
-    </header>
-
-    <main class="content-empty-page">
-        <div id="ads-container">
-            <div class="ads-header">
-                <h2>📊 Quản Lý Quảng Cáo Facebook</h2>
-                <button id="adsSyncBtn" type="button">🔄 Đồng Bộ Ngay</button>
-            </div>
-
-            <div id="adsSyncStatus" class="ads-status"></div>
-
-            <!-- Stats Cards -->
-            <div class="ads-stats">
-                <div class="stat-card">
-                    <div class="stat-label">Tổng Chi Phí</div>
-                    <div class="stat-value" id="statsTotalSpend">₫0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Lượt Hiển Thị</div>
-                    <div class="stat-value" id="statsImpressions">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Lượt Click</div>
-                    <div class="stat-value" id="statsClicks">0</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-label">Chi Phí/Click</div>
-                    <div class="stat-value" id="statsCpc">₫0</div>
-                </div>
-            </div>
-
-            <!-- Campaigns Table -->
-            <div class="ads-table-wrapper">
-                <table id="ads-table">
-                    <thead>
-                        <tr>
-                            <th>Tên Campaign</th>
-                            <th>Trạng Thái</th>
-                            <th>Chi Phí</th>
-                            <th>Lượt Hiển Thị</th>
-                            <th>Lượt Click</th>
-                            <th>CTR (%)</th>
-                            <th>CPC</th>
-                            <th>Chuyển Đổi</th>
-                            <th>Ngày Tạo</th>
-                        </tr>
-                    </thead>
-                    <tbody id="ads-tbody">
-                        <tr>
-                            <td colspan="9" style="text-align: center; padding: 40px; color: #999;">
-                                ⏳ Đang tải dữ liệu...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="lastSyncTime" style="margin-top: 15px; font-size: 0.85rem; color: #666;"></div>
-            
-            <div class="ads-hint">
-                💡 Gợi ý: Nhấn Ctrl+Shift+A để đồng bộ nhanh
-            </div>
-        </div>
-    </main>
-
-    <footer>
-        <p>&copy; 2024 Marketing Ads. Tất cả quyền được bảo lưu.</p>
-    </footer>
-
-    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
-    <script src="./assets/js/firebase-config.js?v=20260418-24"></script>
-    <script src="./assets/js/script.js?v=20260418-31"></script>
-    <script src="./assets/js/ads-manager.js?v=20260419-01"></script>
-</body>
-</html>
-
-
-
-

@@ -1,142 +1,324 @@
+﻿// ================================================================
+// ADS MANAGER — v3 — Account selector, date filter, col resize
 // ================================================================
-// FRONTEND: Hiển thị và quản lý Facebook Ads
-// ================================================================
-
-(function() {
+(function () {
     'use strict';
 
-    var ADS_CONFIG = {
+    // ---- CONFIG ----
+    var CFG = {
         syncEndpoint: '/api/ads-sync',
-        firebaseCollection: 'ads_campaigns',
-        syncInterval: 3600000,
-        syncTimeKey: 'ads_last_sync_time'
+        firestoreCollection: 'ads_campaigns',
+        accountsKey: 'ads_accounts_v2',
+        syncTimeKey: 'ads_last_sync_time',
+        syncInterval: 3600000
     };
 
+    // ---- STATE ----
     var db = null;
     var allCampaigns = [];
     var filteredCampaigns = [];
-    var syncTimer = null;
-    var unsubscribe = null;
+    var accounts = [];          // [{id, name}]
+    var currentAccount = '';
     var currentFilter = 'all';
     var currentSort = { col: null, asc: true };
     var searchQuery = '';
+    var syncTimer = null;
+    var unsubscribe = null;
 
+    // ---- INIT ----
     function init() {
+        loadAccounts();
+        setDefaultDates();
+        renderAccountSelect();
+        renderAccountChips();
         setupEvents();
-        try {
-            if (typeof firebase !== 'undefined') {
-                if (!firebase.apps.length) firebase.initializeApp(window.MA_FIREBASE_CONFIG);
-                db = firebase.firestore();
-                subscribeRealtime();
-                scheduleAutoSync();
-            }
-        } catch (e) { console.error('Ads init:', e); }
+        initFirebase();
     }
 
+    // ---- FIREBASE ----
+    function initFirebase() {
+        try {
+            if (typeof firebase === 'undefined') return;
+            if (!firebase.apps.length) firebase.initializeApp(window.MA_FIREBASE_CONFIG);
+            db = firebase.firestore();
+        } catch (e) { console.error('Firebase init:', e); }
+    }
+
+    function subscribeRealtime(accountId, since, until) {
+        if (!db) return;
+        if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+
+        var query = db.collection(CFG.firestoreCollection)
+            .where('account', '==', accountId)
+            .where('since', '==', since)
+            .where('until', '==', until);
+
+        unsubscribe = query.onSnapshot(function (snap) {
+            allCampaigns = [];
+            snap.forEach(function (doc) { allCampaigns.push(doc.data()); });
+            applyFilterSort();
+            updateStats();
+        }, function (err) {
+            console.warn('Firestore listen error:', err.message);
+        });
+    }
+
+    // ---- ACCOUNTS ----
+    function loadAccounts() {
+        try {
+            var raw = localStorage.getItem(CFG.accountsKey);
+            accounts = raw ? JSON.parse(raw) : [];
+        } catch (e) { accounts = []; }
+        // Always ensure the default env account exists as fallback hint
+        if (accounts.length === 0) {
+            accounts = [{ id: 'act_724992993672214', name: 'Tài khoản chính' }];
+            saveAccounts();
+        }
+    }
+    function saveAccounts() {
+        localStorage.setItem(CFG.accountsKey, JSON.stringify(accounts));
+    }
+    function renderAccountSelect() {
+        var sel = document.getElementById('adsAccountSelect');
+        if (!sel) return;
+        var cur = sel.value || currentAccount;
+        sel.innerHTML = '<option value="">Chọn tài khoản...</option>' +
+            accounts.map(function (a) {
+                return '<option value="' + esc(a.id) + '"' + (a.id === cur ? ' selected' : '') + '>' + esc(a.name) + ' (' + esc(a.id) + ')</option>';
+            }).join('');
+    }
+    function renderAccountChips() {
+        var wrap = document.getElementById('adsAccountChips');
+        if (!wrap) return;
+        if (accounts.length === 0) {
+            wrap.innerHTML = '<span style="color:#9ca3af;font-size:.82rem;">Chưa có tài khoản nào.</span>';
+            return;
+        }
+        wrap.innerHTML = accounts.map(function (a, i) {
+            return '<div class="ads-account-chip' + (a.id === currentAccount ? ' active' : '') + '" data-idx="' + i + '">' +
+                '<span class="chip-label">' + esc(a.name) + '</span>' +
+                '<span style="color:#9ca3af;font-size:.75rem;">(' + esc(a.id) + ')</span>' +
+                '<span class="chip-del" data-idx="' + i + '" title="Xóa" style="cursor:pointer;color:#dc2626;margin-left:4px;font-weight:700;">×</span>' +
+                '</div>';
+        }).join('');
+        wrap.querySelectorAll('.chip-del').forEach(function (btn) {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation();
+                var idx = parseInt(this.dataset.idx);
+                accounts.splice(idx, 1);
+                saveAccounts();
+                renderAccountSelect();
+                renderAccountChips();
+            });
+        });
+        wrap.querySelectorAll('.ads-account-chip').forEach(function (chip) {
+            chip.addEventListener('click', function (e) {
+                if (e.target.classList.contains('chip-del')) return;
+                var idx = parseInt(this.dataset.idx);
+                currentAccount = accounts[idx].id;
+                var sel = document.getElementById('adsAccountSelect');
+                if (sel) sel.value = currentAccount;
+                renderAccountChips();
+            });
+        });
+    }
+
+    // ---- DEFAULT DATES ----
+    function setDefaultDates() {
+        var today = new Date();
+        var firstOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        var toEl = document.getElementById('adsDateTo');
+        var fromEl = document.getElementById('adsDateFrom');
+        if (toEl && !toEl.value) toEl.value = fmtDate(today);
+        if (fromEl && !fromEl.value) fromEl.value = fmtDate(firstOfMonth);
+    }
+    function fmtDate(d) {
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        return d.getFullYear() + '-' + mm + '-' + dd;
+    }
+
+    // ---- EVENTS ----
     function setupEvents() {
         var syncBtn = document.getElementById('adsSyncBtn');
-        if (syncBtn) syncBtn.addEventListener('click', function() { syncNow(false); });
+        if (syncBtn) syncBtn.addEventListener('click', function () { syncNow(); });
 
         var search = document.getElementById('adsSearchInput');
-        if (search) search.addEventListener('input', function() {
+        if (search) search.addEventListener('input', function () {
             searchQuery = this.value.toLowerCase().trim();
             applyFilterSort();
         });
 
-        document.querySelectorAll('.filter-tab').forEach(function(tab) {
-            tab.addEventListener('click', function() {
-                document.querySelectorAll('.filter-tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.ads-filter-tab').forEach(function (tab) {
+            tab.addEventListener('click', function () {
+                document.querySelectorAll('.ads-filter-tab').forEach(function (t) { t.classList.remove('active'); });
                 this.classList.add('active');
                 currentFilter = this.dataset.filter;
                 applyFilterSort();
             });
         });
 
-        document.querySelectorAll('#ads-table th.sortable').forEach(function(th) {
-            th.addEventListener('click', function() {
+        document.querySelectorAll('#ads-table th.sortable').forEach(function (th) {
+            th.addEventListener('click', function (e) {
+                if (e.target.classList.contains('col-resize-handle')) return;
                 var col = this.dataset.col;
+                document.querySelectorAll('#ads-table th').forEach(function (t) {
+                    t.classList.remove('sorted-asc', 'sorted-desc');
+                });
                 if (currentSort.col === col) {
                     currentSort.asc = !currentSort.asc;
                 } else {
-                    currentSort.col = col;
-                    currentSort.asc = true;
+                    currentSort.col = col; currentSort.asc = true;
                 }
+                this.classList.add(currentSort.asc ? 'sorted-asc' : 'sorted-desc');
                 applyFilterSort();
             });
         });
 
         var checkAll = document.getElementById('adsCheckAll');
-        if (checkAll) checkAll.addEventListener('change', function() {
-            document.querySelectorAll('.ads-row-check').forEach(function(cb) { cb.checked = checkAll.checked; });
+        if (checkAll) checkAll.addEventListener('change', function () {
+            document.querySelectorAll('.ads-row-check').forEach(function (cb) { cb.checked = checkAll.checked; });
         });
 
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'A') syncNow(false);
+        var manageBtn = document.getElementById('adsManageAccountsBtn');
+        if (manageBtn) manageBtn.addEventListener('click', function () {
+            var panel = document.getElementById('adsAccountPanel');
+            if (panel) panel.classList.toggle('open');
+        });
+
+        var addBtn = document.getElementById('adsAddAccountBtn');
+        if (addBtn) addBtn.addEventListener('click', function () {
+            var idEl   = document.getElementById('adsNewAccountId');
+            var nameEl = document.getElementById('adsNewAccountName');
+            var newId  = (idEl ? idEl.value.trim() : '');
+            var newName = (nameEl ? nameEl.value.trim() : '') || newId;
+            if (!newId) { alert('Vui lòng nhập Ad Account ID (dạng act_xxx)'); return; }
+            if (!newId.startsWith('act_')) newId = 'act_' + newId;
+            if (accounts.some(function (a) { return a.id === newId; })) {
+                alert('Tài khoản này đã tồn tại'); return;
+            }
+            accounts.push({ id: newId, name: newName });
+            saveAccounts();
+            if (idEl)   idEl.value   = '';
+            if (nameEl) nameEl.value = '';
+            renderAccountSelect();
+            renderAccountChips();
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.ctrlKey && e.shiftKey && e.key === 'A') syncNow();
+        });
+
+        // Column resize
+        setupColResize();
+    }
+
+    // ---- COL RESIZE ----
+    function setupColResize() {
+        document.querySelectorAll('.col-resize-handle').forEach(function (handle) {
+            var startX, startWidth, col;
+            handle.addEventListener('mousedown', function (e) {
+                e.preventDefault(); e.stopPropagation();
+                col = document.getElementById(handle.dataset.col);
+                if (!col) return;
+                startX = e.pageX;
+                startWidth = col.offsetWidth;
+                handle.classList.add('dragging');
+
+                function onMove(ev) {
+                    var newW = Math.max(60, startWidth + ev.pageX - startX);
+                    col.style.width = newW + 'px';
+                }
+                function onUp() {
+                    handle.classList.remove('dragging');
+                    document.removeEventListener('mousemove', onMove);
+                    document.removeEventListener('mouseup', onUp);
+                }
+                document.addEventListener('mousemove', onMove);
+                document.addEventListener('mouseup', onUp);
+            });
         });
     }
 
-    function subscribeRealtime() {
-        if (!db) return;
-        if (unsubscribe) unsubscribe();
-        unsubscribe = db.collection(ADS_CONFIG.firebaseCollection)
-            .onSnapshot(function(snap) {
-                allCampaigns = [];
-                snap.forEach(function(doc) { allCampaigns.push(doc.data()); });
-                applyFilterSort();
-                updateStats();
-            }, function(err) { console.error('Firestore:', err); });
-    }
+    // ---- SYNC ----
+    async function syncNow() {
+        var accountId = (document.getElementById('adsAccountSelect') || {}).value || currentAccount;
+        var since = (document.getElementById('adsDateFrom') || {}).value;
+        var until = (document.getElementById('adsDateTo') || {}).value;
 
-    function scheduleAutoSync() {
-        var lastSync = localStorage.getItem(ADS_CONFIG.syncTimeKey);
-        if (!lastSync || (Date.now() - parseInt(lastSync)) > ADS_CONFIG.syncInterval) syncNow(false);
-        if (syncTimer) clearInterval(syncTimer);
-        syncTimer = setInterval(function() { syncNow(true); }, ADS_CONFIG.syncInterval);
-    }
-
-    async function syncNow(silent) {
-        var syncBtn = document.getElementById('adsSyncBtn');
-        var statusEl = document.getElementById('adsSyncStatus');
-        if (!silent) {
-            if (syncBtn) syncBtn.disabled = true;
-            setStatus('⏳ Đang đồng bộ từ Facebook...', 'info');
+        if (!accountId) {
+            setPill('Chọn tài khoản trước', 'err');
+            return;
         }
+        if (!since || !until) {
+            setPill('Chọn ngày trước', 'err');
+            return;
+        }
+
+        currentAccount = accountId;
+        renderAccountChips();
+
+        var noticeEl = document.getElementById('adsAccountNoticeText');
+        if (noticeEl) noticeEl.innerHTML = 'Đang xem: <strong>' + getAccountName(accountId) + '</strong> &nbsp;|&nbsp; ' + since + ' → ' + until;
+
+        var dateRangeEl = document.getElementById('statsDateRange');
+        if (dateRangeEl) dateRangeEl.textContent = since + ' → ' + until;
+
+        var syncBtn = document.getElementById('adsSyncBtn');
+        if (syncBtn) syncBtn.disabled = true;
+        setPill('⏳ Đang đồng bộ...', 'syncing');
+
         try {
-            var res = await fetch(ADS_CONFIG.syncEndpoint);
+            var url = CFG.syncEndpoint + '?account=' + encodeURIComponent(accountId) + '&since=' + since + '&until=' + until;
+            var res = await fetch(url);
             if (!res.ok) throw new Error('HTTP ' + res.status);
             var result = await res.json();
-            if (!result.success) throw new Error(result.error || result.message || 'Lỗi API');
+            if (!result.success) throw new Error(result.error || 'Lỗi API');
+
+            // Save to Firestore
             if (db && result.data && result.data.length > 0) {
                 var batch = db.batch();
-                result.data.forEach(function(c) {
-                    batch.set(db.collection(ADS_CONFIG.firebaseCollection).doc(c.id), c);
+                result.data.forEach(function (c) {
+                    batch.set(db.collection(CFG.firestoreCollection).doc(c.id + '_' + since + '_' + until), c);
                 });
                 await batch.commit();
+            } else if (result.data && result.data.length === 0) {
+                allCampaigns = [];
+                applyFilterSort();
+                updateStats();
             }
-            localStorage.setItem(ADS_CONFIG.syncTimeKey, Date.now().toString());
-            updateLastSyncTime();
-            if (!silent) setStatus('✅ ' + result.message, 'success');
+
+            localStorage.setItem(CFG.syncTimeKey, Date.now().toString());
+            setPill('✅ ' + result.message, 'ok');
+
+            // Subscribe realtime for this account+date
+            subscribeRealtime(accountId, since, until);
+
         } catch (err) {
             console.error('Sync error:', err);
-            if (!silent) setStatus('❌ Lỗi: ' + err.message, 'error');
+            setPill('❌ ' + err.message, 'err');
         } finally {
-            if (!silent && syncBtn) syncBtn.disabled = false;
+            if (syncBtn) syncBtn.disabled = false;
         }
+    }
+
+    function getAccountName(id) {
+        var a = accounts.find(function (x) { return x.id === id; });
+        return a ? a.name : id;
     }
 
     // ---- FILTER + SORT ----
     function applyFilterSort() {
-        filteredCampaigns = allCampaigns.filter(function(c) {
-            var matchFilter = currentFilter === 'all' || c.status === currentFilter;
-            var matchSearch = !searchQuery || (c.name || '').toLowerCase().indexOf(searchQuery) >= 0;
-            return matchFilter && matchSearch;
+        filteredCampaigns = allCampaigns.filter(function (c) {
+            var mf = currentFilter === 'all' || c.status === currentFilter;
+            var ms = !searchQuery || (c.name || '').toLowerCase().indexOf(searchQuery) >= 0;
+            return mf && ms;
         });
-
         if (currentSort.col) {
             var col = currentSort.col, asc = currentSort.asc;
-            filteredCampaigns.sort(function(a, b) {
-                var va = parseFloat(a[col] || 0), vb = parseFloat(b[col] || 0);
-                if (col === 'name') { va = (a.name || '').toLowerCase(); vb = (b.name || '').toLowerCase(); }
+            filteredCampaigns.sort(function (a, b) {
+                var va = col === 'name' ? (a.name||'').toLowerCase() : parseFloat(a[col]||0);
+                var vb = col === 'name' ? (b.name||'').toLowerCase() : parseFloat(b[col]||0);
                 if (va < vb) return asc ? -1 : 1;
                 if (va > vb) return asc ? 1 : -1;
                 return 0;
@@ -149,579 +331,147 @@
     // ---- RENDER TABLE ----
     function renderTable() {
         var tbody = document.getElementById('ads-tbody');
-        if (!tbody) return;
         var countEl = document.getElementById('adsTableCount');
+        if (!tbody) return;
 
-        if (!filteredCampaigns || filteredCampaigns.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="11" class="ads-empty">Chưa có dữ liệu. Nhấn "Đồng Bộ" để tải.</td></tr>';
+        if (!filteredCampaigns.length) {
+            tbody.innerHTML = '<tr><td colspan="13" class="ads-empty-cell">' +
+                (allCampaigns.length === 0 ? 'Chưa có dữ liệu. Nhấn "Cập Nhật" để tải.' : 'Không tìm thấy chiến dịch.') +
+                '</td></tr>';
             if (countEl) countEl.textContent = '';
             return;
         }
-
         if (countEl) countEl.textContent = filteredCampaigns.length + ' chiến dịch';
 
-        tbody.innerHTML = filteredCampaigns.map(function(c) {
+        tbody.innerHTML = filteredCampaigns.map(function (c) {
             var isActive = c.status === 'ACTIVE';
             var isPaused = c.status === 'PAUSED';
-            var dotClass = isActive ? 'active' : (isPaused ? 'paused' : 'inactive');
-            var distClass = isActive ? 'dist-active' : (isPaused ? 'dist-paused' : 'dist-inactive');
-            var distText = isActive ? '● Đang hoạt động' : (isPaused ? '⏸ Tạm dừng' : '○ Đang tắt');
-
-            var spend = parseFloat(c.spend || 0);
-            var imp   = parseInt(c.impressions || 0);
-            var clk   = parseInt(c.clicks || 0);
-            var cpm   = imp > 0 ? ((spend / imp) * 1000).toFixed(0) : 0;
+            var dotCls  = isActive ? 'active' : isPaused ? 'paused' : 'inactive';
+            var distCls = isActive ? 'dist-active' : isPaused ? 'dist-paused' : 'dist-inactive';
+            var distTxt = isActive ? '● Đang hoạt động' : isPaused ? '⏸ Tạm dừng' : '○ Đang tắt';
+            var spend   = parseFloat(c.spend || 0);
+            var imp     = parseInt(c.impressions || 0);
+            var clk     = parseInt(c.clicks || 0);
+            var reach   = parseInt(c.reach || 0);
+            var cpm     = imp > 0 ? Math.round((spend / imp) * 1000) : 0;
             var created = c.created_time ? new Date(c.created_time).toLocaleDateString('vi-VN') : '—';
+            var budget  = c.budget || '—';
 
             return '<tr>' +
                 '<td><input type="checkbox" class="ads-row-check"></td>' +
-                '<td><div class="camp-name-cell">' +
-                    '<span class="status-dot ' + dotClass + '"></span>' +
-                    '<span class="camp-name-text" title="' + escHtml(c.name || '') + '">' + escHtml(c.name || '—') + '</span>' +
-                '</div></td>' +
-                '<td><span class="dist-badge ' + distClass + '">' + distText + '</span></td>' +
-                '<td class="num-cell spend' + (spend === 0 ? ' zero' : '') + '">' + (spend > 0 ? fmtCur(spend) : '—') + '</td>' +
-                '<td class="num-cell' + (imp === 0 ? ' zero' : '') + '">' + (imp > 0 ? fmtNum(imp) : '—') + '</td>' +
-                '<td class="num-cell' + (clk === 0 ? ' zero' : '') + '">' + (clk > 0 ? fmtNum(clk) : '—') + '</td>' +
-                '<td class="num-cell">' + (c.conversions > 0 ? c.conversions : '—') + '</td>' +
-                '<td class="num-cell">' + (parseFloat(c.cpc) > 0 ? fmtCur(c.cpc) : '—') + '</td>' +
-                '<td class="num-cell">' + (parseFloat(c.ctr) > 0 ? c.ctr + '%' : '—') + '</td>' +
-                '<td class="num-cell">' + (cpm > 0 ? fmtCur(cpm) : '—') + '</td>' +
-                '<td style="color:#6b7280;font-size:.82rem;">' + created + '</td>' +
+                '<td><div class="camp-name-cell"><span class="status-dot ' + dotCls + '"></span>' +
+                    '<span class="camp-name-text" title="' + esc(c.name||'') + '">' + esc(c.name||'—') + '</span></div></td>' +
+                '<td><span class="dist-badge ' + distCls + '">' + distTxt + '</span></td>' +
+                '<td class="budget-cell">' + esc(budget) + '</td>' +
+                '<td class="num-cell spend' + (spend===0?' zero':'') + '">' + (spend>0 ? fmtCur(spend) : '—') + '</td>' +
+                '<td class="num-cell' + (imp===0?' zero':'') + '">' + (imp>0 ? fmtNum(imp) : '—') + '</td>' +
+                '<td class="num-cell' + (reach===0?' zero':'') + '">' + (reach>0 ? fmtNum(reach) : '—') + '</td>' +
+                '<td class="num-cell' + (clk===0?' zero':'') + '">' + (clk>0 ? fmtNum(clk) : '—') + '</td>' +
+                '<td class="num-cell">' + (c.actions > 0 ? c.actions : '—') + '</td>' +
+                '<td class="num-cell">' + (parseFloat(c.cpc)>0 ? fmtCur(c.cpc) : '—') + '</td>' +
+                '<td class="num-cell">' + (parseFloat(c.ctr)>0 ? c.ctr+'%' : '—') + '</td>' +
+                '<td class="num-cell">' + (cpm>0 ? fmtCur(cpm) : '—') + '</td>' +
+                '<td style="color:#6b7280;font-size:.8rem;">' + created + '</td>' +
                 '</tr>';
         }).join('');
     }
 
-    // ---- FOOTER TOTALS ----
+    // ---- RENDER FOOTER TOTALS ----
     function renderFooter() {
         var tfoot = document.getElementById('ads-tfoot');
-        var footerText = document.getElementById('adsFooterText');
-        if (!tfoot || filteredCampaigns.length === 0) { if(tfoot) tfoot.innerHTML=''; return; }
+        var footEl = document.getElementById('adsFooterText');
+        if (!tfoot) return;
+        if (!filteredCampaigns.length) { tfoot.innerHTML = ''; return; }
 
-        var totalSpend = filteredCampaigns.reduce(function(s,c){ return s+parseFloat(c.spend||0); }, 0);
-        var totalImp   = filteredCampaigns.reduce(function(s,c){ return s+parseInt(c.impressions||0); }, 0);
-        var totalClk   = filteredCampaigns.reduce(function(s,c){ return s+parseInt(c.clicks||0); }, 0);
-        var totalConv  = filteredCampaigns.reduce(function(s,c){ return s+parseInt(c.conversions||0); }, 0);
-        var avgCpc     = totalClk > 0 ? (totalSpend / totalClk).toFixed(0) : 0;
-        var avgCtr     = totalImp > 0 ? ((totalClk / totalImp) * 100).toFixed(2) : 0;
-        var totalCpm   = totalImp > 0 ? ((totalSpend / totalImp) * 1000).toFixed(0) : 0;
+        var ts  = filteredCampaigns.reduce(function(s,c){ return s+parseFloat(c.spend||0); }, 0);
+        var ti  = filteredCampaigns.reduce(function(s,c){ return s+parseInt(c.impressions||0); }, 0);
+        var tr  = filteredCampaigns.reduce(function(s,c){ return s+parseInt(c.reach||0); }, 0);
+        var tc  = filteredCampaigns.reduce(function(s,c){ return s+parseInt(c.clicks||0); }, 0);
+        var tac = filteredCampaigns.reduce(function(s,c){ return s+parseFloat(c.actions||0); }, 0);
+        var avgCpc = tc > 0 ? (ts/tc).toFixed(0) : 0;
+        var avgCtr = ti > 0 ? ((tc/ti)*100).toFixed(2) : 0;
+        var totalCpm = ti > 0 ? Math.round((ts/ti)*1000) : 0;
 
-        tfoot.innerHTML = '<tr style="background:#f9fafb;font-weight:700;font-size:.83rem;">' +
+        tfoot.innerHTML = '<tr><td></td>' +
+            '<td style="color:var(--ink);">Tổng ' + filteredCampaigns.length + ' chiến dịch</td>' +
             '<td></td>' +
-            '<td style="color:#374151;">Kết quả ' + filteredCampaigns.length + ' chiến dịch</td>' +
             '<td></td>' +
-            '<td class="num-cell spend">' + fmtCur(totalSpend) + '</td>' +
-            '<td class="num-cell">' + fmtNum(totalImp) + '</td>' +
-            '<td class="num-cell">' + fmtNum(totalClk) + '</td>' +
-            '<td class="num-cell">' + totalConv + '</td>' +
+            '<td class="num-cell spend">' + fmtCur(ts) + '</td>' +
+            '<td class="num-cell">' + fmtNum(ti) + '</td>' +
+            '<td class="num-cell">' + fmtNum(tr) + '</td>' +
+            '<td class="num-cell">' + fmtNum(tc) + '</td>' +
+            '<td class="num-cell">' + tac + '</td>' +
             '<td class="num-cell">' + fmtCur(avgCpc) + '</td>' +
             '<td class="num-cell">' + avgCtr + '%</td>' +
             '<td class="num-cell">' + fmtCur(totalCpm) + '</td>' +
-            '<td></td>' +
-            '</tr>';
+            '<td></td></tr>';
 
-        if (footerText) footerText.textContent = 'Tổng ' + filteredCampaigns.length + ' / ' + allCampaigns.length + ' chiến dịch';
+        if (footEl) footEl.textContent = 'Hiển thị ' + filteredCampaigns.length + ' / ' + allCampaigns.length + ' chiến dịch';
     }
 
-    // ---- UPDATE STATS ----
+    // ---- UPDATE STAT CARDS ----
     function updateStats() {
-        var totalSpend = allCampaigns.reduce(function(s,c){ return s+parseFloat(c.spend||0); },0);
-        var totalImp   = allCampaigns.reduce(function(s,c){ return s+parseInt(c.impressions||0); },0);
-        var totalClk   = allCampaigns.reduce(function(s,c){ return s+parseInt(c.clicks||0); },0);
-        var totalConv  = allCampaigns.reduce(function(s,c){ return s+parseInt(c.conversions||0); },0);
-        var avgCpc     = totalClk > 0 ? (totalSpend / totalClk).toFixed(0) : 0;
-        var avgCtr     = totalImp > 0 ? ((totalClk / totalImp) * 100).toFixed(2) : 0;
-        var activeCnt  = allCampaigns.filter(function(c){ return c.status === 'ACTIVE'; }).length;
+        var ts   = allCampaigns.reduce(function(s,c){ return s+parseFloat(c.spend||0); }, 0);
+        var ti   = allCampaigns.reduce(function(s,c){ return s+parseInt(c.impressions||0); }, 0);
+        var tr   = allCampaigns.reduce(function(s,c){ return s+parseInt(c.reach||0); }, 0);
+        var tc   = allCampaigns.reduce(function(s,c){ return s+parseInt(c.clicks||0); }, 0);
+        var tac  = allCampaigns.reduce(function(s,c){ return s+parseFloat(c.actions||0); }, 0);
+        var act  = allCampaigns.filter(function(c){ return c.status==='ACTIVE'; }).length;
+        var avgCpc = tc>0 ? (ts/tc).toFixed(0) : 0;
+        var avgCtr = ti>0 ? ((tc/ti)*100).toFixed(2) : 0;
 
         var el = function(id){ return document.getElementById(id); };
-        if (el('statsTotalSpend'))   el('statsTotalSpend').textContent   = fmtCur(totalSpend);
-        if (el('statsImpressions'))  el('statsImpressions').textContent  = fmtNum(totalImp);
-        if (el('statsClicks'))       el('statsClicks').textContent       = fmtNum(totalClk);
-        if (el('statsCpc'))          el('statsCpc').textContent          = fmtCur(avgCpc);
-        if (el('statsCtr'))          el('statsCtr').textContent          = avgCtr + '%';
-        if (el('statsConversions'))  el('statsConversions').textContent  = totalConv;
-        if (el('statsActiveCamp'))   el('statsActiveCamp').textContent   = activeCnt + ' chiến dịch đang chạy';
-    }
-
-    function updateLastSyncTime() {
-        var el = document.getElementById('lastSyncTime');
-        if (el) el.textContent = 'Cập nhật: ' + new Date().toLocaleTimeString('vi-VN');
+        if(el('statsActiveCamp'))  el('statsActiveCamp').textContent  = act;
+        if(el('statsTotalCamp'))   el('statsTotalCamp').textContent   = '/ ' + allCampaigns.length + ' tổng';
+        if(el('statsTotalSpend'))  el('statsTotalSpend').textContent  = fmtCur(ts);
+        if(el('statsImpressions')) el('statsImpressions').textContent = fmtNum(ti);
+        if(el('statsReach'))       el('statsReach').textContent       = fmtNum(tr);
+        if(el('statsClicks'))      el('statsClicks').textContent      = fmtNum(tc);
+        if(el('statsCpc'))         el('statsCpc').textContent         = fmtCur(avgCpc);
+        if(el('statsCtr'))         el('statsCtr').textContent         = avgCtr + '%';
+        if(el('statsConversions')) el('statsConversions').textContent = Math.round(tac);
     }
 
     // ---- HELPERS ----
     function fmtNum(n) {
         n = parseInt(n || 0);
         if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
-        if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+        if (n >= 1000)    return (n/1000).toFixed(1) + 'K';
         return n.toLocaleString('vi-VN');
     }
     function fmtCur(n) {
-        n = parseFloat(n || 0);
-        return n.toLocaleString('vi-VN', { maximumFractionDigits: 0 }) + '₫';
+        return parseFloat(n||0).toLocaleString('vi-VN', {maximumFractionDigits:0}) + '₫';
     }
-    function escHtml(s) {
+    function esc(s) {
         return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
-    function setStatus(msg, type) {
-        var el = document.getElementById('adsSyncStatus');
+    function setPill(msg, type) {
+        var el = document.getElementById('adsSyncPill');
         if (!el) return;
         el.textContent = msg;
-        el.className = 'ads-status-' + (type || 'info');
-        el.style.cssText = 'display:block;padding:10px 14px;border-radius:6px;font-size:.88rem;margin-bottom:12px;';
-        if (type === 'info')    { el.style.background='#eff6ff'; el.style.color='#1d4ed8'; el.style.borderLeft='4px solid #1d4ed8'; }
-        if (type === 'success') { el.style.background='#f0fdf4'; el.style.color='#15803d'; el.style.borderLeft='4px solid #15803d'; }
-        if (type === 'error')   { el.style.background='#fef2f2'; el.style.color='#b91c1c'; el.style.borderLeft='4px solid #b91c1c'; }
-        if (type === 'success' || type === 'error') setTimeout(function(){ el.style.display='none'; }, 5000);
-    }
-
-    window.addEventListener('beforeunload', function() {
-        if (syncTimer) clearInterval(syncTimer);
-        if (unsubscribe) unsubscribe();
-    });
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-    window.AdsManager = { sync: function(){ syncNow(false); }, data: function(){ return allCampaigns; } };
-})();
-
-(function() {
-    'use strict';
-
-    // ========== CONFIG ==========
-    var ADS_CONFIG = {
-        syncEndpoint: '/api/ads-sync',
-        firebaseCollection: 'ads_campaigns',
-        syncInterval: 3600000, // 1 giờ
-        syncTimeKey: 'ads_last_sync_time'
-    };
-
-    // ========== STATE ==========
-    var db = null;
-    var campaigns = [];
-    var syncTimer = null;
-    var unsubscribe = null;
-
-    // ========== UI ELEMENTS ==========
-    var syncBtn = null;
-    var syncStatus = null;
-
-    // ========== INIT ==========
-    function init() {
-        syncBtn = document.getElementById('adsSyncBtn');
-        syncStatus = document.getElementById('adsSyncStatus');
-
-        if (syncBtn) {
-            syncBtn.addEventListener('click', function() { syncNow(false); });
-        }
-
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'A') { syncNow(false); }
-        });
-
-        // Khởi tạo Firebase client SDK (dùng Firestore)
-        try {
-            if (typeof firebase !== 'undefined') {
-                if (!firebase.apps.length) {
-                    firebase.initializeApp(window.MA_FIREBASE_CONFIG);
-                }
-                db = firebase.firestore();
-                subscribeRealtime();
-                scheduleAutoSync();
-            }
-        } catch (e) {
-            console.error('Firebase init error:', e);
-        }
-    }
-
-    // ========== FIRESTORE REALTIME ==========
-    function subscribeRealtime() {
-        if (!db) return;
-        if (unsubscribe) unsubscribe();
-
-        unsubscribe = db.collection(ADS_CONFIG.firebaseCollection)
-            .onSnapshot(function(snapshot) {
-                campaigns = [];
-                snapshot.forEach(function(doc) {
-                    campaigns.push(doc.data());
-                });
-                renderTable();
-                updateStats();
-            }, function(err) {
-                console.error('Firestore error:', err);
-            });
-    }
-
-    // ========== AUTO SYNC ==========
-    function scheduleAutoSync() {
-        var lastSync = localStorage.getItem(ADS_CONFIG.syncTimeKey);
-        var now = Date.now();
-        if (!lastSync || (now - parseInt(lastSync)) > ADS_CONFIG.syncInterval) {
-            syncNow(false); // hiển thị trạng thái lần đầu
-        }
-        if (syncTimer) clearInterval(syncTimer);
-        syncTimer = setInterval(function() { syncNow(true); }, ADS_CONFIG.syncInterval);
-    }
-
-    // ========== SYNC FROM VERCEL API → SAVE TO FIRESTORE ==========
-    async function syncNow(silent) {
-        if (!silent) {
-            if (syncBtn) syncBtn.disabled = true;
-            setStatus('⏳ Đang đồng bộ từ Facebook...', 'info');
-        }
-
-        try {
-            var response = await fetch(ADS_CONFIG.syncEndpoint);
-            if (!response.ok) throw new Error('HTTP ' + response.status);
-
-            var result = await response.json();
-
-            if (!result.success) {
-                throw new Error(result.error || result.message || 'Lỗi API');
-            }
-
-            // Lưu từng campaign vào Firestore
-            if (db && result.data && result.data.length > 0) {
-                var batch = db.batch();
-                result.data.forEach(function(c) {
-                    var ref = db.collection(ADS_CONFIG.firebaseCollection).doc(c.id);
-                    batch.set(ref, c);
-                });
-                await batch.commit();
-            }
-
-            localStorage.setItem(ADS_CONFIG.syncTimeKey, Date.now().toString());
-            updateLastSyncTime();
-
-            if (!silent) {
-                setStatus('✅ ' + result.message, 'success');
-            }
-
-        } catch (err) {
-            console.error('Sync error:', err);
-            if (!silent) {
-                setStatus('❌ Lỗi: ' + err.message, 'error');
-            }
-        } finally {
-            if (!silent && syncBtn) syncBtn.disabled = false;
-        }
-    }
-
-    // ========== RENDER TABLE ==========
-    function renderTable() {
-        var tbody = document.getElementById('ads-tbody');
-        if (!tbody) return;
-
-        if (!campaigns || campaigns.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:#999;">Chưa có dữ liệu. Nhấn "Đồng Bộ Ngay" để tải.</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = campaigns.map(function(c) {
-            var statusClass = c.status === 'ACTIVE' ? 'status-active' : 'status-inactive';
-            var statusText = c.status === 'ACTIVE' ? '🟢 Hoạt động' : '🔴 Tạm dừng';
-            var createdDate = c.created_time ? new Date(c.created_time).toLocaleDateString('vi-VN') : '—';
-            return '<tr>' +
-                '<td>' + escHtml(c.name || '—') + '</td>' +
-                '<td><span class="' + statusClass + '">' + statusText + '</span></td>' +
-                '<td>₫' + formatNum(c.spend) + '</td>' +
-                '<td>' + formatNum(c.impressions) + '</td>' +
-                '<td>' + formatNum(c.clicks) + '</td>' +
-                '<td>' + (c.ctr || 0) + '%</td>' +
-                '<td>₫' + (c.cpc || 0) + '</td>' +
-                '<td>' + (c.conversions || 0) + '</td>' +
-                '<td>' + createdDate + '</td>' +
-                '</tr>';
-        }).join('');
-    }
-
-    // ========== UPDATE STATS ==========
-    function updateStats() {
-        var totalSpend = campaigns.reduce(function(s, c) { return s + parseFloat(c.spend || 0); }, 0);
-        var totalImpressions = campaigns.reduce(function(s, c) { return s + parseInt(c.impressions || 0); }, 0);
-        var totalClicks = campaigns.reduce(function(s, c) { return s + parseInt(c.clicks || 0); }, 0);
-        var avgCpc = totalClicks > 0 ? (totalSpend / totalClicks).toFixed(2) : '0';
-
-        var el = function(id) { return document.getElementById(id); };
-        if (el('statsTotalSpend')) el('statsTotalSpend').textContent = '₫' + formatNum(totalSpend);
-        if (el('statsImpressions')) el('statsImpressions').textContent = formatNum(totalImpressions);
-        if (el('statsClicks')) el('statsClicks').textContent = formatNum(totalClicks);
-        if (el('statsCpc')) el('statsCpc').textContent = '₫' + avgCpc;
-    }
-
-    function updateLastSyncTime() {
-        var el = document.getElementById('lastSyncTime');
-        if (el) el.textContent = 'Cập nhật lần cuối: ' + new Date().toLocaleTimeString('vi-VN');
-    }
-
-    // ========== HELPERS ==========
-    function formatNum(n) {
-        n = parseFloat(n || 0);
-        if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-        if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
-        return Math.round(n).toString();
-    }
-
-    function escHtml(s) {
-        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    function setStatus(msg, type) {
-        if (!syncStatus) return;
-        syncStatus.textContent = msg;
-        syncStatus.className = 'ads-status ads-status-' + (type || 'info');
-        syncStatus.style.display = 'block';
-        if (type === 'success' || type === 'error') {
-            setTimeout(function() { syncStatus.style.display = 'none'; }, 5000);
-        }
-    }
-
-    // ========== CLEANUP ==========
-    window.addEventListener('beforeunload', function() {
-        if (syncTimer) clearInterval(syncTimer);
-        if (unsubscribe) unsubscribe();
-    });
-
-    // ========== START ==========
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
-    } else {
-        init();
-    }
-
-    // Debug helper
-    window.AdsManager = { sync: function() { syncNow(false); }, campaigns: function() { return campaigns; } };
-})();
-
-(function() {
-    'use strict';
-
-    // ========== CONFIG ==========
-    const ADS_CONFIG = {
-        syncEndpoint: '/api/ads-sync',
-        firebaseRef: 'ads/campaigns',
-        syncInterval: 3600000, // 1 hour
-        syncTimeKey: 'ads_last_sync_time'
-    };
-
-    // ========== STATE ==========
-    let db = null;
-    let campaigns = [];
-    let syncTimer = null;
-
-    // ========== UI SELECTORS ==========
-    const ui = {
-        container: document.getElementById('ads-container'),
-        table: document.getElementById('ads-table'),
-        tbody: document.getElementById('ads-tbody'),
-        syncBtn: document.getElementById('adsSyncBtn'),
-        syncStatus: document.getElementById('adsSyncStatus'),
-        statsTotalSpend: document.getElementById('statsTotalSpend'),
-        statsImpressions: document.getElementById('statsImpressions'),
-        statsClicks: document.getElementById('statsClicks'),
-        statsCpc: document.getElementById('statsCpc'),
-        lastSyncTime: document.getElementById('lastSyncTime')
-    };
-
-    // ========== INITIALIZATION ==========
-    function init() {
-        if (typeof firebase === 'undefined') return;
-
-        try {
-            const config = window.MA_FIREBASE_CONFIG;
-            firebase.initializeApp(config);
-            db = firebase.database();
-            
-            setupEventListeners();
-            subscribeToRealtime();
-            autoSync();
-        } catch (err) {
-            console.error('Ads Manager init error:', err);
-        }
-    }
-
-    // ========== EVENT LISTENERS ==========
-    function setupEventListeners() {
-        if (ui.syncBtn) {
-            ui.syncBtn.addEventListener('click', syncNow);
-        }
-
-        // Keyboard shortcut: Ctrl+Shift+A để đồng bộ
-        document.addEventListener('keydown', function(e) {
-            if (e.ctrlKey && e.shiftKey && e.key === 'A') {
-                syncNow();
-            }
-        });
-    }
-
-    // ========== REALTIME SYNC ==========
-    function subscribeToRealtime() {
-        if (!db) return;
-
-        db.ref(ADS_CONFIG.firebaseRef).on('value', function(snapshot) {
-            campaigns = snapshot.val() || [];
-            renderTable();
-            updateStats();
-        });
-    }
-
-    function autoSync() {
-        // Sync ngay khi load
-        const lastSync = localStorage.getItem(ADS_CONFIG.syncTimeKey);
-        const now = Date.now();
-        
-        if (!lastSync || (now - parseInt(lastSync)) > ADS_CONFIG.syncInterval) {
-            syncNow(true); // silent mode
-        }
-
-        // Setup interval sync
-        syncTimer = setInterval(() => {
-            syncNow(true); // silent mode
-        }, ADS_CONFIG.syncInterval);
-    }
-
-    // ========== SYNC FROM API ==========
-    async function syncNow(silent = false) {
-        if (!ui.syncBtn) return;
-
-        try {
-            if (!silent) {
-                ui.syncBtn.disabled = true;
-                setStatus('⏳ Đang đồng bộ...', 'info');
-            }
-
-            const response = await fetch(ADS_CONFIG.syncEndpoint, {
-                method: 'GET',
-                headers: { 'Content-Type': 'application/json' }
-            });
-
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-
-            const result = await response.json();
-
-            if (result.success) {
-                localStorage.setItem(ADS_CONFIG.syncTimeKey, Date.now().toString());
-                if (!silent) {
-                    setStatus(`✅ ${result.message}`, 'success');
-                }
-                updateLastSyncTime();
-            } else {
-                throw new Error(result.message);
-            }
-        } catch (error) {
-            console.error('Sync error:', error);
-            setStatus(`❌ Lỗi: ${error.message}`, 'error');
-        } finally {
-            if (!silent && ui.syncBtn) {
-                ui.syncBtn.disabled = false;
-            }
-        }
-    }
-
-    // ========== RENDERING ==========
-    function renderTable() {
-        if (!ui.tbody) return;
-
-        ui.tbody.innerHTML = '';
-
-        if (campaigns.length === 0) {
-            ui.tbody.innerHTML = `
-                <tr>
-                    <td colspan="9" style="text-align: center; padding: 20px; color: #999;">
-                        Chưa có campaign. Hãy đồng bộ lần đầu.
-                    </td>
-                </tr>
-            `;
-            return;
-        }
-
-        campaigns.forEach(campaign => {
-            const row = document.createElement('tr');
-            const statusClass = campaign.status === 'ACTIVE' ? 'status-active' : 'status-inactive';
-            const statusText = campaign.status === 'ACTIVE' ? '🟢 Hoạt động' : '🔴 Tạm dừng';
-
-            row.innerHTML = `
-                <td>${campaign.name}</td>
-                <td><span class="${statusClass}">${statusText}</span></td>
-                <td>₫${formatNumber(campaign.spend)}</td>
-                <td>${formatNumber(campaign.impressions)}</td>
-                <td>${formatNumber(campaign.clicks)}</td>
-                <td>${campaign.ctr}%</td>
-                <td>₫${campaign.cpc}</td>
-                <td>${campaign.conversions || 0}</td>
-                <td>${new Date(campaign.created_time).toLocaleDateString('vi-VN')}</td>
-            `;
-            ui.tbody.appendChild(row);
-        });
-    }
-
-    function updateStats() {
-        if (campaigns.length === 0) return;
-
-        const totalSpend = campaigns.reduce((sum, c) => sum + parseFloat(c.spend || 0), 0);
-        const totalImpressions = campaigns.reduce((sum, c) => sum + parseInt(c.impressions || 0), 0);
-        const totalClicks = campaigns.reduce((sum, c) => sum + parseInt(c.clicks || 0), 0);
-        const totalConversions = campaigns.reduce((sum, c) => sum + parseInt(c.conversions || 0), 0);
-        const avgCpc = totalClicks > 0 ? (totalSpend / totalClicks).toFixed(2) : 0;
-
-        if (ui.statsTotalSpend) ui.statsTotalSpend.textContent = `₫${formatNumber(totalSpend)}`;
-        if (ui.statsImpressions) ui.statsImpressions.textContent = formatNumber(totalImpressions);
-        if (ui.statsClicks) ui.statsClicks.textContent = formatNumber(totalClicks);
-        if (ui.statsCpc) ui.statsCpc.textContent = `₫${avgCpc}`;
-    }
-
-    function updateLastSyncTime() {
-        if (ui.lastSyncTime) {
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString('vi-VN');
-            ui.lastSyncTime.textContent = `Cập nhật lần cuối: ${timeStr}`;
-        }
-    }
-
-    // ========== HELPERS ==========
-    function formatNumber(num) {
-        const n = parseInt(num || 0);
-        if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-        if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
-        return n.toString();
-    }
-
-    function setStatus(message, type = 'info') {
-        if (!ui.syncStatus) return;
-
-        ui.syncStatus.textContent = message;
-        ui.syncStatus.className = `ads-status ads-status-${type}`;
-        ui.syncStatus.style.display = 'block';
-
-        if (type === 'success' || type === 'error') {
-            setTimeout(() => {
-                ui.syncStatus.style.display = 'none';
+        el.className = 'ads-sync-pill ' + (type || '');
+        if (type === 'ok' || type === 'err') {
+            setTimeout(function () {
+                el.textContent = 'Cập nhật: ' + new Date().toLocaleTimeString('vi-VN');
+                el.className = 'ads-sync-pill';
             }, 5000);
         }
     }
 
-    // ========== CLEANUP ==========
-    window.addEventListener('beforeunload', () => {
+    window.addEventListener('beforeunload', function () {
         if (syncTimer) clearInterval(syncTimer);
-        if (db) db.ref(ADS_CONFIG.firebaseRef).off();
+        if (unsubscribe) unsubscribe();
     });
 
-    // ========== START ==========
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
         init();
     }
 
-    // Expose for debugging
     window.AdsManager = {
         sync: syncNow,
-        campaigns: () => campaigns,
-        reload: subscribeToRealtime
+        data: function () { return allCampaigns; },
+        accounts: function () { return accounts; }
     };
 })();
