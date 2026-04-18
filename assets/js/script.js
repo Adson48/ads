@@ -1006,6 +1006,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const reportEmployeeStat = document.getElementById('reportEmployeeStat');
         const insightWeeklyStamp = document.getElementById('insightWeeklyStamp');
         const weeklyStrategyWeekStamp = document.getElementById('weeklyStrategyWeekStamp');
+        const weeklyStrategyWeekPicker = document.getElementById('weeklyStrategyWeekPicker');
         const insightDateFromInput = document.getElementById('insightDateFrom');
         const insightDateToInput = document.getElementById('insightDateTo');
         const topAreaWeekSelect = document.getElementById('topAreaWeekSelect');
@@ -1909,6 +1910,42 @@ if (studioOutput && sidebarCategoryLinks.length) {
             return 'Tuần ' + weekNo + ' (' + toViDate(toInputDate(fromDate)) + ' - ' + toViDate(toInputDate(toDate)) + ')';
         };
 
+        const toIsoWeekValue = function(dateObj) {
+            if (!(dateObj instanceof Date) || Number.isNaN(dateObj.getTime())) {
+                return '';
+            }
+            const d = new Date(Date.UTC(dateObj.getFullYear(), dateObj.getMonth(), dateObj.getDate()));
+            const day = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - day);
+            const weekYear = d.getUTCFullYear();
+            const yearStart = new Date(Date.UTC(weekYear, 0, 1));
+            const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+            return weekYear + '-W' + String(weekNo).padStart(2, '0');
+        };
+
+        const weekInputToRange = function(weekValue) {
+            const m = String(weekValue || '').match(/^(\d{4})-W(\d{2})$/);
+            if (!m) {
+                return null;
+            }
+            const year = Number(m[1]);
+            const week = Number(m[2]);
+            if (!year || !week) {
+                return null;
+            }
+
+            // ISO week: week 1 contains Jan 4, Monday is start of week.
+            const jan4 = new Date(year, 0, 4);
+            const jan4Day = jan4.getDay() || 7;
+            const week1Monday = addDays(jan4, -(jan4Day - 1));
+            const fromDate = addDays(week1Monday, (week - 1) * 7);
+            const toDate = addDays(fromDate, 6);
+            return {
+                from: toInputDate(fromDate),
+                to: toInputDate(toDate)
+            };
+        };
+
         const populateTopAreaWeekSelect = function() {
             if (!topAreaWeekSelect) {
                 return;
@@ -1948,6 +1985,9 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 if (weeklyStrategyWeekStamp) {
                     weeklyStrategyWeekStamp.textContent = 'Tuần từ ngày --/--/---- đến --/--/----';
                 }
+                if (weeklyStrategyWeekPicker) {
+                    weeklyStrategyWeekPicker.value = '';
+                }
                 return;
             }
             const fromText = toViDate(range.from);
@@ -1957,12 +1997,19 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 if (weeklyStrategyWeekStamp) {
                     weeklyStrategyWeekStamp.textContent = 'Tuần từ ngày --/--/---- đến --/--/----';
                 }
+                if (weeklyStrategyWeekPicker) {
+                    weeklyStrategyWeekPicker.value = '';
+                }
                 return;
             }
             const wk = getWeekNumber(new Date(range.to));
             insightWeeklyStamp.textContent = 'Tuần ' + wk + ' - ' + fromText + ' đến ' + toText;
             if (weeklyStrategyWeekStamp) {
                 weeklyStrategyWeekStamp.textContent = 'Tuần từ ngày ' + fromText + ' đến ' + toText;
+            }
+            if (weeklyStrategyWeekPicker) {
+                const fromDate = toDateAtStart(range.from);
+                weeklyStrategyWeekPicker.value = fromDate ? toIsoWeekValue(fromDate) : '';
             }
         };
 
@@ -2163,6 +2210,15 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 }
                 const parts = value.split('|');
                 applyInsightRange(parts[0], parts[1], true);
+            });
+        }
+        if (weeklyStrategyWeekPicker) {
+            weeklyStrategyWeekPicker.addEventListener('change', function() {
+                const weekRange = weekInputToRange(weeklyStrategyWeekPicker.value);
+                if (!weekRange) {
+                    return;
+                }
+                applyInsightRange(weekRange.from, weekRange.to, true);
             });
         }
 
