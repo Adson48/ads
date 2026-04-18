@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Ads - Báo Cáo Tháng</title>
+    <title>Marketing Ads - B�o C�o Th�ng</title>
     <link rel="stylesheet" href="./assets/css/style.css?v=20260418-27">
     <style>
         body { background: #f4f6fb; }
@@ -272,7 +272,7 @@
         .rp-table tbody tr.rd:hover .cell-day { background:linear-gradient(90deg,#fddaeb,#feeaf2); }
         .rp-table tbody tr.rd.is-wknd .cell-day { background:linear-gradient(90deg,#fff0e6,#fff6f0); color:#b84f1a; border-right-color:#f5b888; }
 
-        /* Input cells — subtle warm-white background */
+        /* Input cells � subtle warm-white background */
         .cell-cost-wrap { padding:0; border-right:1px solid rgba(230,215,222,.65); border-bottom:1px solid rgba(230,215,222,.65); min-width:110px; vertical-align:middle; background:rgba(255,254,255,.95); }
         .cell-cost-inp { width:100%; border:none; outline:none; background:transparent; text-align:right; padding:.38rem .52rem; font-size:.8rem; font-family:inherit; color:#3d1f2e; font-weight:600; display:block; }
         .cell-cost-inp:focus { background:rgba(255,234,244,.75); }
@@ -281,13 +281,13 @@
         .rp-inp { width:100%; border:none; outline:none; background:transparent; text-align:right;
             padding:.4rem .46rem; font-size:.8rem; font-family:inherit; color:#2f2030; min-width:62px; display:block; }
         .rp-inp:focus { background:rgba(255,234,244,.75); }
-        /* Revenue column — distinct green-tinted background */
+        /* Revenue column � distinct green-tinted background */
         .cell-rev { padding:0; border-right:1px solid rgba(230,215,222,.65); border-bottom:1px solid rgba(230,215,222,.65); min-width:112px; vertical-align:middle; background:rgba(236,253,245,.9); }
         .rp-inp-rev { width:100%; border:none; outline:none; background:transparent; text-align:right;
             padding:.4rem .46rem; font-size:.8rem; font-family:inherit; color:#116640; font-weight:700; display:block; }
         .rp-inp-rev:focus { background:rgba(209,250,229,.8); }
 
-        /* Formula cells — light purple background so they differ from white input cells */
+        /* Formula cells � light purple background so they differ from white input cells */
         td.rp-fc { border-right:1px solid rgba(210,190,225,.55); border-bottom:1px solid rgba(230,215,222,.65);
             text-align:center; padding:.4rem .42rem; font-size:.77rem; font-weight:700; white-space:nowrap;
             background:rgba(245,240,252,.65); }
@@ -446,145 +446,145 @@
         <nav>
             <div class="logo">Marketing Ads</div>
             <ul class="nav-links">
-                <li><a href="./index.html">Trang Chủ</a></li>
-                <li><a href="./reports.html" class="active">Báo Cáo</a></li>
-                <li><a href="./notifications.html">Thông Báo</a></li>
-                <li><a href="./ideas.html">Ý Tưởng</a></li>
-                <li><a href="./content.html">Nội Dung</a></li>
-                <li><a href="./resource-admin.html">Quản trị tài nguyên</a></li>
+                <li><a href="./index.html">Trang Ch?</a></li>
+                <li><a href="./reports.html" class="active">B�o C�o</a></li>
+                <li><a href="./notifications.html">Th�ng B�o</a></li>
+                <li><a href="./ideas.html">� Tu?ng</a></li>
+                <li><a href="./content.html">N?i Dung</a></li>
+                <li><a href="./resource-admin.html">Qu?n tr? t�i nguy�n</a></li>
             </ul>
         </nav>
     </header>
 
     <div class="rp-page">
         <div class="rp-topbar">
-            <div class="rp-title">&#128202; <span>Báo Cáo</span> Tháng</div>
+            <div class="rp-title">&#128202; <span>B�o C�o</span> Th�ng</div>
             <div class="rp-controls">
-                <span class="rp-name-label">Nhân viên:</span>
+                <span class="rp-name-label">Nh�n vi�n:</span>
                 <select id="rpReporterPick" class="rp-select"></select>
-                <input id="rpReporterNew" class="rp-name-inp" type="text" placeholder="Thêm nhân viên mới..." maxlength="40">
-                <button class="rp-btn rp-btn-gen" id="rpBtnAddReporter" type="button">Thêm NV</button>
-                <button class="rp-btn rp-btn-rename" id="rpBtnRenameReporter" type="button">Đổi tên NV</button>
-                <button class="rp-btn rp-btn-clear" id="rpBtnDelReporter" type="button">Xóa NV</button>
+                <input id="rpReporterNew" class="rp-name-inp" type="text" placeholder="Th�m nh�n vi�n m?i..." maxlength="40">
+                <button class="rp-btn rp-btn-gen" id="rpBtnAddReporter" type="button">Th�m NV</button>
+                <button class="rp-btn rp-btn-rename" id="rpBtnRenameReporter" type="button">�?i t�n NV</button>
+                <button class="rp-btn rp-btn-clear" id="rpBtnDelReporter" type="button">X�a NV</button>
                 <select id="rpMonth" class="rp-select">
-                    <option value="1">Tháng 1</option><option value="2">Tháng 2</option>
-                    <option value="3">Tháng 3</option><option value="4">Tháng 4</option>
-                    <option value="5">Tháng 5</option><option value="6">Tháng 6</option>
-                    <option value="7">Tháng 7</option><option value="8">Tháng 8</option>
-                    <option value="9">Tháng 9</option><option value="10">Tháng 10</option>
-                    <option value="11">Tháng 11</option><option value="12">Tháng 12</option>
+                    <option value="1">Th�ng 1</option><option value="2">Th�ng 2</option>
+                    <option value="3">Th�ng 3</option><option value="4">Th�ng 4</option>
+                    <option value="5">Th�ng 5</option><option value="6">Th�ng 6</option>
+                    <option value="7">Th�ng 7</option><option value="8">Th�ng 8</option>
+                    <option value="9">Th�ng 9</option><option value="10">Th�ng 10</option>
+                    <option value="11">Th�ng 11</option><option value="12">Th�ng 12</option>
                 </select>
                 <input id="rpYear" class="rp-year" type="number" value="2026" min="2020" max="2099">
-                <button class="rp-btn rp-btn-gen"    id="rpBtnGen">Tạo Bảng</button>
-                <button class="rp-btn rp-btn-save"   id="rpBtnSave">Lưu Chia Sẻ</button>
-                <button class="rp-btn rp-btn-export" id="rpBtnExport">Xuất CSV</button>
-                <button class="rp-btn rp-btn-clear"  id="rpBtnClear">Xóa Tháng</button>
-                <span id="rpSaveStatus" class="rp-save-status">Chưa lưu chia sẻ</span>
+                <button class="rp-btn rp-btn-gen"    id="rpBtnGen">T?o B?ng</button>
+                <button class="rp-btn rp-btn-save"   id="rpBtnSave">Luu Chia S?</button>
+                <button class="rp-btn rp-btn-export" id="rpBtnExport">Xu?t CSV</button>
+                <button class="rp-btn rp-btn-clear"  id="rpBtnClear">X�a Th�ng</button>
+                <span id="rpSaveStatus" class="rp-save-status">Chua luu chia s?</span>
             </div>
         </div>
 
         <div class="rp-filterbar">
-            <label>Bộ lọc:</label>
-            <button class="rp-filter-chip active" data-filter="all">Tất cả</button>
-            <button class="rp-filter-chip" data-filter="has-data">Có dữ liệu</button>
-            <button class="rp-filter-chip" data-filter="weekend">Cuối tuần</button>
-            <button class="rp-filter-chip" data-filter="weekday">Ngày thường</button>
+            <label>B? l?c:</label>
+            <button class="rp-filter-chip active" data-filter="all">T?t c?</button>
+            <button class="rp-filter-chip" data-filter="has-data">C� d? li?u</button>
+            <button class="rp-filter-chip" data-filter="weekend">Cu?i tu?n</button>
+            <button class="rp-filter-chip" data-filter="weekday">Ng�y thu?ng</button>
             <div class="rp-filter-sep"></div>
-            <label>Từ ngày:</label>
+            <label>T? ng�y:</label>
             <input id="rpFilterFrom" class="rp-filter-select" type="number" min="1" max="31" placeholder="1" style="width:62px;">
-            <label>Đến ngày:</label>
+            <label>�?n ng�y:</label>
             <input id="rpFilterTo" class="rp-filter-select" type="number" min="1" max="31" placeholder="31" style="width:62px;">
-            <label>Từ lịch:</label>
+            <label>T? l?ch:</label>
             <input id="rpFilterDateFrom" class="rp-filter-date" type="date">
-            <label>Đến lịch:</label>
+            <label>�?n l?ch:</label>
             <input id="rpFilterDateTo" class="rp-filter-date" type="date">
-            <button class="rp-filter-chip rp-chip-primary" id="rpFilterApply">Áp dụng</button>
-            <button class="rp-filter-chip" id="rpFilterReset">Đặt lại</button>
+            <button class="rp-filter-chip rp-chip-primary" id="rpFilterApply">�p d?ng</button>
+            <button class="rp-filter-chip" id="rpFilterReset">�?t l?i</button>
         </div>
 
         <div id="rpTelegramAdminZone">
         <div class="rp-telebar">
-            <span class="rp-tele-label">Đồng bộ Telegram:</span>
-            <button class="rp-btn rp-btn-export" id="rpTgSyncNow" type="button">Đồng bộ ngay</button>
+            <span class="rp-tele-label">�?ng b? Telegram:</span>
+            <button class="rp-btn rp-btn-export" id="rpTgSyncNow" type="button">�?ng b? ngay</button>
             <label class="rp-tele-help" style="display:inline-flex;align-items:center;gap:.35rem;">
-                <input type="checkbox" id="rpTgAutoSync"> Tự động 45 giây/lần
+                <input type="checkbox" id="rpTgAutoSync"> T? d?ng 45 gi�y/l?n
             </label>
-            <span id="rpTgStatus" class="rp-tele-status">Chưa đồng bộ.</span>
-            <span class="rp-tele-help">Hỗ trợ cả dạng 1 dòng và xuống dòng.</span>
+            <span id="rpTgStatus" class="rp-tele-status">Chua d?ng b?.</span>
+            <span class="rp-tele-help">H? tr? c? d?ng 1 d�ng v� xu?ng d�ng.</span>
         </div>
         <div class="rp-tele-config">
             <div class="rp-tele-config-head">
-                <div class="rp-tele-config-title">Cấu hình Telegram để nhận báo cáo từ nhóm</div>
-                <div class="rp-tele-config-note">Thêm Bot Token và Chat ID nhóm ở đây, không cần sang trang khác.</div>
+                <div class="rp-tele-config-title">C?u h�nh Telegram d? nh?n b�o c�o t? nh�m</div>
+                <div class="rp-tele-config-note">Th�m Bot Token v� Chat ID nh�m ? d�y, kh�ng c?n sang trang kh�c.</div>
             </div>
             <div class="rp-tele-field">
                 <label for="rpTgBotToken">Bot Token</label>
                 <input id="rpTgBotToken" class="rp-tele-input" type="text" placeholder="VD: 123456:ABC-DEF...">
             </div>
             <div class="rp-tele-field">
-                <label for="rpTgChatId">Chat ID nhóm</label>
+                <label for="rpTgChatId">Chat ID nh�m</label>
                 <input id="rpTgChatId" class="rp-tele-input" type="text" placeholder="VD: -1001234567890">
             </div>
             <div class="rp-tele-actions">
-                <button class="rp-btn rp-btn-gen" id="rpTgSaveConfig" type="button">Lưu Telegram</button>
-                <button class="rp-btn rp-btn-clear" id="rpTgClearConfig" type="button">Xóa cấu hình</button>
+                <button class="rp-btn rp-btn-gen" id="rpTgSaveConfig" type="button">Luu Telegram</button>
+                <button class="rp-btn rp-btn-clear" id="rpTgClearConfig" type="button">X�a c?u h�nh</button>
             </div>
-            <div class="rp-tele-summary" id="rpTgConfigSummary">Chưa có cấu hình Telegram.</div>
+            <div class="rp-tele-summary" id="rpTgConfigSummary">Chua c� c?u h�nh Telegram.</div>
         </div>
     </div>
-    <div id="rpTelegramStaffNote" class="rp-tele-staff-note">Phần cấu hình Telegram chỉ dành cho quản trị cao nhất. Dữ liệu báo cáo đồng bộ sẽ tự hiển thị cho toàn bộ nhân viên.</div>
+    <div id="rpTelegramStaffNote" class="rp-tele-staff-note">Ph?n c?u h�nh Telegram ch? d�nh cho qu?n tr? cao nh?t. D? li?u b�o c�o d?ng b? s? t? hi?n th? cho to�n b? nh�n vi�n.</div>
     <div class="rp-tele-template">
-        <p class="rp-tele-template-title">Mẫu nhân viên gửi báo cáo Telegram</p>
-        <p>Mẫu điền Telegram (xuống dòng, copy và thay số):</p>
+        <p class="rp-tele-template-title">M?u nh�n vi�n g?i b�o c�o Telegram</p>
+        <p>M?u di?n Telegram (xu?ng d�ng, copy v� thay s?):</p>
         <pre>/report
-NV: Tên nhân viên
-Ngày: 2026-04-17
-Chi phí: 1200000
+NV: T�n nh�n vi�n
+Ng�y: 2026-04-17
+Chi ph�: 1200000
 MESS: 80
-SĐT: 30
-Lịch: 15
-Hoãn hủy: 2
-HĐ: 6
+S�T: 30
+L?ch: 15
+Ho�n h?y: 2
+H�: 6
 Doanh thu: 45000000</pre>
     </div>
 
         <div class="rp-kpi-bar">
-            <div class="rp-kpi kpi-cost"><div class="rp-kpi-label">Tổng Chi Phí</div><div class="rp-kpi-value" id="kpiCost">0 đ</div></div>
-            <div class="rp-kpi kpi-rev"> <div class="rp-kpi-label">Tổng Doanh Thu</div><div class="rp-kpi-value good" id="kpiRev">0 đ</div></div>
+            <div class="rp-kpi kpi-cost"><div class="rp-kpi-label">T?ng Chi Ph�</div><div class="rp-kpi-value" id="kpiCost">0 d</div></div>
+            <div class="rp-kpi kpi-rev"> <div class="rp-kpi-label">T?ng Doanh Thu</div><div class="rp-kpi-value good" id="kpiRev">0 d</div></div>
             <div class="rp-kpi kpi-roas"><div class="rp-kpi-label">ROAS</div><div class="rp-kpi-value" id="kpiRoas">-</div></div>
-            <div class="rp-kpi kpi-mess"><div class="rp-kpi-label">Tổng MESS</div><div class="rp-kpi-value" id="kpiMess">0</div></div>
-            <div class="rp-kpi kpi-sdt"> <div class="rp-kpi-label">Tổng SĐT</div><div class="rp-kpi-value" id="kpiSdt">0</div></div>
-            <div class="rp-kpi kpi-lich"><div class="rp-kpi-label">Tổng Lịch Hẹn</div><div class="rp-kpi-value" id="kpiLich">0</div></div>
-            <div class="rp-kpi kpi-hd">  <div class="rp-kpi-label">Tổng Hợp Đồng</div><div class="rp-kpi-value" id="kpiHd">0</div></div>
-            <div class="rp-kpi kpi-coc"> <div class="rp-kpi-label">Tổng Cọc</div><div class="rp-kpi-value good" id="kpiCoc">0 đ</div></div>
+            <div class="rp-kpi kpi-mess"><div class="rp-kpi-label">T?ng MESS</div><div class="rp-kpi-value" id="kpiMess">0</div></div>
+            <div class="rp-kpi kpi-sdt"> <div class="rp-kpi-label">T?ng S�T</div><div class="rp-kpi-value" id="kpiSdt">0</div></div>
+            <div class="rp-kpi kpi-lich"><div class="rp-kpi-label">T?ng L?ch H?n</div><div class="rp-kpi-value" id="kpiLich">0</div></div>
+            <div class="rp-kpi kpi-hd">  <div class="rp-kpi-label">T?ng H?p �?ng</div><div class="rp-kpi-value" id="kpiHd">0</div></div>
+            <div class="rp-kpi kpi-coc"> <div class="rp-kpi-label">T?ng C?c</div><div class="rp-kpi-value good" id="kpiCoc">0 d</div></div>
         </div>
 
         <div class="rp-table-tools">
             <div class="rp-table-tools-main">
-                <span class="rp-table-tools-title">Tùy chỉnh bảng</span>
-                <span class="rp-table-tools-hint">Kéo mép phải tiêu đề cột để đổi độ rộng. Chế độ rộng giúp nhập số dễ hơn.</span>
+                <span class="rp-table-tools-title">T�y ch?nh b?ng</span>
+                <span class="rp-table-tools-hint">K�o m�p ph?i ti�u d? c?t d? d?i d? r?ng. Ch? d? r?ng gi�p nh?p s? d? hon.</span>
             </div>
             <div class="rp-table-tools-actions">
-                <button class="rp-table-chip" type="button" data-density="compact">Chế độ gọn</button>
-                <button class="rp-table-chip" type="button" data-density="comfy">Chế độ rộng</button>
-                <button class="rp-table-chip" type="button" id="rpResetColWidths">Reset độ rộng cột</button>
+                <button class="rp-table-chip" type="button" data-density="compact">Ch? d? g?n</button>
+                <button class="rp-table-chip" type="button" data-density="comfy">Ch? d? r?ng</button>
+                <button class="rp-table-chip" type="button" id="rpResetColWidths">Reset d? r?ng c?t</button>
             </div>
         </div>
         <div class="rp-table-wrap" id="rpTableWrap">
             <div class="rp-scroll">
                 <table class="rp-table" id="rpTable">
                     <thead>
-                        <tr class="rh-banner"><td colspan="14" id="rpTableTitle">THÁNG 4/2026</td></tr>
+                        <tr class="rh-banner"><td colspan="14" id="rpTableTitle">TH�NG 4/2026</td></tr>
                         <tr class="rh-cols">
-                            <th class="col-day">Ngày</th>
-                            <th class="col-e">Chi Phí (đ)</th>
+                            <th class="col-day">Ng�y</th>
+                            <th class="col-e">Chi Ph� (d)</th>
                             <th class="col-e">MESS</th>
                             <th class="col-e">SDT</th>
-                            <th class="col-e">ĐẶT LỊCH</th>
-                            <th class="col-e">HOÀN HỦY</th>
-                            <th class="col-e">SỐ HĐ</th>
-                            <th class="col-f">TỈ LỆ KÝ</th>
-                            <th class="col-f">TỈ LỆ XIN SỐ</th>
+                            <th class="col-e">�?T L?CH</th>
+                            <th class="col-e">HO�N H?Y</th>
+                            <th class="col-e">S? H�</th>
+                            <th class="col-f">T? L? K�</th>
+                            <th class="col-f">T? L? XIN S?</th>
                             <th class="col-f">CP/MESS</th>
                             <th class="col-f">CP/SDT</th>
                             <th class="col-f">CP/LICH</th>
@@ -592,7 +592,7 @@ Doanh thu: 45000000</pre>
                             <th class="col-f">% CP/DT</th>
                         </tr>
                         <tr class="rh-total" id="rpTotalRow">
-                            <th class="tl">TỔNG</th>
+                            <th class="tl">T?NG</th>
                             <th class="tv" id="tCost">-</th>
                             <th class="tv" id="tMess">-</th><th class="tv" id="tSdt">-</th>
                             <th class="tv" id="tLich">-</th><th class="tv" id="tHoanHuy">-</th><th class="tv" id="tHd">-</th>
@@ -607,16 +607,16 @@ Doanh thu: 45000000</pre>
         </div>
     </div>
 
-    <div class="rp-toast" id="rpToast">Đã lưu!</div>
+    <div class="rp-toast" id="rpToast">�� luu!</div>
 
     <div class="rp-history-wrap">
-        <div class="rp-history-title"><span>&#128338;</span>&nbsp;Lịch sử chỉnh sửa <button id="rpHistClearAll" class="rp-hist-clear">Xóa tất cả</button></div>
-        <ul class="rp-history-list" id="rpHistoryList"><li class="rp-history-empty">Chưa có lịch sử nào.</li></ul>
+        <div class="rp-history-title"><span>&#128338;</span>&nbsp;L?ch s? ch?nh s?a <button id="rpHistClearAll" class="rp-hist-clear">X�a t?t c?</button></div>
+        <ul class="rp-history-list" id="rpHistoryList"><li class="rp-history-empty">Chua c� l?ch s? n�o.</li></ul>
     </div>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
     <script src="./assets/js/firebase-config.js?v=20260418-24"></script>
-    <script src="./assets/js/script.js?v=20260418-28"></script>
+    <script src="./assets/js/script.js?v=20260418-29"></script>
     <script>
     (function(){
         var SK='rpData3',HIST_KEY='rpEditHistory',EMP_KEY='rpEmployeeListV1',TG_OFFSET_KEY='rpTelegramOffsetV1',TABLE_WIDTH_KEY='rpTableWidthsV1',TABLE_DENSITY_KEY='rpTableDensityV1';
@@ -896,7 +896,7 @@ Doanh thu: 45000000</pre>
             cell.style.position='sticky';
             var handle=document.createElement('span');
             handle.className='rp-col-resize';
-            handle.title='Kéo để đổi độ rộng cột';
+            handle.title='K�o d? d?i d? r?ng c?t';
             handle.addEventListener('mousedown',function(ev){
                 ev.preventDefault();
                 ev.stopPropagation();
@@ -958,12 +958,12 @@ Doanh thu: 45000000</pre>
             var raw=[];
             try{raw=JSON.parse(localStorage.getItem(EMP_KEY)||'[]');}catch(e){}
             raw=(Array.isArray(raw)?raw:[]).map(normReporter).filter(Boolean);
-            if(!raw.length){raw=['Nhân viên 1'];}
+            if(!raw.length){raw=['Nh�n vi�n 1'];}
             return Array.from(new Set(raw));
         }
         function saveReporters(list){
             var clean=(Array.isArray(list)?list:[]).map(normReporter).filter(Boolean);
-            if(!clean.length){clean=['Nhân viên 1'];}
+            if(!clean.length){clean=['Nh�n vi�n 1'];}
             localStorage.setItem(EMP_KEY,JSON.stringify(Array.from(new Set(clean))));
         }
         function renderReporterPick(selected){
@@ -1014,7 +1014,7 @@ Doanh thu: 45000000</pre>
         }
         function pushHistory(m,y,data){
             var hist=[];try{hist=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}catch(e){}
-            var snap={ts:Date.now(),month:m,year:y,reporter:getReporter()||'Chưa nhập',data:JSON.stringify(data)};
+            var snap={ts:Date.now(),month:m,year:y,reporter:getReporter()||'Chua nh?p',data:JSON.stringify(data)};
             hist.unshift(snap);if(hist.length>MAX_HIST)hist=hist.slice(0,MAX_HIST);
             localStorage.setItem(HIST_KEY,JSON.stringify(hist));
             renderHistory();
@@ -1022,21 +1022,21 @@ Doanh thu: 45000000</pre>
         function renderHistory(){
             var list=document.getElementById('rpHistoryList');if(!list)return;
             var hist=[];try{hist=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}catch(e){}
-            if(!hist.length){list.innerHTML='<li class="rp-history-empty">Chưa có lịch sử nào.</li>';return;}
-            var mn=['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+            if(!hist.length){list.innerHTML='<li class="rp-history-empty">Chua c� l?ch s? n�o.</li>';return;}
+            var mn=['','Th�ng 1','Th�ng 2','Th�ng 3','Th�ng 4','Th�ng 5','Th�ng 6','Th�ng 7','Th�ng 8','Th�ng 9','Th�ng 10','Th�ng 11','Th�ng 12'];
             list.innerHTML=hist.map(function(h,i){
                 var d=new Date(h.ts);var ts=d.toLocaleDateString('vi-VN')+' '+d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});
-                return '<li class="rp-history-item">'+'<span class="rp-hist-time">'+ts+'</span>'+'<span class="rp-hist-info"><strong>'+h.reporter+'</strong> - '+mn[h.month]+'/'+h.year+'</span>'+'<button class="rp-hist-restore" data-i="'+i+'">Khôi phục</button>'+'<button class="rp-hist-del" data-i="'+i+'">&times;</button>'+'</li>';
+                return '<li class="rp-history-item">'+'<span class="rp-hist-time">'+ts+'</span>'+'<span class="rp-hist-info"><strong>'+h.reporter+'</strong> - '+mn[h.month]+'/'+h.year+'</span>'+'<button class="rp-hist-restore" data-i="'+i+'">Kh�i ph?c</button>'+'<button class="rp-hist-del" data-i="'+i+'">&times;</button>'+'</li>';
             }).join('');
             list.querySelectorAll('.rp-hist-restore').forEach(function(btn){
                 btn.addEventListener('click',function(){
                     var h=hist[parseInt(this.dataset.i)];if(!h)return;
-                    if(!confirm('Khôi phục dữ liệu '+mn[h.month]+'/'+h.year+' của '+h.reporter+'?'))return;
+                    if(!confirm('Kh�i ph?c d? li?u '+mn[h.month]+'/'+h.year+' c?a '+h.reporter+'?'))return;
                     var mv=getMY();
                     ensureReporterExists(h.reporter);
                     localStorage.setItem(skey(h.month,h.year,h.reporter),h.data);
                     if(h.month===mv.m&&h.year===mv.y&&getReporter()===h.reporter)gen();
-                    toast('Đã khôi phục!');
+                    toast('�� kh�i ph?c!');
                 });
             });
             list.querySelectorAll('.rp-hist-del').forEach(function(btn){
@@ -1052,12 +1052,12 @@ Doanh thu: 45000000</pre>
             var now=new Date();
             var sel=document.getElementById('rpMonth');if(sel)sel.value=String(now.getMonth()+1);
             var yr=document.getElementById('rpYear');if(yr)yr.value=String(now.getFullYear());
-            renderReporterPick('Nhân viên 1');
+            renderReporterPick('Nh�n vi�n 1');
         }());
-        function getReporter(){var pick=document.getElementById('rpReporterPick');return normReporter((pick&&pick.value)||'Nhân viên 1');}
+        function getReporter(){var pick=document.getElementById('rpReporterPick');return normReporter((pick&&pick.value)||'Nh�n vi�n 1');}
         function getNewReporterInput(){var ri=document.getElementById('rpReporterNew');return normReporter((ri&&ri.value)||'');}
-        function vnd(n){if(!n)return'0 đ';return Number(n).toLocaleString('vi-VN')+' đ';}
-        function sh(n){if(!n)return'-';if(n>=1e9)return(n/1e9).toFixed(2)+' tỷ';if(n>=1e6)return(n/1e6).toFixed(1)+' tr';return Number(n).toLocaleString('vi-VN');}
+        function vnd(n){if(!n)return'0 d';return Number(n).toLocaleString('vi-VN')+' d';}
+        function sh(n){if(!n)return'-';if(n>=1e9)return(n/1e9).toFixed(2)+' t?';if(n>=1e6)return(n/1e6).toFixed(1)+' tr';return Number(n).toLocaleString('vi-VN');}
         function fn(n){if(!n&&n!==0)return'-';return Number(n).toLocaleString('vi-VN');}
         function pf(v){
             // Accept flexible user input (letters, separators, currency text) and keep only digits.
@@ -1115,13 +1115,13 @@ Doanh thu: 45000000</pre>
             });
             list[oi]=nn;saveReporters(list);return nn;
         }
-        var tt;function toast(msg){var t=document.getElementById('rpToast');if(!t)return;t.textContent=msg||'Đã lưu!';t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show');},2200);}
+        var tt;function toast(msg){var t=document.getElementById('rpToast');if(!t)return;t.textContent=msg||'�� luu!';t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show');},2200);}
         var rt;function sched(){clearTimeout(rt);rt=setTimeout(recalcAll,60);}
         var liveSaveTimer=null;
         function setSaveStatus(msg,type){
             var el=document.getElementById('rpSaveStatus');
             if(!el)return;
-            el.textContent=msg||'Chưa lưu chia sẻ';
+            el.textContent=msg||'Chua luu chia s?';
             el.className='rp-save-status'+(type?(' '+type):'');
         }
         function currentMonthKey(){
@@ -1131,7 +1131,7 @@ Doanh thu: 45000000</pre>
         function scheduleLiveSharedSave(){
             clearTimeout(liveSaveTimer);
             hasPendingLocalEdits=true;
-            setSaveStatus('Đang lưu chia sẻ...','saving');
+            setSaveStatus('�ang luu chia s?...','saving');
             liveSaveTimer=setTimeout(function(){
                 var mv=getMY();
                 saveAll(mv.m,mv.y);
@@ -1141,7 +1141,7 @@ Doanh thu: 45000000</pre>
             var mv=getMY();
             var key=cacheKey(mv.m,mv.y);
             hasPendingLocalEdits=true;
-            setSaveStatus('Đang lưu chia sẻ...','saving');
+            setSaveStatus('�ang luu chia s?...','saving');
             saveAll(mv.m,mv.y);
             clearTimeout(saveTimers[key]);
             return saveRemoteMonthStore(mv.m,mv.y,getMonthStoreSync(mv.m,mv.y));
@@ -1183,7 +1183,7 @@ Doanh thu: 45000000</pre>
             var re=document.getElementById('kpiRoas');
             if(allCost&&allRev){var roas=allRev/allCost;re.textContent=roas.toFixed(2);re.className='rp-kpi-value '+(roas>=2?'good':roas>=1?'warn':'bad');}
             else{re.textContent='-';re.className='rp-kpi-value';}
-            sel('kpiCoc','0 đ');
+            sel('kpiCoc','0 d');
         }
 
         function rpct(td,num,den,hasData,isSign){
@@ -1245,7 +1245,7 @@ Doanh thu: 45000000</pre>
 
         function buildMultiTable(m,y,emps){
             var days=dim(m,y);
-            var mn=['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+            var mn=['','Th�ng 1','Th�ng 2','Th�ng 3','Th�ng 4','Th�ng 5','Th�ng 6','Th�ng 7','Th�ng 8','Th�ng 9','Th�ng 10','Th�ng 11','Th�ng 12'];
             var table=document.getElementById('rpTable');
             var thead=table.querySelector('thead');
             var tbody=document.getElementById('rpBody');
@@ -1263,22 +1263,22 @@ Doanh thu: 45000000</pre>
                 'linear-gradient(135deg,#065f46,#064e3b)'
             ];
             var COL_DEFS=[
-                {l:'CHI PHÍ (đ)',c:'col-e'},{l:'MESS',c:'col-e'},{l:'SĐT',c:'col-e'},
-                {l:'ĐẶT LỊCH',c:'col-e'},{l:'HOÀN HỦY',c:'col-e'},{l:'SỐ HĐ',c:'col-e'},
-                {l:'TỈ LỆ KÝ',c:'col-f'},{l:'TỈ LỆ XIN SỐ',c:'col-f'},
-                {l:'CP/MESS',c:'col-f'},{l:'CP/SĐT',c:'col-f'},{l:'CP/LỊCH',c:'col-f'},
+                {l:'CHI PH� (d)',c:'col-e'},{l:'MESS',c:'col-e'},{l:'S�T',c:'col-e'},
+                {l:'�?T L?CH',c:'col-e'},{l:'HO�N H?Y',c:'col-e'},{l:'S? H�',c:'col-e'},
+                {l:'T? L? K�',c:'col-f'},{l:'T? L? XIN S?',c:'col-f'},
+                {l:'CP/MESS',c:'col-f'},{l:'CP/S�T',c:'col-f'},{l:'CP/L?CH',c:'col-f'},
                 {l:'DOANH THU',c:'col-e'},{l:'% CP/DT',c:'col-f'}
             ];
             buildColGroup(table,emps,COL_DEFS);
 
-            /* ── ROW 1: Day cell (rowspan=3) + Employee banners ── */
+            /* -- ROW 1: Day cell (rowspan=3) + Employee banners -- */
             var bannerRow=document.createElement('tr');
             bannerRow.className='rh-banner';
             var dayTh=document.createElement('th');
             dayTh.className='rh-day-cell';
             dayTh.dataset.colKey='day';
             dayTh.rowSpan=3;
-            dayTh.textContent='Ngày';
+            dayTh.textContent='Ng�y';
             bannerRow.appendChild(dayTh);
             emps.forEach(function(emp,ei){
                 var td=document.createElement('td');
@@ -1286,12 +1286,12 @@ Doanh thu: 45000000</pre>
                 td.className='emp-banner-td';
                 td.style.backgroundImage=EMP_COLORS[ei%EMP_COLORS.length];
                 if(ei===emps.length-1)td.classList.add('emp-group-end');
-                td.textContent=emp.toUpperCase()+' — '+mn[m]+'/'+y;
+                td.textContent=emp.toUpperCase()+' � '+mn[m]+'/'+y;
                 bannerRow.appendChild(td);
             });
             thead.appendChild(bannerRow);
 
-            /* ── ROW 2: Column headers ── */
+            /* -- ROW 2: Column headers -- */
             var colRow=document.createElement('tr');
             colRow.className='rh-cols';
             emps.forEach(function(emp,ei){
@@ -1305,7 +1305,7 @@ Doanh thu: 45000000</pre>
             });
             thead.appendChild(colRow);
 
-            /* ── ROW 3: Top total row ── */
+            /* -- ROW 3: Top total row -- */
             var totalRow=document.createElement('tr');
             totalRow.className='rh-total';
             totalRow.id='rpTotalRow';
@@ -1321,7 +1321,7 @@ Doanh thu: 45000000</pre>
             });
             thead.appendChild(totalRow);
 
-            /* ── TBODY: Day rows ── */
+            /* -- TBODY: Day rows -- */
             for(var d=1;d<=days;d++){
                 var tr=document.createElement('tr');
                 tr.className='rd'+(iswk(d,m,y)?' is-wknd':'');
@@ -1345,11 +1345,11 @@ Doanh thu: 45000000</pre>
                     }
                     var lastInEmpGroup=ei===emps.length-1;
 
-                    /* Chi phí */
+                    /* Chi ph� */
                     var tdC=document.createElement('td');tdC.className='cell-cost-wrap';tdC.dataset.empIdx=ei;
                     tdC.appendChild(minp(sv.cost,'cell-cost-inp rpf'));tr.appendChild(tdC);
 
-                    /* MESS SĐT LỊCH HH HĐ */
+                    /* MESS S�T L?CH HH H� */
                     [{v:sv.mess},{v:sv.sdt},{v:sv.lich},{v:sv.hh},{v:sv.hd}].forEach(function(f){
                         var td=document.createElement('td');td.className='cell-num';td.dataset.empIdx=ei;
                         td.appendChild(minp(f.v));tr.appendChild(td);
@@ -1382,7 +1382,7 @@ Doanh thu: 45000000</pre>
 
             /* Bottom total row */
             var bt=document.createElement('tr');bt.className='rd-btotal';bt.id='rpBtotal';
-            var lbl=document.createElement('td');lbl.className='bt-lbl';lbl.textContent='TỔNG CỘNG';bt.appendChild(lbl);
+            var lbl=document.createElement('td');lbl.className='bt-lbl';lbl.textContent='T?NG C?NG';bt.appendChild(lbl);
             var BT_IDS=['btCost','btMess','btSdt','btLich','btHoanHuy','btHd','btTiLeKy','btTiLeXs','btCpMess','btCpSdt','btCpLich','btRev','btCpDt'];
             emps.forEach(function(emp,ei){
                 BT_IDS.forEach(function(bId,bi){
@@ -1419,60 +1419,60 @@ Doanh thu: 45000000</pre>
             // dropdown now just tracks which employee to rename/delete
         });
         document.getElementById('rpBtnAddReporter').addEventListener('click',async function(){
-            if(!isSuperadminUser){alert('Chỉ quản trị cao nhất mới được thêm nhân viên.');return;}
+            if(!isSuperadminUser){alert('Ch? qu?n tr? cao nh?t m?i du?c th�m nh�n vi�n.');return;}
             var nv=getNewReporterInput();
-            if(!nv){alert('Vui lòng nhập tên nhân viên mới.');return;}
+            if(!nv){alert('Vui l�ng nh?p t�n nh�n vi�n m?i.');return;}
             ensureReporterExists(nv);
             var inp=document.getElementById('rpReporterNew');if(inp){inp.value='';}
             renderReporterPick(nv);
             gen();
             var ok=await saveCurrentMonthImmediately();
-            if(!ok){toast('Thêm NV nhưng chưa đồng bộ shared. Thử lại.');return;}
-            toast('Đã thêm nhân viên "'+nv+'" — bảng mới hiển thị bên phải.');
+            if(!ok){toast('Th�m NV nhung chua d?ng b? shared. Th? l?i.');return;}
+            toast('�� th�m nh�n vi�n "'+nv+'" � b?ng m?i hi?n th? b�n ph?i.');
         });
         document.getElementById('rpBtnRenameReporter').addEventListener('click',async function(){
-            if(!isSuperadminUser){alert('Chỉ quản trị cao nhất mới được đổi tên nhân viên.');return;}
+            if(!isSuperadminUser){alert('Ch? qu?n tr? cao nh?t m?i du?c d?i t�n nh�n vi�n.');return;}
             var oldName=getReporter();var newName=getNewReporterInput();
-            if(!newName){alert('Nhập tên mới vào ô nhập liệu bên cạnh.');return;}
-            if(!confirm('Đổi tên "'+oldName+'" → "'+newName+'"?\nDữ liệu cũ sẽ chuyển sang tên mới.'))return;
+            if(!newName){alert('Nh?p t�n m?i v�o � nh?p li?u b�n c?nh.');return;}
+            if(!confirm('�?i t�n "'+oldName+'" ? "'+newName+'"?\nD? li?u cu s? chuy?n sang t�n m?i.'))return;
             var nn=renameReporter(oldName,newName);
-            if(!nn){alert('Tên không hợp lệ hoặc đã tồn tại.');return;}
+            if(!nn){alert('T�n kh�ng h?p l? ho?c d� t?n t?i.');return;}
             var inp=document.getElementById('rpReporterNew');if(inp)inp.value='';
             renderReporterPick(nn);
             gen();
             var ok=await saveCurrentMonthImmediately();
-            if(!ok){toast('Đổi tên NV nhưng chưa đồng bộ shared. Thử lại.');return;}
-            toast('Đã đổi tên thành "'+nn+'"!');
+            if(!ok){toast('�?i t�n NV nhung chua d?ng b? shared. Th? l?i.');return;}
+            toast('�� d?i t�n th�nh "'+nn+'"!');
         });
         document.getElementById('rpBtnDelReporter').addEventListener('click',async function(){
-            if(!isSuperadminUser){alert('Chỉ quản trị cao nhất mới được xóa nhân viên.');return;}
+            if(!isSuperadminUser){alert('Ch? qu?n tr? cao nh?t m?i du?c x�a nh�n vi�n.');return;}
             var current=getReporter();var list=loadReporters();
-            if(list.length<=1){alert('Cần giữ lại ít nhất 1 nhân viên.');return;}
-            if(!confirm('Xóa nhân viên "'+current+'" khỏi danh sách?')){return;}
+            if(list.length<=1){alert('C?n gi? l?i �t nh?t 1 nh�n vi�n.');return;}
+            if(!confirm('X�a nh�n vi�n "'+current+'" kh?i danh s�ch?')){return;}
             list=list.filter(function(n){return n!==current;});saveReporters(list);
             renderReporterPick(list[0]);
             gen();
             var ok=await saveCurrentMonthImmediately();
-            if(!ok){toast('Xóa NV nhưng chưa đồng bộ shared. Thử lại.');return;}
-            toast('Đã xóa nhân viên khỏi danh sách.');
+            if(!ok){toast('X�a NV nhung chua d?ng b? shared. Th? l?i.');return;}
+            toast('�� x�a nh�n vi�n kh?i danh s�ch.');
         });
         document.getElementById('rpBtnSave').addEventListener('click',function(){
             hasPendingLocalEdits=true;
-            setSaveStatus('Đang lưu chia sẻ...','saving');
+            setSaveStatus('�ang luu chia s?...','saving');
             var mv=getMY();saveAll(mv.m,mv.y);
             var rp=getReporter();
             pushHistory(mv.m,mv.y,JSON.parse(localStorage.getItem(skey(mv.m,mv.y,rp))||'{}'));
-            toast('Đã lưu tất cả nhân viên!');
+            toast('�� luu t?t c? nh�n vi�n!');
         });
         document.getElementById('rpBtnClear').addEventListener('click',function(){
-            if(!confirm('Xóa dữ liệu tháng này của nhân viên "'+getReporter()+'"?'))return;
+            if(!confirm('X�a d? li?u th�ng n�y c?a nh�n vi�n "'+getReporter()+'"?'))return;
             var mv=getMY(),rp=getReporter();
             localStorage.removeItem(skey(mv.m,mv.y,rp));
-            gen();toast('Đã xóa dữ liệu của "'+rp+'"!');
+            gen();toast('�� x�a d? li?u c?a "'+rp+'"!');
         });
         document.getElementById('rpBtnExport').addEventListener('click',function(){
             var mv=getMY(),rows=document.querySelectorAll('.rd[data-day]');
-            var csv='Ngày,Chi Phí,MESS,SĐT,ĐẶT LỊCH,HOÀN HỦY,SỐ HĐ,TỈ LỆ KÝ,TỈ LỆ XIN SỐ,CP/MESS,CP/SĐT,CP/LỊCH,DOANH THU,% CP/DT\n';
+            var csv='Ng�y,Chi Ph�,MESS,S�T,�?T L?CH,HO�N H?Y,S? H�,T? L? K�,T? L? XIN S?,CP/MESS,CP/S�T,CP/L?CH,DOANH THU,% CP/DT\n';
             rows.forEach(function(row){
                 var day=row.querySelector('.cell-day').textContent;
                 var inp=row.querySelectorAll('.rpf');
@@ -1487,8 +1487,8 @@ Doanh thu: 45000000</pre>
             var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='bao-cao-'+rp+'-'+mv.m+'-'+mv.y+'.csv';a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);
         });
         document.getElementById('rpHistClearAll').addEventListener('click',function(){
-            if(!confirm('Xóa toàn bộ lịch sử chỉnh sửa?'))return;
-            localStorage.removeItem(HIST_KEY);renderHistory();toast('Đã xóa lịch sử!');
+            if(!confirm('X�a to�n b? l?ch s? ch?nh s?a?'))return;
+            localStorage.removeItem(HIST_KEY);renderHistory();toast('�� x�a l?ch s?!');
         });
         /* Filter chips */
         var curFilter='all';
@@ -1565,8 +1565,8 @@ Doanh thu: 45000000</pre>
             return null;
         }
         function stripAccents(input){
-            // Replace Vietnamese Đ/đ (U+0110/U+0111) BEFORE NFD normalize since they don't decompose
-            return String(input||'').replace(/Đ/g,'D').replace(/đ/g,'d').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+            // Replace Vietnamese �/d (U+0110/U+0111) BEFORE NFD normalize since they don't decompose
+            return String(input||'').replace(/�/g,'D').replace(/d/g,'d').normalize('NFD').replace(/[\u0300-\u036f]/g,'');
         }
         function keyNorm(input){
             return stripAccents(input).toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -1714,22 +1714,22 @@ Doanh thu: 45000000</pre>
         }
         async function syncFromTelegram(){
             if(!isSuperadminUser){
-                setTgStatus('Chỉ quản trị cao nhất mới được đồng bộ Telegram.', 'bad');
+                setTgStatus('Ch? qu?n tr? cao nh?t m?i du?c d?ng b? Telegram.', 'bad');
                 return;
             }
             var cfg=getTelegramConfigSafe();
             if(!cfg.botToken||!cfg.chatId){
-                setTgStatus('Thiếu Bot Token/Chat ID. Vui lòng cấu hình Telegram trước.', 'bad');
+                setTgStatus('Thi?u Bot Token/Chat ID. Vui l�ng c?u h�nh Telegram tru?c.', 'bad');
                 return;
             }
-            setTgStatus('Đang đồng bộ dữ liệu từ Telegram...','');
+            setTgStatus('�ang d?ng b? d? li?u t? Telegram...','');
             var offset=parseInt(localStorage.getItem(TG_OFFSET_KEY)||'0',10)||0;
             try{
                 var url=buildTelegramUrl(cfg.botToken,'getUpdates')+'?offset='+offset+'&limit=50&timeout=0';
                 var res=await fetch(url);
                 var data=await res.json().catch(function(){return{};});
                 if(!res.ok||!data.ok){
-                    setTgStatus('Không lấy được dữ liệu Telegram: '+(data.description||'Unknown'), 'bad');
+                    setTgStatus('Kh�ng l?y du?c d? li?u Telegram: '+(data.description||'Unknown'), 'bad');
                     return;
                 }
                 var list=Array.isArray(data.result)?data.result:[];
@@ -1759,21 +1759,21 @@ Doanh thu: 45000000</pre>
                 if(maxUpdate>offset){localStorage.setItem(TG_OFFSET_KEY,String(maxUpdate));}
                 if(currentTouched){gen();}
                 if(imported>0){
-                    var msg='Đồng bộ thành công '+imported+' báo cáo';
-                    if(importedCurrent>0){msg+='; vào tháng đang xem: '+importedCurrent;}
-                    if(importedOtherMonth>0){msg+='; khác tháng đang xem: '+importedOtherMonth;}
+                    var msg='�?ng b? th�nh c�ng '+imported+' b�o c�o';
+                    if(importedCurrent>0){msg+='; v�o th�ng dang xem: '+importedCurrent;}
+                    if(importedOtherMonth>0){msg+='; kh�c th�ng dang xem: '+importedOtherMonth;}
                     setTgStatus(msg+'.', 'good');
                 }else if(list.length===0){
-                    setTgStatus('Không có cập nhật Telegram mới.', '');
+                    setTgStatus('Kh�ng c� c?p nh?t Telegram m?i.', '');
                 }else if(chatMatched===0){
-                    setTgStatus('Có cập nhật Telegram nhưng không khớp Chat ID đã cấu hình.', 'bad');
+                    setTgStatus('C� c?p nh?t Telegram nhung kh�ng kh?p Chat ID d� c?u h�nh.', 'bad');
                 }else if(parsedCount===0){
-                    setTgStatus('Đã thấy tin trong nhóm nhưng sai cú pháp /report. Vui lòng đối chiếu đúng mẫu.', 'bad');
+                    setTgStatus('�� th?y tin trong nh�m nhung sai c� ph�p /report. Vui l�ng d?i chi?u d�ng m?u.', 'bad');
                 }else{
-                    setTgStatus('Đã đọc tin Telegram nhưng chưa ghi dữ liệu hợp lệ vào bảng.', 'bad');
+                    setTgStatus('�� d?c tin Telegram nhung chua ghi d? li?u h?p l? v�o b?ng.', 'bad');
                 }
             }catch(e){
-                setTgStatus('Lỗi đồng bộ Telegram: '+(e&&e.message?e.message:'Không rõ lỗi'), 'bad');
+                setTgStatus('L?i d?ng b? Telegram: '+(e&&e.message?e.message:'Kh�ng r� l?i'), 'bad');
             }
         }
         function stopTelegramAutoSync(){
@@ -1803,7 +1803,7 @@ Doanh thu: 45000000</pre>
         }
         function maskTelegramToken(token){
             token=String(token||'').trim();
-            if(!token){return 'chưa nhập';}
+            if(!token){return 'chua nh?p';}
             if(token.length<=10){return token;}
             return token.slice(0,6)+'...'+token.slice(-4);
         }
@@ -1817,8 +1817,8 @@ Doanh thu: 45000000</pre>
             if(chatInp&&document.activeElement!==chatInp){chatInp.value=storedChat;}
             if(summary){
                 summary.textContent=(storedToken||storedChat)
-                    ? ('Đang dùng Bot Token: '+maskTelegramToken(storedToken)+' | Chat ID: '+(storedChat||'chưa nhập'))
-                    : 'Chưa có cấu hình Telegram. Dán Bot Token và Chat ID nhóm rồi bấm Lưu Telegram.';
+                    ? ('�ang d�ng Bot Token: '+maskTelegramToken(storedToken)+' | Chat ID: '+(storedChat||'chua nh?p'))
+                    : 'Chua c� c?u h�nh Telegram. D�n Bot Token v� Chat ID nh�m r?i b?m Luu Telegram.';
             }
         }
         function bindTelegramConfigUi(){
@@ -1829,29 +1829,29 @@ Doanh thu: 45000000</pre>
             refreshTelegramConfigUi();
             if(saveBtn){
                 saveBtn.addEventListener('click',function(){
-                    if(!isSuperadminUser){setTgStatus('Chỉ quản trị cao nhất mới được chỉnh cấu hình Telegram.', 'bad');return;}
+                    if(!isSuperadminUser){setTgStatus('Ch? qu?n tr? cao nh?t m?i du?c ch?nh c?u h�nh Telegram.', 'bad');return;}
                     var token=tokenInp?tokenInp.value.trim():'';
                     var chatId=chatInp?chatInp.value.trim():'';
                     if(!token||!chatId){
-                        setTgStatus('Thiếu Bot Token hoặc Chat ID nhóm.', 'bad');
+                        setTgStatus('Thi?u Bot Token ho?c Chat ID nh�m.', 'bad');
                         return;
                     }
                     localStorage.setItem('telegramBotToken',token);
                     localStorage.setItem('telegramChatId',chatId);
                     localStorage.removeItem(TG_OFFSET_KEY);
                     refreshTelegramConfigUi();
-                    setTgStatus('Đã lưu cấu hình Telegram cho trang báo cáo. Có thể bấm Đồng bộ ngay.', 'good');
+                    setTgStatus('�� luu c?u h�nh Telegram cho trang b�o c�o. C� th? b?m �?ng b? ngay.', 'good');
                     syncFromTelegram();
                 });
             }
             if(clearBtn){
                 clearBtn.addEventListener('click',function(){
-                    if(!isSuperadminUser){setTgStatus('Chỉ quản trị cao nhất mới được chỉnh cấu hình Telegram.', 'bad');return;}
+                    if(!isSuperadminUser){setTgStatus('Ch? qu?n tr? cao nh?t m?i du?c ch?nh c?u h�nh Telegram.', 'bad');return;}
                     localStorage.removeItem('telegramBotToken');
                     localStorage.removeItem('telegramChatId');
                     localStorage.removeItem(TG_OFFSET_KEY);
                     refreshTelegramConfigUi();
-                    setTgStatus('Đã xóa cấu hình Telegram trên trình duyệt này.', '');
+                    setTgStatus('�� x�a c?u h�nh Telegram tr�n tr�nh duy?t n�y.', '');
                 });
             }
         }

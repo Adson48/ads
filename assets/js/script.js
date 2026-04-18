@@ -83,13 +83,6 @@ const collectSharedStatePayload = function() {
     return {
         notifications: safeParseList(localStorage.getItem('notifications')),
         checklist: safeParseList(localStorage.getItem('homeChecklistItems')),
-        settings: {
-            telegramBotToken: String(localStorage.getItem('telegramBotToken') || ''),
-            telegramChatId: String(localStorage.getItem('telegramChatId') || ''),
-            telegramSendEnabled: String(localStorage.getItem('telegramSendEnabled') || ''),
-            googleApiKey: String(localStorage.getItem('googleApiKey') || ''),
-            googleCx: String(localStorage.getItem('googleCx') || '')
-        },
         updatedAt: Date.now()
     };
 };
@@ -98,7 +91,6 @@ const applySharedStateFromRemote = function(data) {
     const remote = (data && typeof data === 'object') ? data : {};
     const remoteNotifications = Array.isArray(remote.notifications) ? remote.notifications : null;
     const remoteChecklist = Array.isArray(remote.checklist) ? remote.checklist : null;
-    const remoteSettings = (remote.settings && typeof remote.settings === 'object') ? remote.settings : null;
 
     if (remoteNotifications) {
         localStorage.setItem('notifications', JSON.stringify(remoteNotifications));
@@ -108,64 +100,8 @@ const applySharedStateFromRemote = function(data) {
         localStorage.setItem('homeChecklistItems', JSON.stringify(remoteChecklist));
     }
 
-    if (remoteSettings) {
-        if (Object.prototype.hasOwnProperty.call(remoteSettings, 'telegramBotToken')) {
-            const token = String(remoteSettings.telegramBotToken || '');
-            if (token) {
-                localStorage.setItem('telegramBotToken', token);
-            } else {
-                localStorage.removeItem('telegramBotToken');
-            }
-        }
-
-        if (Object.prototype.hasOwnProperty.call(remoteSettings, 'telegramChatId')) {
-            const chatId = String(remoteSettings.telegramChatId || '');
-            if (chatId) {
-                localStorage.setItem('telegramChatId', chatId);
-            } else {
-                localStorage.removeItem('telegramChatId');
-            }
-        }
-
-        if (Object.prototype.hasOwnProperty.call(remoteSettings, 'telegramSendEnabled')) {
-            const sendEnabled = String(remoteSettings.telegramSendEnabled || '');
-            if (sendEnabled) {
-                localStorage.setItem('telegramSendEnabled', sendEnabled);
-            } else {
-                localStorage.removeItem('telegramSendEnabled');
-            }
-        }
-
-        if (Object.prototype.hasOwnProperty.call(remoteSettings, 'googleApiKey')) {
-            const apiKey = String(remoteSettings.googleApiKey || '');
-            if (apiKey) {
-                localStorage.setItem('googleApiKey', apiKey);
-            } else {
-                localStorage.removeItem('googleApiKey');
-            }
-        }
-
-        if (Object.prototype.hasOwnProperty.call(remoteSettings, 'googleCx')) {
-            const cx = String(remoteSettings.googleCx || '');
-            if (cx) {
-                localStorage.setItem('googleCx', cx);
-            } else {
-                localStorage.removeItem('googleCx');
-            }
-        }
-    }
-
-    if (telegramBotTokenInput) {
-        telegramBotTokenInput.value = localStorage.getItem('telegramBotToken') || '';
-    }
-    if (telegramChatIdInput) {
-        telegramChatIdInput.value = localStorage.getItem('telegramChatId') || '';
-    }
-    if (sendToTelegramCheckbox) {
-        const saved = localStorage.getItem(telegramSendEnabledKey);
-        if (saved !== null) {
-            sendToTelegramCheckbox.checked = saved === '1';
-        }
+    if (typeof window._maRenderChecklist === 'function') {
+        window._maRenderChecklist();
     }
 
     if (typeof displayNotifications === 'function') {
@@ -220,7 +156,11 @@ const startSharedStateRealtime = function() {
 
     sharedStateUnsub = db.collection(sharedStateCollection).doc(sharedStateDocId).onSnapshot(function(snap) {
         if (!snap.exists) {
-            syncSharedStateToRemote();
+            // Only seed initial doc if there is actual data to persist (avoids blank users wiping existing data)
+            const seed = collectSharedStatePayload();
+            if (seed.notifications.length || seed.checklist.length) {
+                syncSharedStateToRemote();
+            }
             return;
         }
 
@@ -3262,6 +3202,16 @@ if (studioOutput && sidebarCategoryLinks.length) {
             queueSharedStateSync();
             setChecklistOverdueContext(data);
         };
+
+        var renderChecklistFromStorage = function() {
+            const items = safeParseList(localStorage.getItem(checklistStorageKey));
+            checklistContainer.innerHTML = '';
+            items.forEach(function(item) {
+                checklistContainer.appendChild(createChecklistRow(item));
+            });
+            setChecklistOverdueContext(items);
+        };
+        window._maRenderChecklist = renderChecklistFromStorage;
 
         const savedChecklist = JSON.parse(localStorage.getItem(checklistStorageKey) || 'null');
         if (Array.isArray(savedChecklist) && savedChecklist.length) {

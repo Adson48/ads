@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Ads - Trang Chủ</title>
+    <title>Marketing Ads - Trang Ch?</title>
     <link rel="stylesheet" href="./assets/css/style.css?v=20260418-27">
 </head>
 <body>
@@ -11,50 +11,50 @@
         <nav>
             <div class="logo">Marketing Ads</div>
             <ul class="nav-links">
-                <li><a href="./index.html">Trang Chủ</a></li>
-                <li><a href="./reports.html">Báo Cáo</a></li>
-                <li><a href="./notifications.html">Thông Báo</a></li>
-                <li><a href="./ideas.html">Ý Tưởng</a></li>
-                <li><a href="./content.html">Nội Dung</a></li>
-                <li><a href="./resource-admin.html">Quản trị tài nguyên</a></li>
+                <li><a href="./index.html">Trang Ch?</a></li>
+                <li><a href="./reports.html">B�o C�o</a></li>
+                <li><a href="./notifications.html">Th�ng B�o</a></li>
+                <li><a href="./ideas.html">� Tu?ng</a></li>
+                <li><a href="./content.html">N?i Dung</a></li>
+                <li><a href="./resource-admin.html">Qu?n tr? t�i nguy�n</a></li>
             </ul>
         </nav>
     </header>
 
     <section id="homeAlertBanner" class="home-alert-banner" hidden>
         <div class="home-alert-inner">
-            <p class="home-alert-title">CẢNH BÁO CHIẾN DỊCH</p>
+            <p class="home-alert-title">C?NH B�O CHI?N D?CH</p>
             <ul id="homeAlertList" class="home-alert-list"></ul>
         </div>
     </section>
 
     <main class="home-dashboard">
         <section class="section dashboard-overview">
-            <h1 class="dashboard-title">TỔNG QUAN CHIẾN DỊCH ADS</h1>
+            <h1 class="dashboard-title">T?NG QUAN CHI?N D?CH ADS</h1>
             <div class="overview-cards">
                 <article class="overview-card card-budget">
-                    <p class="card-label">💰 Chi phí hiện tại</p>
-                    <input id="budgetInput" class="card-input" type="text" inputmode="numeric" placeholder="Nhập chi phí hiện tại" value="120000000">
+                    <p class="card-label">?? Chi ph� hi?n t?i</p>
+                    <input id="budgetInput" class="card-input" type="text" inputmode="numeric" placeholder="Nh?p chi ph� hi?n t?i" value="120000000">
                 </article>
                 <article class="overview-card card-daily-budget">
-                    <p class="card-label">📈 Doanh thu hiện tại</p>
-                    <input id="dailyBudgetInput" class="card-input" type="text" inputmode="numeric" placeholder="Nhập doanh thu hiện tại" value="4000000">
+                    <p class="card-label">?? Doanh thu hi?n t?i</p>
+                    <input id="dailyBudgetInput" class="card-input" type="text" inputmode="numeric" placeholder="Nh?p doanh thu hi?n t?i" value="4000000">
                 </article>
                 <article class="overview-card card-revenue">
-                    <p class="card-label">🎯 Doanh thu tổng KPI</p>
-                    <input id="revenueInput" class="card-input" type="text" inputmode="numeric" placeholder="Nhập doanh thu tổng KPI" value="350000000">
+                    <p class="card-label">?? Doanh thu t?ng KPI</p>
+                    <input id="revenueInput" class="card-input" type="text" inputmode="numeric" placeholder="Nh?p doanh thu t?ng KPI" value="350000000">
                 </article>
                 <article class="overview-card card-campaign">
-                    <p class="card-label">🚀 Campaign đang chạy</p>
-                    <input id="campaignInput" class="card-input" type="number" min="1" step="1" placeholder="Nhập số campaign" value="12">
+                    <p class="card-label">?? Campaign dang ch?y</p>
+                    <input id="campaignInput" class="card-input" type="number" min="1" step="1" placeholder="Nh?p s? campaign" value="12">
                 </article>
             </div>
         </section>
 
         <section class="section dashboard-chart-section">
-            <h2>Hiệu suất Ads theo thời gian <span id="reportEmployeeStat" class="chart-employee-stat">Tổng nhân viên: 0</span></h2>
+            <h2>Hi?u su?t Ads theo th?i gian <span id="reportEmployeeStat" class="chart-employee-stat">T?ng nh�n vi�n: 0</span></h2>
             <div class="chart-panel">
-                <canvas id="adsPerformanceChart" aria-label="Biểu đồ hiệu suất Ads theo thời gian"></canvas>
+                <canvas id="adsPerformanceChart" aria-label="Bi?u d? hi?u su?t Ads theo th?i gian"></canvas>
             </div>
         </section>
 
@@ -62,113 +62,113 @@
             <div class="insight-grid">
                 <article class="insight-card">
                     <div class="insight-head">
-                        <h3>INSIGHT KHÁCH HÀNG</h3>
+                        <h3>INSIGHT KH�CH H�NG</h3>
                         <div class="insight-range-wrap">
-                            <span id="insightWeeklyStamp" class="insight-badge">Update theo tuần</span>
+                            <span id="insightWeeklyStamp" class="insight-badge">Update theo tu?n</span>
                             <div class="insight-range-controls">
-                                <input id="insightDateFrom" class="insight-date-input" type="date" aria-label="Từ ngày Insight">
-                                <span class="insight-range-sep">đến</span>
-                                <input id="insightDateTo" class="insight-date-input" type="date" aria-label="Đến ngày Insight">
+                                <input id="insightDateFrom" class="insight-date-input" type="date" aria-label="T? ng�y Insight">
+                                <span class="insight-range-sep">d?n</span>
+                                <input id="insightDateTo" class="insight-date-input" type="date" aria-label="�?n ng�y Insight">
                             </div>
                         </div>
                     </div>
                     <div class="insight-form-grid">
                         <div>
-                            <label class="area-field-label" for="insightAgeInput">👩 Mẹ (Tuổi)</label>
-                            <input id="insightAgeInput" class="area-input" type="text" placeholder="Nhập độ tuổi khách hàng">
+                            <label class="area-field-label" for="insightAgeInput">?? M? (Tu?i)</label>
+                            <input id="insightAgeInput" class="area-input" type="text" placeholder="Nh?p d? tu?i kh�ch h�ng">
                         </div>
                         <div>
-                            <label class="area-field-label" for="insightInterestInput">💡 Quan tâm</label>
-                            <textarea id="insightInterestInput" class="area-input insight-textarea" rows="3" placeholder="Nhập mối quan tâm của khách hàng"></textarea>
+                            <label class="area-field-label" for="insightInterestInput">?? Quan t�m</label>
+                            <textarea id="insightInterestInput" class="area-input insight-textarea" rows="3" placeholder="Nh?p m?i quan t�m c?a kh�ch h�ng"></textarea>
                         </div>
                         <div>
-                            <label class="area-field-label" for="insightBehaviorInput">🎯 Hành vi chính</label>
-                            <textarea id="insightBehaviorInput" class="area-input insight-textarea" rows="3" placeholder="Nhập hành vi chính của khách hàng"></textarea>
+                            <label class="area-field-label" for="insightBehaviorInput">?? H�nh vi ch�nh</label>
+                            <textarea id="insightBehaviorInput" class="area-input insight-textarea" rows="3" placeholder="Nh?p h�nh vi ch�nh c?a kh�ch h�ng"></textarea>
                         </div>
                     </div>
                 </article>
 
                 <article class="insight-card">
                     <div class="insight-head">
-                        <h3>Top khu vực ký HĐ cao</h3>
-                        <span class="insight-badge">3 quận tại Hà Nội</span>
+                        <h3>Top khu v?c k� H� cao</h3>
+                        <span class="insight-badge">3 qu?n t?i H� N?i</span>
                     </div>
                     <div class="top-area-week-row">
-                        <label class="area-field-label" for="topAreaWeekSelect">Lọc tuần</label>
+                        <label class="area-field-label" for="topAreaWeekSelect">L?c tu?n</label>
                         <select id="topAreaWeekSelect" class="area-select">
-                            <option value="">Tuần hiện tại</option>
+                            <option value="">Tu?n hi?n t?i</option>
                         </select>
                     </div>
                     <div class="sheet-link-row">
-                        <input id="topAreaSheetUrl" class="area-input" type="url" placeholder="Dán link Google Sheet (public) để tự động cập nhật theo tuần">
-                        <button id="topAreaSheetApply" class="insight-badge sheet-link-btn" type="button">Liên kết Sheet</button>
-                        <button id="topAreaSheetSync" class="insight-badge sheet-link-btn" type="button">Đồng bộ Sheet</button>
+                        <input id="topAreaSheetUrl" class="area-input" type="url" placeholder="D�n link Google Sheet (public) d? t? d?ng c?p nh?t theo tu?n">
+                        <button id="topAreaSheetApply" class="insight-badge sheet-link-btn" type="button">Li�n k?t Sheet</button>
+                        <button id="topAreaSheetSync" class="insight-badge sheet-link-btn" type="button">�?ng b? Sheet</button>
                     </div>
-                    <p id="topAreaSheetStatus" class="sheet-link-status">Chưa liên kết Google Sheet. Hệ thống đang dùng dữ liệu nhập tay.</p>
+                    <p id="topAreaSheetStatus" class="sheet-link-status">Chua li�n k?t Google Sheet. H? th?ng dang d�ng d? li?u nh?p tay.</p>
                     <div class="area-metrics">
                         <div class="area-item">
-                            <label class="area-field-label" for="districtSelect1">Khu vực</label>
+                            <label class="area-field-label" for="districtSelect1">Khu v?c</label>
                             <select id="districtSelect1" class="area-select">
-                                <option value="">Chọn quận/huyện/thị xã</option>
-                                <option>Ba Đình</option>
-                                <option>Hoàn Kiếm</option>
-                                <option>Tây Hồ</option>
-                                <option>Long Biên</option>
-                                <option>Cầu Giấy</option>
-                                <option>Đống Đa</option>
-                                <option>Hai Bà Trưng</option>
-                                <option>Hoàng Mai</option>
-                                <option>Thanh Xuân</option>
-                                <option>Bắc Từ Liêm</option>
-                                <option>Nam Từ Liêm</option>
-                                <option>Hà Đông</option>
+                                <option value="">Ch?n qu?n/huy?n/th? x�</option>
+                                <option>Ba ��nh</option>
+                                <option>Ho�n Ki?m</option>
+                                <option>T�y H?</option>
+                                <option>Long Bi�n</option>
+                                <option>C?u Gi?y</option>
+                                <option>�?ng �a</option>
+                                <option>Hai B� Trung</option>
+                                <option>Ho�ng Mai</option>
+                                <option>Thanh Xu�n</option>
+                                <option>B?c T? Li�m</option>
+                                <option>Nam T? Li�m</option>
+                                <option>H� ��ng</option>
                             </select>
                             <div class="area-input-grid">
-                                <input id="districtGrowth1" class="area-input" type="text" inputmode="decimal" placeholder="% tăng trưởng">
+                                <input id="districtGrowth1" class="area-input" type="text" inputmode="decimal" placeholder="% tang tru?ng">
                                 <input id="districtRevenue1" class="area-input" type="text" inputmode="numeric" placeholder="Doanh thu">
                             </div>
                         </div>
                         <div class="area-item">
-                            <label class="area-field-label" for="districtSelect2">Khu vực</label>
+                            <label class="area-field-label" for="districtSelect2">Khu v?c</label>
                             <select id="districtSelect2" class="area-select">
-                                <option value="">Chọn quận/huyện/thị xã</option>
-                                <option>Ba Đình</option>
-                                <option>Hoàn Kiếm</option>
-                                <option>Tây Hồ</option>
-                                <option>Long Biên</option>
-                                <option>Cầu Giấy</option>
-                                <option>Đống Đa</option>
-                                <option>Hai Bà Trưng</option>
-                                <option>Hoàng Mai</option>
-                                <option>Thanh Xuân</option>
-                                <option>Bắc Từ Liêm</option>
-                                <option>Nam Từ Liêm</option>
-                                <option>Hà Đông</option>
+                                <option value="">Ch?n qu?n/huy?n/th? x�</option>
+                                <option>Ba ��nh</option>
+                                <option>Ho�n Ki?m</option>
+                                <option>T�y H?</option>
+                                <option>Long Bi�n</option>
+                                <option>C?u Gi?y</option>
+                                <option>�?ng �a</option>
+                                <option>Hai B� Trung</option>
+                                <option>Ho�ng Mai</option>
+                                <option>Thanh Xu�n</option>
+                                <option>B?c T? Li�m</option>
+                                <option>Nam T? Li�m</option>
+                                <option>H� ��ng</option>
                             </select>
                             <div class="area-input-grid">
-                                <input id="districtGrowth2" class="area-input" type="text" inputmode="decimal" placeholder="% tăng trưởng">
+                                <input id="districtGrowth2" class="area-input" type="text" inputmode="decimal" placeholder="% tang tru?ng">
                                 <input id="districtRevenue2" class="area-input" type="text" inputmode="numeric" placeholder="Doanh thu">
                             </div>
                         </div>
                         <div class="area-item">
-                            <label class="area-field-label" for="districtSelect3">Khu vực</label>
+                            <label class="area-field-label" for="districtSelect3">Khu v?c</label>
                             <select id="districtSelect3" class="area-select">
-                                <option value="">Chọn quận/huyện/thị xã</option>
-                                <option>Ba Đình</option>
-                                <option>Hoàn Kiếm</option>
-                                <option>Tây Hồ</option>
-                                <option>Long Biên</option>
-                                <option>Cầu Giấy</option>
-                                <option>Đống Đa</option>
-                                <option>Hai Bà Trưng</option>
-                                <option>Hoàng Mai</option>
-                                <option>Thanh Xuân</option>
-                                <option>Bắc Từ Liêm</option>
-                                <option>Nam Từ Liêm</option>
-                                <option>Hà Đông</option>
+                                <option value="">Ch?n qu?n/huy?n/th? x�</option>
+                                <option>Ba ��nh</option>
+                                <option>Ho�n Ki?m</option>
+                                <option>T�y H?</option>
+                                <option>Long Bi�n</option>
+                                <option>C?u Gi?y</option>
+                                <option>�?ng �a</option>
+                                <option>Hai B� Trung</option>
+                                <option>Ho�ng Mai</option>
+                                <option>Thanh Xu�n</option>
+                                <option>B?c T? Li�m</option>
+                                <option>Nam T? Li�m</option>
+                                <option>H� ��ng</option>
                             </select>
                             <div class="area-input-grid">
-                                <input id="districtGrowth3" class="area-input" type="text" inputmode="decimal" placeholder="% tăng trưởng">
+                                <input id="districtGrowth3" class="area-input" type="text" inputmode="decimal" placeholder="% tang tru?ng">
                                 <input id="districtRevenue3" class="area-input" type="text" inputmode="numeric" placeholder="Doanh thu">
                             </div>
                         </div>
@@ -180,29 +180,29 @@
         <section class="section weekly-strategy-section">
             <article class="insight-card strategy-card">
                 <div class="insight-head">
-                    <h3>📋 Chiến lược Tuần</h3>
-                    <span id="weeklyStrategyWeekStamp" class="insight-badge">Tuần từ ngày --/--/---- đến --/--/----</span>
+                    <h3>?? Chi?n lu?c Tu?n</h3>
+                    <span id="weeklyStrategyWeekStamp" class="insight-badge">Tu?n t? ng�y --/--/---- d?n --/--/----</span>
                     <div class="insight-range-controls">
-                        <span class="insight-range-sep">Chọn tuần</span>
-                        <input id="weeklyStrategyWeekPicker" class="insight-date-input" type="week" aria-label="Chọn tuần chiến lược">
+                        <span class="insight-range-sep">Ch?n tu?n</span>
+                        <input id="weeklyStrategyWeekPicker" class="insight-date-input" type="week" aria-label="Ch?n tu?n chi?n lu?c">
                     </div>
                 </div>
                 <div class="strategy-grid">
                     <div>
-                        <label class="area-field-label" for="weeklyGoalInput">🎯 Mục tiêu tuần</label>
-                        <input id="weeklyGoalInput" class="area-input" type="text" placeholder="Nhập mục tiêu chính trong tuần">
+                        <label class="area-field-label" for="weeklyGoalInput">?? M?c ti�u tu?n</label>
+                        <input id="weeklyGoalInput" class="area-input" type="text" placeholder="Nh?p m?c ti�u ch�nh trong tu?n">
                     </div>
                     <div>
-                        <label class="area-field-label" for="weeklyAudienceInput">👥 Tập khách hàng trọng tâm</label>
-                        <input id="weeklyAudienceInput" class="area-input" type="text" placeholder="Nhập tập khách hàng ưu tiên">
+                        <label class="area-field-label" for="weeklyAudienceInput">?? T?p kh�ch h�ng tr?ng t�m</label>
+                        <input id="weeklyAudienceInput" class="area-input" type="text" placeholder="Nh?p t?p kh�ch h�ng uu ti�n">
                     </div>
                     <div>
-                        <label class="area-field-label" for="weeklyActionInput">⚡ Hành động chính</label>
-                        <textarea id="weeklyActionInput" class="area-input insight-textarea" rows="3" placeholder="Nhập các hành động triển khai trong tuần"></textarea>
+                        <label class="area-field-label" for="weeklyActionInput">? H�nh d?ng ch�nh</label>
+                        <textarea id="weeklyActionInput" class="area-input insight-textarea" rows="3" placeholder="Nh?p c�c h�nh d?ng tri?n khai trong tu?n"></textarea>
                     </div>
                     <div>
-                        <label class="area-field-label" for="weeklyOfferInput">🎁 Ưu đãi / thông điệp</label>
-                        <textarea id="weeklyOfferInput" class="area-input insight-textarea" rows="3" placeholder="Nhập thông điệp hoặc ưu đãi chính"></textarea>
+                        <label class="area-field-label" for="weeklyOfferInput">?? Uu d�i / th�ng di?p</label>
+                        <textarea id="weeklyOfferInput" class="area-input insight-textarea" rows="3" placeholder="Nh?p th�ng di?p ho?c uu d�i ch�nh"></textarea>
                     </div>
                 </div>
             </article>
@@ -211,29 +211,29 @@
         <section class="section checklist-section">
             <article class="insight-card checklist-card">
                 <div class="insight-head">
-                    <h3>✅ CHECKLIST HÔM NAY</h3>
-                    <button id="addChecklistItemBtn" type="button" class="insight-badge checklist-add-btn">+ Thêm mục</button>
+                    <h3>? CHECKLIST H�M NAY</h3>
+                    <button id="addChecklistItemBtn" type="button" class="insight-badge checklist-add-btn">+ Th�m m?c</button>
                 </div>
                 <div id="checklistContainer" class="checklist-container">
                     <label class="checklist-row">
                         <input class="checklist-checkbox" type="checkbox">
-                        <input class="checklist-text" type="text" value="Check campaign" placeholder="Nhập nội dung checklist">
-                        <input class="checklist-due" type="date" aria-label="Hạn hoàn thành">
+                        <input class="checklist-text" type="text" value="Check campaign" placeholder="Nh?p n?i dung checklist">
+                        <input class="checklist-due" type="date" aria-label="H?n ho�n th�nh">
                     </label>
                     <label class="checklist-row">
                         <input class="checklist-checkbox" type="checkbox">
-                        <input class="checklist-text" type="text" value="Update báo cáo" placeholder="Nhập nội dung checklist">
-                        <input class="checklist-due" type="date" aria-label="Hạn hoàn thành">
+                        <input class="checklist-text" type="text" value="Update b�o c�o" placeholder="Nh?p n?i dung checklist">
+                        <input class="checklist-due" type="date" aria-label="H?n ho�n th�nh">
                     </label>
                     <label class="checklist-row">
                         <input class="checklist-checkbox" type="checkbox">
-                        <input class="checklist-text" type="text" value="Test content" placeholder="Nhập nội dung checklist">
-                        <input class="checklist-due" type="date" aria-label="Hạn hoàn thành">
+                        <input class="checklist-text" type="text" value="Test content" placeholder="Nh?p n?i dung checklist">
+                        <input class="checklist-due" type="date" aria-label="H?n ho�n th�nh">
                     </label>
                     <label class="checklist-row">
                         <input class="checklist-checkbox" type="checkbox">
-                        <input class="checklist-text" type="text" value="" placeholder="Nhập nội dung checklist">
-                        <input class="checklist-due" type="date" aria-label="Hạn hoàn thành">
+                        <input class="checklist-text" type="text" value="" placeholder="Nh?p n?i dung checklist">
+                        <input class="checklist-due" type="date" aria-label="H?n ho�n th�nh">
                     </label>
                 </div>
             </article>
@@ -241,14 +241,14 @@
     </main>
 
     <footer>
-        <p>&copy; 2024 Marketing Ads. Tất cả quyền được bảo lưu.</p>
+        <p>&copy; 2024 Marketing Ads. T?t c? quy?n du?c b?o luu.</p>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
     <script src="./assets/js/firebase-config.js?v=20260418-24"></script>
-    <script src="./assets/js/script.js?v=20260418-28"></script>
+    <script src="./assets/js/script.js?v=20260418-29"></script>
     <script>
     // Force-check alert after all scripts settled
     setTimeout(function() {

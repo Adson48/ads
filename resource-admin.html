@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Ads - Quản trị tài nguyên</title>
+    <title>Marketing Ads - Qu?n tr? t�i nguy�n</title>
     <link rel="stylesheet" href="./assets/css/style.css?v=20260418-27">
     <style>
         .resource-page { width: 100%; max-width: none; margin: 0; padding: 1rem 1rem 2rem; }
@@ -56,46 +56,46 @@
         <nav>
             <div class="logo">Marketing Ads</div>
             <ul class="nav-links">
-                <li><a href="./index.html">Trang Chủ</a></li>
-                <li><a href="./reports.html">Báo Cáo</a></li>
-                <li><a href="./notifications.html">Thông Báo</a></li>
-                <li><a href="./ideas.html">Ý Tưởng</a></li>
-                <li><a href="./content.html">Nội Dung</a></li>
-                <li><a href="./resource-admin.html">Quản trị tài nguyên</a></li>
+                <li><a href="./index.html">Trang Ch?</a></li>
+                <li><a href="./reports.html">B�o C�o</a></li>
+                <li><a href="./notifications.html">Th�ng B�o</a></li>
+                <li><a href="./ideas.html">� Tu?ng</a></li>
+                <li><a href="./content.html">N?i Dung</a></li>
+                <li><a href="./resource-admin.html">Qu?n tr? t�i nguy�n</a></li>
             </ul>
         </nav>
     </header>
 
     <main class="resource-page">
         <div class="resource-head">
-            <h1 class="resource-title">Quản trị tài nguyên</h1>
-            <div class="resource-role-badge" id="resourceRoleBadge">Đang kiểm tra quyền...</div>
+            <h1 class="resource-title">Qu?n tr? t�i nguy�n</h1>
+            <div class="resource-role-badge" id="resourceRoleBadge">�ang ki?m tra quy?n...</div>
         </div>
-        <p class="resource-sub">Quản lý sheet thông tin via và sheet quản lý tài khoản quảng cáo theo thời gian thực</p>
-        <p id="resourceStatus" class="resource-status">Đang khởi tạo dữ liệu...</p>
+        <p class="resource-sub">Qu?n l� sheet th�ng tin via v� sheet qu?n l� t�i kho?n qu?ng c�o theo th?i gian th?c</p>
+        <p id="resourceStatus" class="resource-status">�ang kh?i t?o d? li?u...</p>
 
         <div class="resource-tabs">
-            <button class="resource-tab-btn active" type="button" data-tab="viaSection">Sheet thông tin via</button>
-            <button class="resource-tab-btn" type="button" data-tab="adSection">Sheet thông tin quản lý tài khoản quảng cáo</button>
+            <button class="resource-tab-btn active" type="button" data-tab="viaSection">Sheet th�ng tin via</button>
+            <button class="resource-tab-btn" type="button" data-tab="adSection">Sheet th�ng tin qu?n l� t�i kho?n qu?ng c�o</button>
         </div>
 
         <section id="viaSection" class="resource-section active resource-card">
             <div class="resource-filter-row">
-                <div class="field"><label class="resource-label" for="viaFilterFrom">Lọc ngày check từ</label><input id="viaFilterFrom" class="resource-input" type="date"></div>
-                <div class="field"><label class="resource-label" for="viaFilterTo">Lọc ngày check đến</label><input id="viaFilterTo" class="resource-input" type="date"></div>
-                <div class="field actions"><button id="viaApplyFilter" class="resource-btn gray" type="button">Lọc dữ liệu</button></div>
-                <div class="field actions"><button id="viaClearFilter" class="resource-btn gray" type="button">Xóa lọc</button></div>
+                <div class="field"><label class="resource-label" for="viaFilterFrom">L?c ng�y check t?</label><input id="viaFilterFrom" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="viaFilterTo">L?c ng�y check d?n</label><input id="viaFilterTo" class="resource-input" type="date"></div>
+                <div class="field actions"><button id="viaApplyFilter" class="resource-btn gray" type="button">L?c d? li?u</button></div>
+                <div class="field actions"><button id="viaClearFilter" class="resource-btn gray" type="button">X�a l?c</button></div>
             </div>
 
             <form id="viaForm" class="resource-form">
                 <div class="field"><label class="resource-label" for="viaId">ID VIA</label><input id="viaId" class="resource-input" type="text" required></div>
                 <div class="field"><label class="resource-label" for="viaUid">UID Facebook</label><input id="viaUid" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaOldPass">Mật khẩu cũ</label><input id="viaOldPass" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaCurrentPass">Mật khẩu hiện tại</label><input id="viaCurrentPass" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="via2fa">2FA (mã hoặc key)</label><input id="via2fa" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaCheckDate">Ngày check</label><input id="viaCheckDate" class="resource-input" type="date"></div>
-                <div class="field"><label class="resource-label" for="viaOperator">Người thực hiện</label><input id="viaOperator" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaStatus">Tình trạng</label>
+                <div class="field"><label class="resource-label" for="viaOldPass">M?t kh?u cu</label><input id="viaOldPass" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaCurrentPass">M?t kh?u hi?n t?i</label><input id="viaCurrentPass" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="via2fa">2FA (m� ho?c key)</label><input id="via2fa" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaCheckDate">Ng�y check</label><input id="viaCheckDate" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="viaOperator">Ngu?i th?c hi?n</label><input id="viaOperator" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaStatus">T�nh tr?ng</label>
                     <select id="viaStatus" class="resource-select">
                         <option value="Live">Live</option>
                         <option value="Die">Die</option>
@@ -103,11 +103,11 @@
                         <option value="Limit Ads">Limit Ads</option>
                     </select>
                 </div>
-                <div class="field"><label class="resource-label" for="viaSource">Nguồn mua</label><input id="viaSource" class="resource-input" type="text"></div>
-                <div class="field full"><label class="resource-label" for="viaNote">Ghi chú</label><textarea id="viaNote" class="resource-textarea"></textarea></div>
+                <div class="field"><label class="resource-label" for="viaSource">Ngu?n mua</label><input id="viaSource" class="resource-input" type="text"></div>
+                <div class="field full"><label class="resource-label" for="viaNote">Ghi ch�</label><textarea id="viaNote" class="resource-textarea"></textarea></div>
                 <div class="resource-actions">
-                    <button class="resource-btn primary" type="submit" id="viaSubmitBtn">Thêm via</button>
-                    <button class="resource-btn gray" type="reset">Làm mới form</button>
+                    <button class="resource-btn primary" type="submit" id="viaSubmitBtn">Th�m via</button>
+                    <button class="resource-btn gray" type="reset">L�m m?i form</button>
                 </div>
             </form>
             <div class="resource-table-wrap">
@@ -116,15 +116,15 @@
                         <tr>
                             <th>ID VIA</th>
                             <th>UID Facebook</th>
-                            <th>Mật khẩu cũ</th>
-                            <th>Mật khẩu hiện tại</th>
+                            <th>M?t kh?u cu</th>
+                            <th>M?t kh?u hi?n t?i</th>
                             <th>2FA</th>
-                            <th>Ngày check</th>
-                            <th>Người thực hiện</th>
-                            <th>Tình trạng</th>
-                            <th>Nguồn mua</th>
-                            <th>Ghi chú</th>
-                            <th>Thao tác</th>
+                            <th>Ng�y check</th>
+                            <th>Ngu?i th?c hi?n</th>
+                            <th>T�nh tr?ng</th>
+                            <th>Ngu?n mua</th>
+                            <th>Ghi ch�</th>
+                            <th>Thao t�c</th>
                         </tr>
                     </thead>
                     <tbody id="viaTableBody"></tbody>
@@ -134,31 +134,31 @@
 
         <section id="adSection" class="resource-section resource-card">
             <div class="resource-filter-row">
-                <div class="field"><label class="resource-label" for="adFilterFrom">Lọc ngày add từ</label><input id="adFilterFrom" class="resource-input" type="date"></div>
-                <div class="field"><label class="resource-label" for="adFilterTo">Lọc ngày add đến</label><input id="adFilterTo" class="resource-input" type="date"></div>
-                <div class="field actions"><button id="adApplyFilter" class="resource-btn gray" type="button">Lọc dữ liệu</button></div>
-                <div class="field actions"><button id="adClearFilter" class="resource-btn gray" type="button">Xóa lọc</button></div>
+                <div class="field"><label class="resource-label" for="adFilterFrom">L?c ng�y add t?</label><input id="adFilterFrom" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="adFilterTo">L?c ng�y add d?n</label><input id="adFilterTo" class="resource-input" type="date"></div>
+                <div class="field actions"><button id="adApplyFilter" class="resource-btn gray" type="button">L?c d? li?u</button></div>
+                <div class="field actions"><button id="adClearFilter" class="resource-btn gray" type="button">X�a l?c</button></div>
             </div>
 
             <form id="adForm" class="resource-form">
                 <div class="field"><label class="resource-label" for="adId">ID Account</label><input id="adId" class="resource-input" type="text" required></div>
-                <div class="field"><label class="resource-label" for="adName">Tên tài khoản</label><input id="adName" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adName">T�n t�i kho?n</label><input id="adName" class="resource-input" type="text"></div>
                 <div class="field"><label class="resource-label" for="adBmId">ID BM (Business Manager)</label><input id="adBmId" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adPlatform">Nền tảng</label>
+                <div class="field"><label class="resource-label" for="adPlatform">N?n t?ng</label>
                     <select id="adPlatform" class="resource-select">
                         <option value="Facebook">Facebook</option>
                         <option value="TikTok">TikTok</option>
                         <option value="Google">Google</option>
                     </select>
                 </div>
-                <div class="field"><label class="resource-label" for="adCountry">Quốc gia</label><input id="adCountry" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adCurrency">Tiền tệ</label><input id="adCurrency" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adThreshold">Ngưỡng thanh toán</label><input id="adThreshold" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adPayMethod">Phương thức thanh toán</label><input id="adPayMethod" class="resource-input" type="text" placeholder="Visa / PayPal..."></div>
-                <div class="field"><label class="resource-label" for="adCardLast4">4 số cuối thẻ</label><input id="adCardLast4" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adCardOwner">Chủ thẻ</label><input id="adCardOwner" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adAddDate">Ngày add</label><input id="adAddDate" class="resource-input" type="date"></div>
-                <div class="field"><label class="resource-label" for="adStatus">Trạng thái</label>
+                <div class="field"><label class="resource-label" for="adCountry">Qu?c gia</label><input id="adCountry" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adCurrency">Ti?n t?</label><input id="adCurrency" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adThreshold">Ngu?ng thanh to�n</label><input id="adThreshold" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adPayMethod">Phuong th?c thanh to�n</label><input id="adPayMethod" class="resource-input" type="text" placeholder="Visa / PayPal..."></div>
+                <div class="field"><label class="resource-label" for="adCardLast4">4 s? cu?i th?</label><input id="adCardLast4" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adCardOwner">Ch? th?</label><input id="adCardOwner" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adAddDate">Ng�y add</label><input id="adAddDate" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="adStatus">Tr?ng th�i</label>
                     <select id="adStatus" class="resource-select">
                         <option value="Active">Active</option>
                         <option value="Disabled">Disabled</option>
@@ -166,13 +166,13 @@
                         <option value="Die">Die</option>
                     </select>
                 </div>
-                <div class="field"><label class="resource-label" for="adManager">Người quản lý</label><input id="adManager" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adLink">Link truy cập</label><input id="adLink" class="resource-input" type="url"></div>
-                <div class="field"><label class="resource-label" for="adGrantDate">Ngày cấp quyền</label><input id="adGrantDate" class="resource-input" type="date"></div>
-                <div class="field full"><label class="resource-label" for="adNote">Ghi chú</label><textarea id="adNote" class="resource-textarea"></textarea></div>
+                <div class="field"><label class="resource-label" for="adManager">Ngu?i qu?n l�</label><input id="adManager" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adLink">Link truy c?p</label><input id="adLink" class="resource-input" type="url"></div>
+                <div class="field"><label class="resource-label" for="adGrantDate">Ng�y c?p quy?n</label><input id="adGrantDate" class="resource-input" type="date"></div>
+                <div class="field full"><label class="resource-label" for="adNote">Ghi ch�</label><textarea id="adNote" class="resource-textarea"></textarea></div>
                 <div class="resource-actions">
-                    <button class="resource-btn primary" type="submit" id="adSubmitBtn">Thêm tài khoản quảng cáo</button>
-                    <button class="resource-btn gray" type="reset">Làm mới form</button>
+                    <button class="resource-btn primary" type="submit" id="adSubmitBtn">Th�m t�i kho?n qu?ng c�o</button>
+                    <button class="resource-btn gray" type="reset">L�m m?i form</button>
                 </div>
             </form>
             <div class="resource-table-wrap">
@@ -180,22 +180,22 @@
                     <thead>
                         <tr>
                             <th>ID Account</th>
-                            <th>Tên tài khoản</th>
+                            <th>T�n t�i kho?n</th>
                             <th>ID BM</th>
-                            <th>Nền tảng</th>
-                            <th>Quốc gia</th>
-                            <th>Tiền tệ</th>
-                            <th>Ngưỡng thanh toán</th>
-                            <th>Phương thức thanh toán</th>
-                            <th>4 số cuối thẻ</th>
-                            <th>Chủ thẻ</th>
-                            <th>Ngày add</th>
-                            <th>Trạng thái</th>
-                            <th>Người quản lý</th>
-                            <th>Link truy cập</th>
-                            <th>Ngày cấp quyền</th>
-                            <th>Ghi chú</th>
-                            <th>Thao tác</th>
+                            <th>N?n t?ng</th>
+                            <th>Qu?c gia</th>
+                            <th>Ti?n t?</th>
+                            <th>Ngu?ng thanh to�n</th>
+                            <th>Phuong th?c thanh to�n</th>
+                            <th>4 s? cu?i th?</th>
+                            <th>Ch? th?</th>
+                            <th>Ng�y add</th>
+                            <th>Tr?ng th�i</th>
+                            <th>Ngu?i qu?n l�</th>
+                            <th>Link truy c?p</th>
+                            <th>Ng�y c?p quy?n</th>
+                            <th>Ghi ch�</th>
+                            <th>Thao t�c</th>
                         </tr>
                     </thead>
                     <tbody id="adTableBody"></tbody>
@@ -207,7 +207,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
     <script src="./assets/js/firebase-config.js?v=20260418-24"></script>
-    <script src="./assets/js/script.js?v=20260418-28"></script>
+    <script src="./assets/js/script.js?v=20260418-29"></script>
     <script>
         (function () {
             var DOC_COLLECTION = 'ma_config';
@@ -270,7 +270,7 @@
             var resolveRole = function () {
                 var badge = document.querySelector('.auth-badge');
                 var badgeText = String((badge && badge.textContent) || '').toLowerCase();
-                if (badgeText.indexOf('quản trị cao nhất') !== -1 || badgeText.indexOf('quan tri cao nhat') !== -1) {
+                if (badgeText.indexOf('qu?n tr? cao nh?t') !== -1 || badgeText.indexOf('quan tri cao nhat') !== -1) {
                     return true;
                 }
 
@@ -294,7 +294,7 @@
             var applyRoleUi = function () {
                 state.isSuperadmin = resolveRole();
                 if (roleBadge) {
-                    roleBadge.textContent = state.isSuperadmin ? 'Quyền hiện tại: Superadmin (được chỉnh sửa)' : 'Quyền hiện tại: Nhân viên (chỉ xem)';
+                    roleBadge.textContent = state.isSuperadmin ? 'Quy?n hi?n t?i: Superadmin (du?c ch?nh s?a)' : 'Quy?n hi?n t?i: Nh�n vi�n (ch? xem)';
                 }
 
                 var editable = Array.prototype.slice.call(document.querySelectorAll('#viaForm input, #viaForm select, #viaForm textarea, #viaForm button, #adForm input, #adForm select, #adForm textarea, #adForm button'));
@@ -304,7 +304,7 @@
                 });
 
                 if (!state.isSuperadmin) {
-                    setStatus('Nhân viên chỉ có quyền xem dữ liệu quản trị tài nguyên.', '');
+                    setStatus('Nh�n vi�n ch? c� quy?n xem d? li?u qu?n tr? t�i nguy�n.', '');
                 }
             };
 
@@ -336,14 +336,14 @@
             var resetViaEditing = function () {
                 state.viaEditingId = '';
                 if (viaSubmitBtn) {
-                    viaSubmitBtn.textContent = 'Thêm via';
+                    viaSubmitBtn.textContent = 'Th�m via';
                 }
             };
 
             var resetAdEditing = function () {
                 state.adEditingId = '';
                 if (adSubmitBtn) {
-                    adSubmitBtn.textContent = 'Thêm tài khoản quảng cáo';
+                    adSubmitBtn.textContent = 'Th�m t�i kho?n qu?ng c�o';
                 }
             };
 
@@ -383,12 +383,12 @@
                 if (!viaTableBody) { return; }
                 var rows = filteredViaRows();
                 if (!rows.length) {
-                    viaTableBody.innerHTML = '<tr><td colspan="11" class="resource-empty">Chưa có dữ liệu via phù hợp.</td></tr>';
+                    viaTableBody.innerHTML = '<tr><td colspan="11" class="resource-empty">Chua c� d? li?u via ph� h?p.</td></tr>';
                     return;
                 }
                 viaTableBody.innerHTML = rows.map(function (row) {
                     var actionCell = state.isSuperadmin
-                        ? '<button class="danger-btn" type="button" data-via-edit="' + toCell(row.id) + '">Sửa</button> <button class="danger-btn" type="button" data-via-del="' + toCell(row.id) + '">Xóa</button>'
+                        ? '<button class="danger-btn" type="button" data-via-edit="' + toCell(row.id) + '">S?a</button> <button class="danger-btn" type="button" data-via-del="' + toCell(row.id) + '">X�a</button>'
                         : '<span>-</span>';
                     return '<tr>' +
                         '<td>' + toCell(row.idVia) + '</td>' +
@@ -413,7 +413,7 @@
                             if (!row) { return; }
                             state.viaEditingId = String(id);
                             fillViaForm(row);
-                            if (viaSubmitBtn) { viaSubmitBtn.textContent = 'Cập nhật via'; }
+                            if (viaSubmitBtn) { viaSubmitBtn.textContent = 'C?p nh?t via'; }
                         });
                     });
 
@@ -435,14 +435,14 @@
                 if (!adTableBody) { return; }
                 var rows = filteredAdRows();
                 if (!rows.length) {
-                    adTableBody.innerHTML = '<tr><td colspan="17" class="resource-empty">Chưa có dữ liệu tài khoản quảng cáo phù hợp.</td></tr>';
+                    adTableBody.innerHTML = '<tr><td colspan="17" class="resource-empty">Chua c� d? li?u t�i kho?n qu?ng c�o ph� h?p.</td></tr>';
                     return;
                 }
                 adTableBody.innerHTML = rows.map(function (row) {
                     var actionCell = state.isSuperadmin
-                        ? '<button class="danger-btn" type="button" data-ad-edit="' + toCell(row.id) + '">Sửa</button> <button class="danger-btn" type="button" data-ad-del="' + toCell(row.id) + '">Xóa</button>'
+                        ? '<button class="danger-btn" type="button" data-ad-edit="' + toCell(row.id) + '">S?a</button> <button class="danger-btn" type="button" data-ad-del="' + toCell(row.id) + '">X�a</button>'
                         : '<span>-</span>';
-                    var linkCell = row.accessLink ? '<a href="' + toCell(row.accessLink) + '" target="_blank" rel="noopener noreferrer">Mở link</a>' : '-';
+                    var linkCell = row.accessLink ? '<a href="' + toCell(row.accessLink) + '" target="_blank" rel="noopener noreferrer">M? link</a>' : '-';
                     return '<tr>' +
                         '<td>' + toCell(row.idAccount) + '</td>' +
                         '<td>' + toCell(row.accountName) + '</td>' +
@@ -472,7 +472,7 @@
                             if (!row) { return; }
                             state.adEditingId = String(id);
                             fillAdForm(row);
-                            if (adSubmitBtn) { adSubmitBtn.textContent = 'Cập nhật tài khoản quảng cáo'; }
+                            if (adSubmitBtn) { adSubmitBtn.textContent = 'C?p nh?t t�i kho?n qu?ng c�o'; }
                         });
                     });
 
@@ -517,15 +517,15 @@
                     updatedAt: Date.now(),
                     updatedBy: userId
                 }, { merge: true }).then(function () {
-                    setStatus('Đã cập nhật dữ liệu quản trị tài nguyên theo thời gian thực.', 'good');
+                    setStatus('�� c?p nh?t d? li?u qu?n tr? t�i nguy�n theo th?i gian th?c.', 'good');
                 }).catch(function () {
-                    setStatus('Không thể lưu dữ liệu lên hệ thống. Vui lòng thử lại.', 'bad');
+                    setStatus('Kh�ng th? luu d? li?u l�n h? th?ng. Vui l�ng th? l?i.', 'bad');
                 });
             };
 
             var subscribeRemote = function () {
                 if (!db) {
-                    setStatus('Chưa kết nối được Firebase. Dữ liệu thời gian thực tạm thời không khả dụng.', 'bad');
+                    setStatus('Chua k?t n?i du?c Firebase. D? li?u th?i gian th?c t?m th?i kh�ng kh? d?ng.', 'bad');
                     return;
                 }
                 if (unsub) { unsub(); unsub = null; }
@@ -535,7 +535,7 @@
                         state.viaRows = [];
                         state.adRows = [];
                         renderAll();
-                        setStatus('Chưa có dữ liệu quản trị tài nguyên. Superadmin có thể bắt đầu nhập mới.', '');
+                        setStatus('Chua c� d? li?u qu?n tr? t�i nguy�n. Superadmin c� th? b?t d?u nh?p m?i.', '');
                         return;
                     }
                     var data = snap.data() || {};
@@ -543,12 +543,12 @@
                     state.adRows = Array.isArray(data.adRows) ? data.adRows : [];
                     renderAll();
                     if (!state.isSuperadmin) {
-                        setStatus('Dữ liệu quản trị tài nguyên đã được cập nhật thời gian thực. Nhân viên chỉ được xem.', 'good');
+                        setStatus('D? li?u qu?n tr? t�i nguy�n d� du?c c?p nh?t th?i gian th?c. Nh�n vi�n ch? du?c xem.', 'good');
                     } else {
-                        setStatus('Dữ liệu quản trị tài nguyên đã đồng bộ thời gian thực.', 'good');
+                        setStatus('D? li?u qu?n tr? t�i nguy�n d� d?ng b? th?i gian th?c.', 'good');
                     }
                 }, function () {
-                    setStatus('Mất kết nối dữ liệu thời gian thực. Vui lòng kiểm tra mạng.', 'bad');
+                    setStatus('M?t k?t n?i d? li?u th?i gian th?c. Vui l�ng ki?m tra m?ng.', 'bad');
                 });
             };
 
