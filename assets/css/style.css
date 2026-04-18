@@ -1394,9 +1394,17 @@ header {
 
 /* Home Dashboard */
 .home-dashboard {
-    width: min(96vw, 1260px);
-    margin: 3.35rem auto 0;
+    width: 100%;
+    max-width: none;
+    margin: 3.35rem 0 0;
     font-size: 16px;
+}
+
+.home-dashboard .section {
+    max-width: none;
+    margin: 0;
+    padding-left: 0;
+    padding-right: 0;
 }
 
 .home-alert-banner {
@@ -1409,9 +1417,10 @@ header {
 }
 
 .home-alert-inner {
-    width: min(96vw, 1260px);
-    margin: 0 auto;
-    padding: 0 1rem;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 0;
 }
 
 .home-alert-title {
@@ -1869,7 +1878,8 @@ header {
 
 @media (max-width: 680px) {
     .home-dashboard {
-        width: min(94vw, 100%);
+        width: 100%;
+        max-width: none;
         margin-top: 1.9rem;
     }
 
