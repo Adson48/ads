@@ -1093,6 +1093,12 @@ if (studioOutput && sidebarCategoryLinks.length) {
         };
 
         const resolveTopAreaSheetAccess = function() {
+            const authBadge = document.querySelector('.auth-badge');
+            const badgeText = String((authBadge && authBadge.textContent) || '').toLowerCase();
+            if (badgeText.indexOf('quan tri cao nhat') !== -1 || badgeText.indexOf('quản trị cao nhất') !== -1) {
+                return { known: true, isSuperadmin: true };
+            }
+
             const session = safeParseState(localStorage.getItem(authSessionKey));
             const userId = String((session && session.userId) || '').trim();
             if (!userId) {
@@ -1764,6 +1770,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         applyInsightRange(initialDashboardState.insightFrom, initialDashboardState.insightTo, false);
         const initialSheetCfg = loadTopAreaSheetConfig();
         applyTopAreaSheetAccessByRole();
+        setTimeout(applyTopAreaSheetAccessByRole, 1200);
         if (topAreaSheetUrlInput) {
             topAreaSheetUrlInput.value = String(initialSheetCfg.url || '');
         }
