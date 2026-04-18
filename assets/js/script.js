@@ -14,6 +14,13 @@ const telegramSendEnabledKey = 'telegramSendEnabled';
 let homeAlertBanner = document.getElementById('homeAlertBanner');
 let homeAlertList = document.getElementById('homeAlertList');
 
+const sharedStateCollection = 'ma_config';
+const sharedStateDocId = 'site_shared_state_v1';
+let sharedStateDb = null;
+let sharedStateUnsub = null;
+let sharedStateApplyingRemote = false;
+let sharedStateSyncTimer = null;
+
 // Create alert banner in DOM if it doesn't exist yet
 if (!homeAlertBanner) {
     homeAlertBanner = document.createElement('section');
@@ -34,6 +41,198 @@ const homeAlertState = {
     roasThreshold: 1.5,
     roasValue: null,
     overdueTasks: []
+};
+
+const safeParseList = function(raw) {
+    try {
+        const parsed = JSON.parse(raw || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return [];
+    }
+};
+
+const safeParseAny = function(raw, fallback) {
+    try {
+        const parsed = JSON.parse(raw || '');
+        return parsed != null ? parsed : fallback;
+    } catch (e) {
+        return fallback;
+    }
+};
+
+const initSharedStateDb = function() {
+    try {
+        if (sharedStateDb) {
+            return sharedStateDb;
+        }
+        if (typeof firebase === 'undefined') {
+            return null;
+        }
+        if (!firebase.apps.length && window.MA_FIREBASE_CONFIG && window.MA_FIREBASE_CONFIG.apiKey) {
+            firebase.initializeApp(window.MA_FIREBASE_CONFIG);
+        }
+        sharedStateDb = firebase.firestore();
+        return sharedStateDb;
+    } catch (e) {
+        return null;
+    }
+};
+
+const collectSharedStatePayload = function() {
+    return {
+        notifications: safeParseList(localStorage.getItem('notifications')),
+        checklist: safeParseList(localStorage.getItem('homeChecklistItems')),
+        settings: {
+            telegramBotToken: String(localStorage.getItem('telegramBotToken') || ''),
+            telegramChatId: String(localStorage.getItem('telegramChatId') || ''),
+            telegramSendEnabled: String(localStorage.getItem('telegramSendEnabled') || ''),
+            googleApiKey: String(localStorage.getItem('googleApiKey') || ''),
+            googleCx: String(localStorage.getItem('googleCx') || '')
+        },
+        updatedAt: Date.now()
+    };
+};
+
+const applySharedStateFromRemote = function(data) {
+    const remote = (data && typeof data === 'object') ? data : {};
+    const remoteNotifications = Array.isArray(remote.notifications) ? remote.notifications : null;
+    const remoteChecklist = Array.isArray(remote.checklist) ? remote.checklist : null;
+    const remoteSettings = (remote.settings && typeof remote.settings === 'object') ? remote.settings : null;
+
+    if (remoteNotifications) {
+        localStorage.setItem('notifications', JSON.stringify(remoteNotifications));
+    }
+
+    if (remoteChecklist) {
+        localStorage.setItem('homeChecklistItems', JSON.stringify(remoteChecklist));
+    }
+
+    if (remoteSettings) {
+        if (Object.prototype.hasOwnProperty.call(remoteSettings, 'telegramBotToken')) {
+            const token = String(remoteSettings.telegramBotToken || '');
+            if (token) {
+                localStorage.setItem('telegramBotToken', token);
+            } else {
+                localStorage.removeItem('telegramBotToken');
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(remoteSettings, 'telegramChatId')) {
+            const chatId = String(remoteSettings.telegramChatId || '');
+            if (chatId) {
+                localStorage.setItem('telegramChatId', chatId);
+            } else {
+                localStorage.removeItem('telegramChatId');
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(remoteSettings, 'telegramSendEnabled')) {
+            const sendEnabled = String(remoteSettings.telegramSendEnabled || '');
+            if (sendEnabled) {
+                localStorage.setItem('telegramSendEnabled', sendEnabled);
+            } else {
+                localStorage.removeItem('telegramSendEnabled');
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(remoteSettings, 'googleApiKey')) {
+            const apiKey = String(remoteSettings.googleApiKey || '');
+            if (apiKey) {
+                localStorage.setItem('googleApiKey', apiKey);
+            } else {
+                localStorage.removeItem('googleApiKey');
+            }
+        }
+
+        if (Object.prototype.hasOwnProperty.call(remoteSettings, 'googleCx')) {
+            const cx = String(remoteSettings.googleCx || '');
+            if (cx) {
+                localStorage.setItem('googleCx', cx);
+            } else {
+                localStorage.removeItem('googleCx');
+            }
+        }
+    }
+
+    if (telegramBotTokenInput) {
+        telegramBotTokenInput.value = localStorage.getItem('telegramBotToken') || '';
+    }
+    if (telegramChatIdInput) {
+        telegramChatIdInput.value = localStorage.getItem('telegramChatId') || '';
+    }
+    if (sendToTelegramCheckbox) {
+        const saved = localStorage.getItem(telegramSendEnabledKey);
+        if (saved !== null) {
+            sendToTelegramCheckbox.checked = saved === '1';
+        }
+    }
+
+    if (typeof displayNotifications === 'function') {
+        displayNotifications();
+    }
+    if (typeof hydrateHomeAlerts === 'function') {
+        hydrateHomeAlerts();
+    }
+};
+
+const syncSharedStateToRemote = async function() {
+    if (sharedStateApplyingRemote) {
+        return false;
+    }
+    const db = initSharedStateDb();
+    if (!db) {
+        return false;
+    }
+    try {
+        const payload = collectSharedStatePayload();
+        await db.collection(sharedStateCollection).doc(sharedStateDocId).set(payload, { merge: true });
+        return true;
+    } catch (e) {
+        return false;
+    }
+};
+
+const queueSharedStateSync = function() {
+    if (sharedStateApplyingRemote) {
+        return;
+    }
+    if (sharedStateSyncTimer) {
+        clearTimeout(sharedStateSyncTimer);
+        sharedStateSyncTimer = null;
+    }
+    sharedStateSyncTimer = setTimeout(function() {
+        sharedStateSyncTimer = null;
+        syncSharedStateToRemote();
+    }, 220);
+};
+
+const startSharedStateRealtime = function() {
+    const db = initSharedStateDb();
+    if (!db) {
+        return;
+    }
+
+    if (sharedStateUnsub) {
+        sharedStateUnsub();
+        sharedStateUnsub = null;
+    }
+
+    sharedStateUnsub = db.collection(sharedStateCollection).doc(sharedStateDocId).onSnapshot(function(snap) {
+        if (!snap.exists) {
+            syncSharedStateToRemote();
+            return;
+        }
+
+        sharedStateApplyingRemote = true;
+        try {
+            applySharedStateFromRemote(snap.data() || {});
+        } finally {
+            sharedStateApplyingRemote = false;
+        }
+    }, function() {
+        // Keep local mode if realtime listener is unavailable.
+    });
 };
 
 const renderHomeAlerts = function() {
@@ -169,6 +368,8 @@ const persistTelegramConfig = function(showStatus) {
     if (showStatus && telegramConfigStatus) {
         telegramConfigStatus.textContent = 'Đã lưu cấu hình Telegram thành công.';
     }
+
+    queueSharedStateSync();
 };
 
 const dataUrlToBlob = function(dataUrl) {
@@ -260,6 +461,7 @@ if (sendToTelegramCheckbox) {
 
     sendToTelegramCheckbox.addEventListener('change', function() {
         localStorage.setItem(telegramSendEnabledKey, this.checked ? '1' : '0');
+        queueSharedStateSync();
     });
 }
 
@@ -376,6 +578,7 @@ if (notificationForm) {
             };
             notifications.unshift(newNotification);
             localStorage.setItem('notifications', JSON.stringify(notifications));
+            queueSharedStateSync();
             displayNotifications();
 
             let alertMessage = `Thông báo "${title}" đã được đăng thành công!`;
@@ -454,6 +657,7 @@ function deleteNotification(id) {
     const notifications = JSON.parse(localStorage.getItem('notifications') || '[]');
     const filtered = notifications.filter(n => n.id !== id);
     localStorage.setItem('notifications', JSON.stringify(filtered));
+    queueSharedStateSync();
     displayNotifications();
 }
 
@@ -466,6 +670,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 hydrateHomeAlerts();
 setTimeout(hydrateHomeAlerts, 300);
+startSharedStateRealtime();
 
 // Content studio interactions
 const studioOutput = document.getElementById('studioOutput');
@@ -695,6 +900,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
                     localStorage.setItem('googleApiKey', apiKey);
                     localStorage.setItem('googleCx', cx);
+                    queueSharedStateSync();
                     googleConfigStatus.textContent = 'Đã lưu cấu hình Google thành công.';
 
                     if (studioTemplateSelect && studioTemplateSelect.value === 'title') {
@@ -3053,6 +3259,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
             });
 
             localStorage.setItem(checklistStorageKey, JSON.stringify(data));
+            queueSharedStateSync();
             setChecklistOverdueContext(data);
         };
 
