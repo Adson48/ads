@@ -1414,6 +1414,26 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 : (compact.indexOf('trieu') !== -1 || compact.indexOf('tr') !== -1 ? 1000000
                 : (compact.indexOf('k') !== -1 ? 1000 : 1));
             let normalizedNumber = compact.replace(/[^0-9,.-]/g, '');
+            const dotCount = (normalizedNumber.match(/\./g) || []).length;
+            const commaCount = (normalizedNumber.match(/,/g) || []).length;
+
+            if (dotCount > 0 && commaCount === 0) {
+                const dotParts = normalizedNumber.split('.').filter(Boolean);
+                const looksLikeThousands = dotParts.length > 1 && dotParts.slice(1).every(function(part) {
+                    return /^\d{3}$/.test(part);
+                });
+                if (looksLikeThousands) {
+                    normalizedNumber = dotParts.join('');
+                }
+            } else if (commaCount > 0 && dotCount === 0) {
+                const commaParts = normalizedNumber.split(',').filter(Boolean);
+                const looksLikeThousands = commaParts.length > 1 && commaParts.slice(1).every(function(part) {
+                    return /^\d{3}$/.test(part);
+                });
+                if (looksLikeThousands) {
+                    normalizedNumber = commaParts.join('');
+                }
+            }
 
             if (normalizedNumber.indexOf('.') !== -1 && normalizedNumber.indexOf(',') !== -1) {
                 if (normalizedNumber.lastIndexOf(',') > normalizedNumber.lastIndexOf('.')) {
