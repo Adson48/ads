@@ -1179,7 +1179,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
             return access.known && access.isSuperadmin;
         };
 
-        const applyTopAreaSheetAccessByRole = function() {
+        const applyTopAreaSheetAccessByRole = function(skipStatusUpdate) {
             const access = resolveTopAreaSheetAccess();
             const isSuperadmin = access.known && access.isSuperadmin;
             const linkRow = topAreaSheetUrlInput ? topAreaSheetUrlInput.closest('.sheet-link-row') : null;
@@ -1192,8 +1192,11 @@ if (studioOutput && sidebarCategoryLinks.length) {
             if (topAreaSheetApplyBtn) {
                 topAreaSheetApplyBtn.disabled = !isSuperadmin;
             }
-            if (topAreaSheetStatus && access.known && !isSuperadmin) {
-                setTopAreaStatus('Dữ liệu khu vực được đồng bộ bởi quản trị hệ thống.', '');
+            if (!skipStatusUpdate && topAreaSheetStatus && access.known && !isSuperadmin) {
+                const sharedResult = loadTopAreaSharedResult();
+                if (!sharedResult || !Array.isArray(sharedResult.rows) || !sharedResult.rows.length) {
+                    setTopAreaStatus('Dữ liệu khu vực được đồng bộ bởi quản trị hệ thống.', '');
+                }
             }
             return isSuperadmin;
         };
@@ -1268,6 +1271,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 const sharedResult = (remoteCfg && remoteCfg[topAreaSharedResultField] && typeof remoteCfg[topAreaSharedResultField] === 'object')
                     ? remoteCfg[topAreaSharedResultField]
                     : null;
+                applyTopAreaSheetAccessByRole(true);
                 if (sharedResult && Array.isArray(sharedResult.rows) && sharedResult.rows.length) {
                     saveTopAreaSharedResult(sharedResult);
                     if (!canManageTopAreaSheet()) {
@@ -1285,7 +1289,6 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         }
                     }
                 }
-                applyTopAreaSheetAccessByRole();
             });
         };
 
@@ -2108,7 +2111,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         applyInsightRange(initialDashboardState.insightFrom, initialDashboardState.insightTo, false);
         const initialSheetCfg = loadTopAreaSheetConfig();
         applyTopAreaSheetAccessByRole();
-        setTimeout(applyTopAreaSheetAccessByRole, 1200);
+        setTimeout(function() { applyTopAreaSheetAccessByRole(false); }, 1200);
         if (topAreaSheetUrlInput) {
             topAreaSheetUrlInput.value = String(initialSheetCfg.url || '');
         }
@@ -2130,9 +2133,8 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 updateTopAreaFromSheet({ silent: false });
             });
         }
-        if (String(initialSheetCfg.url || '').trim()) {
-            updateTopAreaFromSheet({ silent: true });
-        }
+        // Always try to apply cached shared result or fetch from sheet on init
+        updateTopAreaFromSheet({ silent: true });
         if (insightDateFromInput) {
             insightDateFromInput.addEventListener('change', function() {
                 applyInsightRange(insightDateFromInput.value, insightDateToInput ? insightDateToInput.value : '', true);
