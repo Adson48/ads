@@ -219,8 +219,17 @@
                 localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-24)));
             };
 
+            var resolveDefaultEndpoint = function() {
+                var host = String(window.location.hostname || '').toLowerCase();
+                if (host.indexOf('github.io') !== -1) {
+                    return '';
+                }
+                return window.location.origin + '/api/chat';
+            };
+
             var getEndpoint = function() {
-                return String(localStorage.getItem(ENDPOINT_KEY) || '').trim();
+                var saved = String(localStorage.getItem(ENDPOINT_KEY) || '').trim();
+                return saved || resolveDefaultEndpoint();
             };
 
             var setStatus = function(message, type) {
@@ -319,10 +328,14 @@
                 }
             };
 
-            endpointInput.value = getEndpoint();
+            endpointInput.value = String(localStorage.getItem(ENDPOINT_KEY) || '').trim() || resolveDefaultEndpoint();
             history = safeLoadHistory();
             renderHistory();
-            setStatus(endpointInput.value ? 'Endpoint da san sang.' : 'Chua cau hinh endpoint.', endpointInput.value ? 'good' : '');
+            if (endpointInput.value) {
+                setStatus('Endpoint da san sang.', 'good');
+            } else {
+                setStatus('Dang chay tren GitHub Pages: vui long nhap endpoint backend (Vercel/Worker).', '');
+            }
 
             saveEndpointBtn.addEventListener('click', function() {
                 var endpoint = String(endpointInput.value || '').trim();

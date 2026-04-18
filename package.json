@@ -1,0 +1,9 @@
+{
+  "name": "ads-chat-proxy",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Serverless ChatGPT proxy for ADS website",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
