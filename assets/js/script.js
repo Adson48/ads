@@ -61,6 +61,23 @@ const safeParseAny = function(raw, fallback) {
     }
 };
 
+// Returns true if the currently logged-in session belongs to a superadmin.
+const isSessionSuperadmin = function() {
+    try {
+        const session = JSON.parse(localStorage.getItem('ma_session_v1') || 'null');
+        const userId = session && session.userId ? String(session.userId) : '';
+        if (!userId) { return false; }
+        const ownerId = String(localStorage.getItem('ma_owner_id_v1') || '').trim();
+        if (ownerId && ownerId === userId) { return true; }
+        const accounts = JSON.parse(localStorage.getItem('ma_accounts_v1') || '[]');
+        if (!Array.isArray(accounts)) { return false; }
+        const user = accounts.find(function(acc) { return acc && acc.id === userId; });
+        if (!user) { return false; }
+        return String(user.role || '').toLowerCase() === 'superadmin' &&
+               String(user.status || 'active').toLowerCase() === 'active';
+    } catch (e) { return false; }
+};
+
 const initSharedStateDb = function() {
     try {
         if (sharedStateDb) {
@@ -133,6 +150,10 @@ const queueSharedStateSync = function() {
     if (sharedStateApplyingRemote) {
         return;
     }
+    // Only the superadmin is allowed to push shared state to Firestore.
+    if (!isSessionSuperadmin()) {
+        return;
+    }
     if (sharedStateSyncTimer) {
         clearTimeout(sharedStateSyncTimer);
         sharedStateSyncTimer = null;
@@ -156,10 +177,12 @@ const startSharedStateRealtime = function() {
 
     sharedStateUnsub = db.collection(sharedStateCollection).doc(sharedStateDocId).onSnapshot(function(snap) {
         if (!snap.exists) {
-            // Only seed initial doc if there is actual data to persist (avoids blank users wiping existing data)
-            const seed = collectSharedStatePayload();
-            if (seed.notifications.length || seed.checklist.length) {
-                syncSharedStateToRemote();
+            // Only superadmin seeds the initial document — prevents staff from wiping existing data.
+            if (isSessionSuperadmin()) {
+                const seed = collectSharedStatePayload();
+                if (seed.notifications.length || seed.checklist.length) {
+                    syncSharedStateToRemote();
+                }
             }
             return;
         }
@@ -500,9 +523,41 @@ if (notifImageInput) {
     });
 }
 
+// Apply role-based visibility for shared-state UI elements (notification form, checklist).
+// Called on load and whenever session/accounts change.
+const applySharedStateRoleUi = function() {
+    const isSa = isSessionSuperadmin();
+
+    // Notification form: only superadmin can post
+    const nForm = document.getElementById('notificationForm');
+    if (nForm) {
+        nForm.style.display = isSa ? '' : 'none';
+    }
+    // Checklist editing controls: only superadmin can add/edit
+    const clAddBtn = document.getElementById('addChecklistItemBtn');
+    if (clAddBtn) {
+        clAddBtn.style.display = isSa ? '' : 'none';
+    }
+    const clContainer = document.getElementById('checklistContainer');
+    if (clContainer) {
+        const inputs = clContainer.querySelectorAll('input');
+        inputs.forEach(function(inp) {
+            inp.disabled = !isSa;
+        });
+        const delBtns = clContainer.querySelectorAll('.checklist-delete');
+        delBtns.forEach(function(btn) {
+            btn.style.display = isSa ? '' : 'none';
+        });
+    }
+};
+
 if (notificationForm) {
     notificationForm.addEventListener('submit', async function(e) {
         e.preventDefault();
+        if (!isSessionSuperadmin()) {
+            alert('Chỉ superadmin mới có quyền đăng thông báo.');
+            return;
+        }
         const title = document.getElementById('title').value;
         const content = document.getElementById('content').value;
         const imageFile = document.getElementById('notifImage').files[0];
@@ -606,6 +661,10 @@ document.addEventListener('DOMContentLoaded', function() {
     displayNotifications();
     hydrateHomeAlerts();
     setTimeout(hydrateHomeAlerts, 800);
+    // Apply role UI after DOM is ready (session may not be loaded yet — retry once)
+    applySharedStateRoleUi();
+    setTimeout(applySharedStateRoleUi, 800);
+    setTimeout(applySharedStateRoleUi, 2000);
 });
 
 hydrateHomeAlerts();
@@ -3103,10 +3162,12 @@ if (studioOutput && sidebarCategoryLinks.length) {
             if (key === authSessionKey || key === authOwnerKey) {
                 applyTopAreaSheetAccessByRole();
                 applyInsightStrategyEditAccessByRole();
+                applySharedStateRoleUi();
             }
             if (key === authAccountsKey) {
                 applyTopAreaSheetAccessByRole();
                 applyInsightStrategyEditAccessByRole();
+                applySharedStateRoleUi();
             }
         });
         setInterval(updateDashboardChart, chartRefreshMs);
@@ -3210,6 +3271,8 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 checklistContainer.appendChild(createChecklistRow(item));
             });
             setChecklistOverdueContext(items);
+            // Re-apply role restrictions after re-render
+            applySharedStateRoleUi();
         };
         window._maRenderChecklist = renderChecklistFromStorage;
 
