@@ -15,6 +15,8 @@
     --radius-md: 14px;
     --shadow-soft: 0 10px 30px rgba(94, 33, 61, 0.08);
     --shadow-lift: 0 18px 45px rgba(94, 33, 61, 0.14);
+    --page-gutter: 1rem;
+    --page-gutter-mobile: 0.75rem;
 }
 
 * {
@@ -582,8 +584,8 @@ footer {
 .report-page-section {
     width: min(99vw, 1900px);
     max-width: none;
-    padding-left: 0.6rem;
-    padding-right: 0.6rem;
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
 }
 
 .report-page-section h2 {
@@ -633,8 +635,8 @@ footer {
 @media (max-width: 768px) {
     .report-page-section {
         width: min(99vw, 100%);
-        padding-left: 0.35rem;
-        padding-right: 0.35rem;
+        padding-left: var(--page-gutter-mobile);
+        padding-right: var(--page-gutter-mobile);
     }
 
     .report-page-section .table-container {
@@ -769,8 +771,11 @@ footer {
     display: grid;
     grid-template-columns: minmax(0, 3fr) minmax(260px, 1fr);
     gap: 2rem;
-    width: min(96vw, 1600px);
+    width: 100%;
+    max-width: 1600px;
     margin: 1.25rem auto 0;
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
     align-items: stretch;
 }
 
@@ -815,7 +820,9 @@ footer {
     .notifications-container {
         grid-template-columns: 1fr;
         gap: 1rem;
-        width: min(94vw, 100%);
+        width: 100%;
+        padding-left: var(--page-gutter-mobile);
+        padding-right: var(--page-gutter-mobile);
     }
 
     .kpi-month-grid {
@@ -919,7 +926,7 @@ footer {
     width: 100%;
     max-width: none;
     margin: 0;
-    padding: 3rem 1.2rem 3rem 0;
+    padding: 3rem var(--page-gutter);
     display: grid;
     grid-template-columns: minmax(110px, 0.4fr) minmax(0, 1.6fr);
     gap: 2rem;
@@ -1397,16 +1404,16 @@ header {
     width: 100%;
     max-width: none;
     margin: 3.35rem 0 0;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
     font-size: 16px;
 }
 
 .home-dashboard .section {
     max-width: none;
     margin: 0;
-    padding-left: 1rem;
-    padding-right: 1rem;
+    padding-left: var(--page-gutter);
+    padding-right: var(--page-gutter);
 }
 
 .home-alert-banner {
@@ -1422,7 +1429,7 @@ header {
     width: 100%;
     max-width: none;
     margin: 0;
-    padding: 0 1rem;
+    padding: 0 var(--page-gutter);
 }
 
 .home-alert-title {
@@ -1883,8 +1890,8 @@ header {
         width: 100%;
         max-width: none;
         margin-top: 1.9rem;
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
+        padding-left: var(--page-gutter-mobile);
+        padding-right: var(--page-gutter-mobile);
     }
 
     .home-alert-banner {
