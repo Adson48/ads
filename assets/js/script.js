@@ -1087,6 +1087,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         let homeReportDb = null;
         let homeReportUnsub = null;
         let topAreaSheetConfigUnsub = null;
+        let topAreaSharedBridgeUnsub = null;
         let insightStrategySyncTimer = null;
         let topAreaManualSyncTimer = null;
         let topAreaCurrentRowsCache = [];
@@ -1611,6 +1612,53 @@ if (studioOutput && sidebarCategoryLinks.length) {
             });
         };
 
+        const bindTopAreaSharedBridgeRealtime = function() {
+            const db = initHomeReportDb();
+            if (!db) {
+                return;
+            }
+
+            if (topAreaSharedBridgeUnsub) {
+                topAreaSharedBridgeUnsub();
+                topAreaSharedBridgeUnsub = null;
+            }
+
+            topAreaSharedBridgeUnsub = db.collection(reportCollection).doc(topAreaSharedBridgeDocId).onSnapshot(function(snapshot) {
+                if (!snapshot.exists) {
+                    return;
+                }
+                const payload = snapshot.data() || {};
+                const nextUrl = String(payload.url || '').trim();
+                const nextGid = String(payload.gid || '0').trim() || '0';
+
+                if (nextUrl) {
+                    saveTopAreaSheetConfig({ url: nextUrl, gid: nextGid });
+                    if (topAreaSheetUrlInput && canManageTopAreaSheet()) {
+                        topAreaSheetUrlInput.value = nextUrl;
+                    }
+                }
+
+                const sharedHistory = (payload && payload[topAreaSharedHistoryField] && typeof payload[topAreaSharedHistoryField] === 'object')
+                    ? payload[topAreaSharedHistoryField]
+                    : null;
+                if (sharedHistory) {
+                    saveTopAreaSharedHistory(Object.assign({}, loadTopAreaSharedHistory(), sharedHistory));
+                }
+
+                const sharedResult = (payload && payload[topAreaSharedResultField] && typeof payload[topAreaSharedResultField] === 'object')
+                    ? payload[topAreaSharedResultField]
+                    : null;
+                if (sharedResult && Array.isArray(sharedResult.rows) && sharedResult.rows.length) {
+                    saveTopAreaSharedResult(sharedResult);
+                    saveTopAreaSharedHistory(upsertTopAreaHistory(loadTopAreaSharedHistory(), sharedResult));
+                }
+
+                updateTopAreaFromSheet({ silent: false });
+            }, function() {
+                updateTopAreaFromSheet({ silent: true });
+            });
+        };
+
         const extractSheetId = function(rawUrl) {
             const text = String(rawUrl || '').trim();
             if (!text) {
@@ -2124,9 +2172,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     historyEntry.rows.length
                 ) {
                     applyTopAreaRowsToUi(historyEntry.rows);
-                    if (!(options && options.silent)) {
-                        setTopAreaStatus('Đã tải dữ liệu tuần từ ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
-                    }
+                    setTopAreaStatus('Đã tải dữ liệu tuần từ ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
                     return true;
                 }
 
@@ -2138,9 +2184,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     String(sharedLocalResult.to || '') === currentRange.to
                 ) {
                     applyTopAreaRowsToUi(sharedLocalResult.rows);
-                    if (!(options && options.silent)) {
-                        setTopAreaStatus('Đã đồng bộ dữ liệu top HĐ từ ' + toViDate(sharedLocalResult.from) + ' đến ' + toViDate(sharedLocalResult.to) + '.', 'good');
-                    }
+                    setTopAreaStatus('Đã đồng bộ dữ liệu top HĐ từ ' + toViDate(sharedLocalResult.from) + ' đến ' + toViDate(sharedLocalResult.to) + '.', 'good');
                     return true;
                 }
 
@@ -2162,9 +2206,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                                 const mergedEntry = mergedHistory[historyKey];
                                 if (mergedEntry && Array.isArray(mergedEntry.rows) && mergedEntry.rows.length) {
                                     applyTopAreaRowsToUi(mergedEntry.rows);
-                                    if (!(options && options.silent)) {
-                                        setTopAreaStatus('Đã tải dữ liệu tuần từ ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
-                                    }
+                                    setTopAreaStatus('Đã tải dữ liệu tuần từ ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
                                     return true;
                                 }
                             }
@@ -2181,9 +2223,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                             ) {
                                 saveTopAreaSharedResult(bridgeLatest);
                                 applyTopAreaRowsToUi(bridgeLatest.rows);
-                                if (!(options && options.silent)) {
-                                    setTopAreaStatus('Đã đồng bộ dữ liệu top HĐ từ ' + toViDate(bridgeLatest.from) + ' đến ' + toViDate(bridgeLatest.to) + '.', 'good');
-                                }
+                                setTopAreaStatus('Đã đồng bộ dữ liệu top HĐ từ ' + toViDate(bridgeLatest.from) + ' đến ' + toViDate(bridgeLatest.to) + '.', 'good');
                                 return true;
                             }
                         }
@@ -2206,9 +2246,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         const rowsFromSheet = deriveTopAreaRows(normalized.rows, currentRange);
                         if (rowsFromSheet.length) {
                             applyTopAreaRowsToUi(rowsFromSheet);
-                            if (!(options && options.silent)) {
-                                setTopAreaStatus('Đã tải dữ liệu Google Sheet tuần từ ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
-                            }
+                            setTopAreaStatus('Đã tải dữ liệu Google Sheet tuần từ ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', 'good');
                             return true;
                         }
                     } catch (e) {
@@ -2220,9 +2258,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 const cachedListForStaff = Array.isArray(cachedRowsForStaff) ? cachedRowsForStaff : [];
                 if (cachedListForStaff.length) {
                     applyTopAreaRowsToUi(deriveTopAreaRows(cachedListForStaff, currentRange));
-                    if (!(options && options.silent)) {
-                        setTopAreaStatus('Đang dùng dữ liệu Google Sheet đã lưu để thống kê tuần ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', '');
-                    }
+                    setTopAreaStatus('Đang dùng dữ liệu Google Sheet đã lưu để thống kê tuần ' + toViDate(currentRange.from) + ' đến ' + toViDate(currentRange.to) + '.', '');
                     return true;
                 }
 
@@ -2892,6 +2928,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
         bindHomeReportRealtime();
         bindTopAreaSheetConfigRealtime();
+        bindTopAreaSharedBridgeRealtime();
         hydrateHomeAlerts();
         adsPerformanceChartCanvas.dataset.chartReady = '1';
         return true;
