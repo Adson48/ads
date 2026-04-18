@@ -1274,7 +1274,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                         // For staff: always sync date range and apply rows from shared result
                         applyInsightRange(sharedResult.from, sharedResult.to, false);
                         applyTopAreaRowsToUi(sharedResult.rows);
-                        setTopAreaStatus('Đã cập nhật dữ liệu top HĐ theo tuần mới nhất từ hệ thống.', 'good');
+                        setTopAreaStatus('Đã đồng bộ dữ liệu top HĐ từ ' + toViDate(sharedResult.from) + ' đến ' + toViDate(sharedResult.to) + '.', 'good');
                     } else {
                         const currentRange = normalizeInsightRange(
                             insightDateFromInput ? insightDateFromInput.value : '',
@@ -1794,7 +1794,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     applyInsightRange(sharedLocalResult.from, sharedLocalResult.to, false);
                     applyTopAreaRowsToUi(sharedLocalResult.rows);
                     if (!(options && options.silent)) {
-                        setTopAreaStatus('Đã cập nhật dữ liệu top HĐ theo tuần mới nhất từ hệ thống.', 'good');
+                        setTopAreaStatus('Đã đồng bộ dữ liệu top HĐ từ ' + toViDate(sharedLocalResult.from) + ' đến ' + toViDate(sharedLocalResult.to) + '.', 'good');
                     }
                     return true;
                 }
