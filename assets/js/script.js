@@ -1270,14 +1270,18 @@ if (studioOutput && sidebarCategoryLinks.length) {
                     : null;
                 if (sharedResult && Array.isArray(sharedResult.rows) && sharedResult.rows.length) {
                     saveTopAreaSharedResult(sharedResult);
-                    const currentRange = normalizeInsightRange(
-                        insightDateFromInput ? insightDateFromInput.value : '',
-                        insightDateToInput ? insightDateToInput.value : ''
-                    );
-                    if (String(sharedResult.from || '') === currentRange.from && String(sharedResult.to || '') === currentRange.to) {
+                    if (!canManageTopAreaSheet()) {
+                        // For staff: always sync date range and apply rows from shared result
+                        applyInsightRange(sharedResult.from, sharedResult.to, false);
                         applyTopAreaRowsToUi(sharedResult.rows);
-                        if (!canManageTopAreaSheet()) {
-                            setTopAreaStatus('Đã cập nhật dữ liệu top HĐ theo tuần mới nhất từ hệ thống.', 'good');
+                        setTopAreaStatus('Đã cập nhật dữ liệu top HĐ theo tuần mới nhất từ hệ thống.', 'good');
+                    } else {
+                        const currentRange = normalizeInsightRange(
+                            insightDateFromInput ? insightDateFromInput.value : '',
+                            insightDateToInput ? insightDateToInput.value : ''
+                        );
+                        if (String(sharedResult.from || '') === currentRange.from && String(sharedResult.to || '') === currentRange.to) {
+                            applyTopAreaRowsToUi(sharedResult.rows);
                         }
                     }
                 }
@@ -1784,10 +1788,10 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 if (
                     sharedLocalResult &&
                     Array.isArray(sharedLocalResult.rows) &&
-                    sharedLocalResult.rows.length &&
-                    String(sharedLocalResult.from || '') === currentRange.from &&
-                    String(sharedLocalResult.to || '') === currentRange.to
+                    sharedLocalResult.rows.length
                 ) {
+                    // Always sync date range to match shared result so staff sees the same week as superadmin
+                    applyInsightRange(sharedLocalResult.from, sharedLocalResult.to, false);
                     applyTopAreaRowsToUi(sharedLocalResult.rows);
                     if (!(options && options.silent)) {
                         setTopAreaStatus('Đã cập nhật dữ liệu top HĐ theo tuần mới nhất từ hệ thống.', 'good');
