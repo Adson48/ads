@@ -57,7 +57,6 @@
         if (unsubscribe) unsubscribe();
 
         unsubscribe = db.collection(ADS_CONFIG.firebaseCollection)
-            .orderBy('synced_at', 'desc')
             .onSnapshot(function(snapshot) {
                 campaigns = [];
                 snapshot.forEach(function(doc) {
@@ -75,7 +74,7 @@
         var lastSync = localStorage.getItem(ADS_CONFIG.syncTimeKey);
         var now = Date.now();
         if (!lastSync || (now - parseInt(lastSync)) > ADS_CONFIG.syncInterval) {
-            syncNow(true);
+            syncNow(false); // hiển thị trạng thái lần đầu
         }
         if (syncTimer) clearInterval(syncTimer);
         syncTimer = setInterval(function() { syncNow(true); }, ADS_CONFIG.syncInterval);
