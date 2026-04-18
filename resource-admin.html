@@ -3,38 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Ads - Quan Tri Tai Nguyen</title>
-    <link rel="stylesheet" href="./assets/css/style.css?v=20260418-11">
+    <title>Marketing Ads - Quản trị tài nguyên</title>
+    <link rel="stylesheet" href="./assets/css/style.css?v=20260418-24">
     <style>
         .resource-page { max-width: 1240px; margin: 0 auto; padding: 2rem 1.25rem 3rem; }
-        .resource-head { display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; margin-bottom:1rem; }
-        .resource-title { margin:0; font-size:1.6rem; font-weight:800; color:#5f2d47; }
-        .resource-sub { margin:0; color:#6f4b5c; font-weight:600; font-size:.95rem; }
-        .resource-tabs { display:flex; gap:.65rem; flex-wrap:wrap; margin-bottom:1rem; }
-        .resource-tab-btn { border:1px solid rgba(199,81,124,.28); background:#fff; color:#7b3858; font-weight:700; border-radius:999px; padding:.5rem .95rem; cursor:pointer; font-family:inherit; }
-        .resource-tab-btn.active { background:linear-gradient(135deg,#c7517c,#a93c63); color:#fff; border-color:transparent; }
-        .resource-card { background:#fff; border:1px solid rgba(199,81,124,.2); border-radius:18px; box-shadow:0 10px 28px rgba(94,33,61,.08); padding:1rem; }
-        .resource-section { display:none; }
-        .resource-section.active { display:block; }
-        .resource-form { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.75rem; margin-bottom:1rem; }
-        .resource-form .field { display:grid; gap:.35rem; }
-        .resource-form .field.full { grid-column:1 / -1; }
-        .resource-label { font-size:.8rem; font-weight:800; color:#6f3a56; text-transform:uppercase; letter-spacing:.04em; }
-        .resource-input,.resource-select,.resource-textarea { width:100%; border:1px solid rgba(199,81,124,.3); border-radius:10px; padding:.55rem .65rem; font-size:.9rem; font-family:inherit; background:#fff; color:#2f2430; outline:none; }
-        .resource-textarea { min-height:70px; resize:vertical; }
-        .resource-actions { grid-column:1 / -1; display:flex; gap:.55rem; flex-wrap:wrap; }
-        .resource-btn { border:none; border-radius:10px; padding:.58rem .95rem; font-size:.87rem; font-weight:700; cursor:pointer; font-family:inherit; }
-        .resource-btn.primary { background:linear-gradient(135deg,#c7517c,#a93c63); color:#fff; }
-        .resource-btn.gray { background:#f5f2f4; color:#6d5a62; border:1px solid #e5d9de; }
-        .resource-table-wrap { overflow-x:auto; border:1px solid rgba(199,81,124,.22); border-radius:14px; background:#fff; }
-        .resource-table { width:100%; border-collapse:collapse; min-width:1150px; }
-        .resource-table th,.resource-table td { border-bottom:1px solid rgba(199,81,124,.14); padding:.52rem .58rem; text-align:left; vertical-align:top; font-size:.84rem; color:#3b2b34; white-space:nowrap; }
-        .resource-table th { background:#fff3f8; color:#7a3052; font-weight:800; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; position:sticky; top:0; z-index:1; }
-        .resource-table td.note-cell { white-space:normal; min-width:220px; max-width:340px; }
-        .resource-table .danger-btn { border:none; background:#fee2e2; color:#b91c1c; border-radius:8px; padding:.35rem .5rem; cursor:pointer; font-weight:700; font-size:.78rem; }
-        .resource-empty { padding:.9rem; color:#7c6a73; font-weight:600; font-size:.9rem; }
-        @media (max-width: 980px) { .resource-form { grid-template-columns:repeat(2,minmax(0,1fr)); } }
-        @media (max-width: 640px) { .resource-form { grid-template-columns:1fr; } }
+        .resource-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .resource-title { margin: 0; font-size: 1.6rem; font-weight: 800; color: #5f2d47; }
+        .resource-sub { margin: 0; color: #6f4b5c; font-weight: 600; font-size: .95rem; }
+        .resource-tabs { display: flex; gap: .65rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .resource-tab-btn { border: 1px solid rgba(199,81,124,.28); background: #fff; color: #7b3858; font-weight: 700; border-radius: 999px; padding: .5rem .95rem; cursor: pointer; font-family: inherit; }
+        .resource-tab-btn.active { background: linear-gradient(135deg,#c7517c,#a93c63); color: #fff; border-color: transparent; }
+        .resource-role-badge { display: inline-flex; align-items: center; gap: .45rem; border-radius: 999px; padding: .3rem .7rem; border: 1px solid rgba(199,81,124,.3); background: #fff2f8; color: #7b3858; font-size: .82rem; font-weight: 800; }
+        .resource-status { margin: 0 0 1rem; padding: .58rem .75rem; border-radius: 10px; border: 1px solid #f3d3df; background: #fff7fb; color: #7b3858; font-size: .86rem; font-weight: 700; }
+        .resource-status.good { border-color: #bbf7d0; background: #f0fdf4; color: #166534; }
+        .resource-status.bad { border-color: #fecaca; background: #fef2f2; color: #b91c1c; }
+        .resource-card { background: #fff; border: 1px solid rgba(199,81,124,.2); border-radius: 18px; box-shadow: 0 10px 28px rgba(94,33,61,.08); padding: 1rem; }
+        .resource-section { display: none; }
+        .resource-section.active { display: block; }
+        .resource-filter-row { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: .65rem; margin-bottom: .9rem; }
+        .resource-filter-row .field { display: grid; gap: .3rem; }
+        .resource-filter-row .field.actions { display: flex; align-items: flex-end; gap: .5rem; }
+        .resource-form { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: .75rem; margin-bottom: 1rem; }
+        .resource-form .field { display: grid; gap: .35rem; }
+        .resource-form .field.full { grid-column: 1 / -1; }
+        .resource-label { font-size: .8rem; font-weight: 800; color: #6f3a56; text-transform: uppercase; letter-spacing: .04em; }
+        .resource-input,.resource-select,.resource-textarea { width: 100%; border: 1px solid rgba(199,81,124,.3); border-radius: 10px; padding: .55rem .65rem; font-size: .9rem; font-family: inherit; background: #fff; color: #2f2430; outline: none; }
+        .resource-textarea { min-height: 70px; resize: vertical; }
+        .resource-actions { grid-column: 1 / -1; display: flex; gap: .55rem; flex-wrap: wrap; }
+        .resource-btn { border: none; border-radius: 10px; padding: .58rem .95rem; font-size: .87rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+        .resource-btn.primary { background: linear-gradient(135deg,#c7517c,#a93c63); color: #fff; }
+        .resource-btn.gray { background: #f5f2f4; color: #6d5a62; border: 1px solid #e5d9de; }
+        .resource-btn:disabled { opacity: .6; cursor: not-allowed; }
+        .resource-table-wrap { overflow-x: auto; border: 1px solid rgba(199,81,124,.22); border-radius: 14px; background: #fff; }
+        .resource-table { width: 100%; border-collapse: collapse; min-width: 1150px; }
+        .resource-table th,.resource-table td { border-bottom: 1px solid rgba(199,81,124,.14); padding: .52rem .58rem; text-align: left; vertical-align: top; font-size: .84rem; color: #3b2b34; white-space: nowrap; }
+        .resource-table th { background: #fff3f8; color: #7a3052; font-weight: 800; font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; position: sticky; top: 0; z-index: 1; }
+        .resource-table td.note-cell { white-space: normal; min-width: 220px; max-width: 340px; }
+        .resource-table .danger-btn { border: none; background: #fee2e2; color: #b91c1c; border-radius: 8px; padding: .35rem .5rem; cursor: pointer; font-weight: 700; font-size: .78rem; }
+        .resource-empty { padding: .9rem; color: #7c6a73; font-weight: 600; font-size: .9rem; }
+        @media (max-width: 980px) {
+            .resource-form { grid-template-columns: repeat(2,minmax(0,1fr)); }
+            .resource-filter-row { grid-template-columns: repeat(2,minmax(0,1fr)); }
+        }
+        @media (max-width: 640px) {
+            .resource-form { grid-template-columns: 1fr; }
+            .resource-filter-row { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -42,37 +56,46 @@
         <nav>
             <div class="logo">Marketing Ads</div>
             <ul class="nav-links">
-                <li><a href="./index.html">Trang Chu</a></li>
-                <li><a href="./reports.html">Bao Cao</a></li>
-                <li><a href="./notifications.html">Thong Bao</a></li>
-                <li><a href="./ideas.html">Y Tuong</a></li>
-                <li><a href="./content.html">Noi Dung</a></li>
-                <li><a href="./resource-admin.html">Quan Tri Tai Nguyen</a></li>
+                <li><a href="./index.html">Trang Chủ</a></li>
+                <li><a href="./reports.html">Báo Cáo</a></li>
+                <li><a href="./notifications.html">Thông Báo</a></li>
+                <li><a href="./ideas.html">Ý Tưởng</a></li>
+                <li><a href="./content.html">Nội Dung</a></li>
+                <li><a href="./resource-admin.html">Quản trị tài nguyên</a></li>
             </ul>
         </nav>
     </header>
 
     <main class="resource-page">
         <div class="resource-head">
-            <h1 class="resource-title">Quan tri tai nguyen</h1>
-            <p class="resource-sub">Quan ly sheet thong tin via va sheet quan ly tai khoan quang cao</p>
+            <h1 class="resource-title">Quản trị tài nguyên</h1>
+            <div class="resource-role-badge" id="resourceRoleBadge">Đang kiểm tra quyền...</div>
         </div>
+        <p class="resource-sub">Quản lý sheet thông tin via và sheet quản lý tài khoản quảng cáo theo thời gian thực</p>
+        <p id="resourceStatus" class="resource-status">Đang khởi tạo dữ liệu...</p>
 
         <div class="resource-tabs">
-            <button class="resource-tab-btn active" type="button" data-tab="viaSection">Sheet thong tin via</button>
-            <button class="resource-tab-btn" type="button" data-tab="adSection">Sheet thong tin quan ly tai khoan quang cao</button>
+            <button class="resource-tab-btn active" type="button" data-tab="viaSection">Sheet thông tin via</button>
+            <button class="resource-tab-btn" type="button" data-tab="adSection">Sheet thông tin quản lý tài khoản quảng cáo</button>
         </div>
 
         <section id="viaSection" class="resource-section active resource-card">
+            <div class="resource-filter-row">
+                <div class="field"><label class="resource-label" for="viaFilterFrom">Lọc ngày check từ</label><input id="viaFilterFrom" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="viaFilterTo">Lọc ngày check đến</label><input id="viaFilterTo" class="resource-input" type="date"></div>
+                <div class="field actions"><button id="viaApplyFilter" class="resource-btn gray" type="button">Lọc dữ liệu</button></div>
+                <div class="field actions"><button id="viaClearFilter" class="resource-btn gray" type="button">Xóa lọc</button></div>
+            </div>
+
             <form id="viaForm" class="resource-form">
                 <div class="field"><label class="resource-label" for="viaId">ID VIA</label><input id="viaId" class="resource-input" type="text" required></div>
                 <div class="field"><label class="resource-label" for="viaUid">UID Facebook</label><input id="viaUid" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaOldPass">Mat khau cu</label><input id="viaOldPass" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaCurrentPass">Mat khau hien tai</label><input id="viaCurrentPass" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="via2fa">2FA (ma hoac key)</label><input id="via2fa" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaCheckDate">Ngay check</label><input id="viaCheckDate" class="resource-input" type="date"></div>
-                <div class="field"><label class="resource-label" for="viaOperator">Nguoi thuc hien</label><input id="viaOperator" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaStatus">Tinh trang</label>
+                <div class="field"><label class="resource-label" for="viaOldPass">Mật khẩu cũ</label><input id="viaOldPass" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaCurrentPass">Mật khẩu hiện tại</label><input id="viaCurrentPass" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="via2fa">2FA (mã hoặc key)</label><input id="via2fa" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaCheckDate">Ngày check</label><input id="viaCheckDate" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="viaOperator">Người thực hiện</label><input id="viaOperator" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaStatus">Tình trạng</label>
                     <select id="viaStatus" class="resource-select">
                         <option value="Live">Live</option>
                         <option value="Die">Die</option>
@@ -80,11 +103,11 @@
                         <option value="Limit Ads">Limit Ads</option>
                     </select>
                 </div>
-                <div class="field"><label class="resource-label" for="viaSource">Nguon mua</label><input id="viaSource" class="resource-input" type="text"></div>
-                <div class="field full"><label class="resource-label" for="viaNote">Ghi chu</label><textarea id="viaNote" class="resource-textarea"></textarea></div>
+                <div class="field"><label class="resource-label" for="viaSource">Nguồn mua</label><input id="viaSource" class="resource-input" type="text"></div>
+                <div class="field full"><label class="resource-label" for="viaNote">Ghi chú</label><textarea id="viaNote" class="resource-textarea"></textarea></div>
                 <div class="resource-actions">
-                    <button class="resource-btn primary" type="submit">Them via</button>
-                    <button class="resource-btn gray" type="reset">Lam moi form</button>
+                    <button class="resource-btn primary" type="submit" id="viaSubmitBtn">Thêm via</button>
+                    <button class="resource-btn gray" type="reset">Làm mới form</button>
                 </div>
             </form>
             <div class="resource-table-wrap">
@@ -93,15 +116,15 @@
                         <tr>
                             <th>ID VIA</th>
                             <th>UID Facebook</th>
-                            <th>Mat khau cu</th>
-                            <th>Mat khau hien tai</th>
+                            <th>Mật khẩu cũ</th>
+                            <th>Mật khẩu hiện tại</th>
                             <th>2FA</th>
-                            <th>Ngay check</th>
-                            <th>Nguoi thuc hien</th>
-                            <th>Tinh trang</th>
-                            <th>Nguon mua</th>
-                            <th>Ghi chu</th>
-                            <th>Thao tac</th>
+                            <th>Ngày check</th>
+                            <th>Người thực hiện</th>
+                            <th>Tình trạng</th>
+                            <th>Nguồn mua</th>
+                            <th>Ghi chú</th>
+                            <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="viaTableBody"></tbody>
@@ -110,25 +133,32 @@
         </section>
 
         <section id="adSection" class="resource-section resource-card">
+            <div class="resource-filter-row">
+                <div class="field"><label class="resource-label" for="adFilterFrom">Lọc ngày add từ</label><input id="adFilterFrom" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="adFilterTo">Lọc ngày add đến</label><input id="adFilterTo" class="resource-input" type="date"></div>
+                <div class="field actions"><button id="adApplyFilter" class="resource-btn gray" type="button">Lọc dữ liệu</button></div>
+                <div class="field actions"><button id="adClearFilter" class="resource-btn gray" type="button">Xóa lọc</button></div>
+            </div>
+
             <form id="adForm" class="resource-form">
                 <div class="field"><label class="resource-label" for="adId">ID Account</label><input id="adId" class="resource-input" type="text" required></div>
-                <div class="field"><label class="resource-label" for="adName">Ten tai khoan</label><input id="adName" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adName">Tên tài khoản</label><input id="adName" class="resource-input" type="text"></div>
                 <div class="field"><label class="resource-label" for="adBmId">ID BM (Business Manager)</label><input id="adBmId" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adPlatform">Nen tang</label>
+                <div class="field"><label class="resource-label" for="adPlatform">Nền tảng</label>
                     <select id="adPlatform" class="resource-select">
                         <option value="Facebook">Facebook</option>
                         <option value="TikTok">TikTok</option>
                         <option value="Google">Google</option>
                     </select>
                 </div>
-                <div class="field"><label class="resource-label" for="adCountry">Quoc gia</label><input id="adCountry" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adCurrency">Tien te</label><input id="adCurrency" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adThreshold">Nguong thanh toan</label><input id="adThreshold" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adPayMethod">Phuong thuc thanh toan</label><input id="adPayMethod" class="resource-input" type="text" placeholder="Visa / PayPal..."></div>
-                <div class="field"><label class="resource-label" for="adCardLast4">4 so cuoi the</label><input id="adCardLast4" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adCardOwner">Chu the</label><input id="adCardOwner" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adAddDate">Ngay add</label><input id="adAddDate" class="resource-input" type="date"></div>
-                <div class="field"><label class="resource-label" for="adStatus">Trang thai</label>
+                <div class="field"><label class="resource-label" for="adCountry">Quốc gia</label><input id="adCountry" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adCurrency">Tiền tệ</label><input id="adCurrency" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adThreshold">Ngưỡng thanh toán</label><input id="adThreshold" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adPayMethod">Phương thức thanh toán</label><input id="adPayMethod" class="resource-input" type="text" placeholder="Visa / PayPal..."></div>
+                <div class="field"><label class="resource-label" for="adCardLast4">4 số cuối thẻ</label><input id="adCardLast4" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adCardOwner">Chủ thẻ</label><input id="adCardOwner" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adAddDate">Ngày add</label><input id="adAddDate" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="adStatus">Trạng thái</label>
                     <select id="adStatus" class="resource-select">
                         <option value="Active">Active</option>
                         <option value="Disabled">Disabled</option>
@@ -136,13 +166,13 @@
                         <option value="Die">Die</option>
                     </select>
                 </div>
-                <div class="field"><label class="resource-label" for="adManager">Nguoi quan ly</label><input id="adManager" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adLink">Link truy cap</label><input id="adLink" class="resource-input" type="url"></div>
-                <div class="field"><label class="resource-label" for="adGrantDate">Ngay cap quyen</label><input id="adGrantDate" class="resource-input" type="date"></div>
-                <div class="field full"><label class="resource-label" for="adNote">Ghi chu</label><textarea id="adNote" class="resource-textarea"></textarea></div>
+                <div class="field"><label class="resource-label" for="adManager">Người quản lý</label><input id="adManager" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adLink">Link truy cập</label><input id="adLink" class="resource-input" type="url"></div>
+                <div class="field"><label class="resource-label" for="adGrantDate">Ngày cấp quyền</label><input id="adGrantDate" class="resource-input" type="date"></div>
+                <div class="field full"><label class="resource-label" for="adNote">Ghi chú</label><textarea id="adNote" class="resource-textarea"></textarea></div>
                 <div class="resource-actions">
-                    <button class="resource-btn primary" type="submit">Them tai khoan quang cao</button>
-                    <button class="resource-btn gray" type="reset">Lam moi form</button>
+                    <button class="resource-btn primary" type="submit" id="adSubmitBtn">Thêm tài khoản quảng cáo</button>
+                    <button class="resource-btn gray" type="reset">Làm mới form</button>
                 </div>
             </form>
             <div class="resource-table-wrap">
@@ -150,22 +180,22 @@
                     <thead>
                         <tr>
                             <th>ID Account</th>
-                            <th>Ten tai khoan</th>
+                            <th>Tên tài khoản</th>
                             <th>ID BM</th>
-                            <th>Nen tang</th>
-                            <th>Quoc gia</th>
-                            <th>Tien te</th>
-                            <th>Nguong thanh toan</th>
-                            <th>Phuong thuc thanh toan</th>
-                            <th>4 so cuoi the</th>
-                            <th>Chu the</th>
-                            <th>Ngay add</th>
-                            <th>Trang thai</th>
-                            <th>Nguoi quan ly</th>
-                            <th>Link truy cap</th>
-                            <th>Ngay cap quyen</th>
-                            <th>Ghi chu</th>
-                            <th>Thao tac</th>
+                            <th>Nền tảng</th>
+                            <th>Quốc gia</th>
+                            <th>Tiền tệ</th>
+                            <th>Ngưỡng thanh toán</th>
+                            <th>Phương thức thanh toán</th>
+                            <th>4 số cuối thẻ</th>
+                            <th>Chủ thẻ</th>
+                            <th>Ngày add</th>
+                            <th>Trạng thái</th>
+                            <th>Người quản lý</th>
+                            <th>Link truy cập</th>
+                            <th>Ngày cấp quyền</th>
+                            <th>Ghi chú</th>
+                            <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="adTableBody"></tbody>
@@ -180,49 +210,186 @@
     <script src="./assets/js/script.js?v=20260418-24"></script>
     <script>
         (function () {
-            var viaKey = 'resourceViaSheetV1';
-            var adKey = 'resourceAdAccountSheetV1';
+            var DOC_COLLECTION = 'ma_config';
+            var DOC_ID = 'resource_admin_v1';
+            var SESSION_KEY = 'ma_session_v1';
+            var OWNER_KEY = 'ma_owner_id_v1';
+            var ACCOUNTS_KEY = 'ma_accounts_v1';
+
+            var state = {
+                isSuperadmin: false,
+                viaRows: [],
+                adRows: [],
+                viaEditingId: '',
+                adEditingId: ''
+            };
+
+            var viaFilter = { from: '', to: '' };
+            var adFilter = { from: '', to: '' };
+
+            var roleBadge = document.getElementById('resourceRoleBadge');
+            var statusEl = document.getElementById('resourceStatus');
+
             var viaForm = document.getElementById('viaForm');
             var viaTableBody = document.getElementById('viaTableBody');
             var adForm = document.getElementById('adForm');
             var adTableBody = document.getElementById('adTableBody');
+            var viaSubmitBtn = document.getElementById('viaSubmitBtn');
+            var adSubmitBtn = document.getElementById('adSubmitBtn');
+
+            var viaFilterFrom = document.getElementById('viaFilterFrom');
+            var viaFilterTo = document.getElementById('viaFilterTo');
+            var viaApplyFilter = document.getElementById('viaApplyFilter');
+            var viaClearFilter = document.getElementById('viaClearFilter');
+
+            var adFilterFrom = document.getElementById('adFilterFrom');
+            var adFilterTo = document.getElementById('adFilterTo');
+            var adApplyFilter = document.getElementById('adApplyFilter');
+            var adClearFilter = document.getElementById('adClearFilter');
+
             var tabButtons = document.querySelectorAll('[data-tab]');
 
-            tabButtons.forEach(function (btn) {
-                btn.addEventListener('click', function () {
-                    var target = this.getAttribute('data-tab');
-                    document.querySelectorAll('.resource-section').forEach(function (sec) {
-                        sec.classList.toggle('active', sec.id === target);
-                    });
-                    tabButtons.forEach(function (b) { b.classList.toggle('active', b === btn); });
-                });
-            });
+            var db = null;
+            var unsub = null;
 
-            var safeRead = function (key) {
+            var setStatus = function (text, type) {
+                if (!statusEl) { return; }
+                statusEl.textContent = text || '';
+                statusEl.className = 'resource-status' + (type ? ' ' + type : '');
+            };
+
+            var safeParse = function (raw, fallback) {
                 try {
-                    var arr = JSON.parse(localStorage.getItem(key) || '[]');
-                    return Array.isArray(arr) ? arr : [];
+                    var parsed = JSON.parse(raw || '');
+                    return parsed != null ? parsed : fallback;
                 } catch (e) {
-                    return [];
+                    return fallback;
                 }
             };
 
-            var safeWrite = function (key, rows) {
-                localStorage.setItem(key, JSON.stringify(rows || []));
+            var resolveRole = function () {
+                var badge = document.querySelector('.auth-badge');
+                var badgeText = String((badge && badge.textContent) || '').toLowerCase();
+                if (badgeText.indexOf('quản trị cao nhất') !== -1 || badgeText.indexOf('quan tri cao nhat') !== -1) {
+                    return true;
+                }
+
+                var session = safeParse(localStorage.getItem(SESSION_KEY), null);
+                var userId = String((session && session.userId) || '').trim();
+                if (!userId) { return false; }
+
+                var ownerId = String(localStorage.getItem(OWNER_KEY) || '').trim();
+                if (ownerId && ownerId === userId) {
+                    return true;
+                }
+
+                var accounts = safeParse(localStorage.getItem(ACCOUNTS_KEY), []);
+                if (!Array.isArray(accounts)) { return false; }
+                var user = accounts.find(function (acc) { return acc && acc.id === userId; });
+                if (!user) { return false; }
+
+                return String(user.role || '').toLowerCase() === 'superadmin' && String(user.status || 'active').toLowerCase() === 'active';
+            };
+
+            var applyRoleUi = function () {
+                state.isSuperadmin = resolveRole();
+                if (roleBadge) {
+                    roleBadge.textContent = state.isSuperadmin ? 'Quyền hiện tại: Superadmin (được chỉnh sửa)' : 'Quyền hiện tại: Nhân viên (chỉ xem)';
+                }
+
+                var editable = Array.prototype.slice.call(document.querySelectorAll('#viaForm input, #viaForm select, #viaForm textarea, #viaForm button, #adForm input, #adForm select, #adForm textarea, #adForm button'));
+                editable.forEach(function (el) {
+                    if (!el) { return; }
+                    el.disabled = !state.isSuperadmin;
+                });
+
+                if (!state.isSuperadmin) {
+                    setStatus('Nhân viên chỉ có quyền xem dữ liệu quản trị tài nguyên.', '');
+                }
             };
 
             var toCell = function (val) {
                 return String(val || '').replace(/</g, '&lt;').replace(/>/g, '&gt;');
             };
 
+            var inRange = function (dateStr, from, to) {
+                if (!dateStr) { return false; }
+                if (from && dateStr < from) { return false; }
+                if (to && dateStr > to) { return false; }
+                return true;
+            };
+
+            var filteredViaRows = function () {
+                return state.viaRows.filter(function (row) {
+                    if (!viaFilter.from && !viaFilter.to) { return true; }
+                    return inRange(String(row.checkDate || ''), viaFilter.from, viaFilter.to);
+                });
+            };
+
+            var filteredAdRows = function () {
+                return state.adRows.filter(function (row) {
+                    if (!adFilter.from && !adFilter.to) { return true; }
+                    return inRange(String(row.addDate || ''), adFilter.from, adFilter.to);
+                });
+            };
+
+            var resetViaEditing = function () {
+                state.viaEditingId = '';
+                if (viaSubmitBtn) {
+                    viaSubmitBtn.textContent = 'Thêm via';
+                }
+            };
+
+            var resetAdEditing = function () {
+                state.adEditingId = '';
+                if (adSubmitBtn) {
+                    adSubmitBtn.textContent = 'Thêm tài khoản quảng cáo';
+                }
+            };
+
+            var fillViaForm = function (row) {
+                document.getElementById('viaId').value = row.idVia || '';
+                document.getElementById('viaUid').value = row.uidFacebook || '';
+                document.getElementById('viaOldPass').value = row.oldPassword || '';
+                document.getElementById('viaCurrentPass').value = row.currentPassword || '';
+                document.getElementById('via2fa').value = row.twoFA || '';
+                document.getElementById('viaCheckDate').value = row.checkDate || '';
+                document.getElementById('viaOperator').value = row.operator || '';
+                document.getElementById('viaStatus').value = row.status || 'Live';
+                document.getElementById('viaSource').value = row.source || '';
+                document.getElementById('viaNote').value = row.note || '';
+            };
+
+            var fillAdForm = function (row) {
+                document.getElementById('adId').value = row.idAccount || '';
+                document.getElementById('adName').value = row.accountName || '';
+                document.getElementById('adBmId').value = row.bmId || '';
+                document.getElementById('adPlatform').value = row.platform || 'Facebook';
+                document.getElementById('adCountry').value = row.country || '';
+                document.getElementById('adCurrency').value = row.currency || '';
+                document.getElementById('adThreshold').value = row.paymentThreshold || '';
+                document.getElementById('adPayMethod').value = row.paymentMethod || '';
+                document.getElementById('adCardLast4').value = row.cardLast4 || '';
+                document.getElementById('adCardOwner').value = row.cardOwner || '';
+                document.getElementById('adAddDate').value = row.addDate || '';
+                document.getElementById('adStatus').value = row.status || 'Active';
+                document.getElementById('adManager').value = row.manager || '';
+                document.getElementById('adLink').value = row.accessLink || '';
+                document.getElementById('adGrantDate').value = row.grantDate || '';
+                document.getElementById('adNote').value = row.note || '';
+            };
+
             var renderVia = function () {
                 if (!viaTableBody) { return; }
-                var rows = safeRead(viaKey);
+                var rows = filteredViaRows();
                 if (!rows.length) {
-                    viaTableBody.innerHTML = '<tr><td colspan="11" class="resource-empty">Chua co du lieu via.</td></tr>';
+                    viaTableBody.innerHTML = '<tr><td colspan="11" class="resource-empty">Chưa có dữ liệu via phù hợp.</td></tr>';
                     return;
                 }
                 viaTableBody.innerHTML = rows.map(function (row) {
+                    var actionCell = state.isSuperadmin
+                        ? '<button class="danger-btn" type="button" data-via-edit="' + toCell(row.id) + '">Sửa</button> <button class="danger-btn" type="button" data-via-del="' + toCell(row.id) + '">Xóa</button>'
+                        : '<span>-</span>';
                     return '<tr>' +
                         '<td>' + toCell(row.idVia) + '</td>' +
                         '<td>' + toCell(row.uidFacebook) + '</td>' +
@@ -234,28 +401,48 @@
                         '<td>' + toCell(row.status) + '</td>' +
                         '<td>' + toCell(row.source) + '</td>' +
                         '<td class="note-cell">' + toCell(row.note) + '</td>' +
-                        '<td><button class="danger-btn" type="button" data-via-del="' + toCell(row.id) + '">Xoa</button></td>' +
+                        '<td>' + actionCell + '</td>' +
                     '</tr>';
                 }).join('');
 
-                viaTableBody.querySelectorAll('[data-via-del]').forEach(function (btn) {
-                    btn.addEventListener('click', function () {
-                        var id = this.getAttribute('data-via-del');
-                        var next = safeRead(viaKey).filter(function (r) { return String(r.id) !== String(id); });
-                        safeWrite(viaKey, next);
-                        renderVia();
+                if (state.isSuperadmin) {
+                    viaTableBody.querySelectorAll('[data-via-edit]').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            var id = this.getAttribute('data-via-edit');
+                            var row = state.viaRows.find(function (r) { return String(r.id) === String(id); });
+                            if (!row) { return; }
+                            state.viaEditingId = String(id);
+                            fillViaForm(row);
+                            if (viaSubmitBtn) { viaSubmitBtn.textContent = 'Cập nhật via'; }
+                        });
                     });
-                });
+
+                    viaTableBody.querySelectorAll('[data-via-del]').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            var id = this.getAttribute('data-via-del');
+                            state.viaRows = state.viaRows.filter(function (r) { return String(r.id) !== String(id); });
+                            if (String(state.viaEditingId) === String(id)) {
+                                resetViaEditing();
+                                if (viaForm) { viaForm.reset(); }
+                            }
+                            saveRemote();
+                        });
+                    });
+                }
             };
 
             var renderAd = function () {
                 if (!adTableBody) { return; }
-                var rows = safeRead(adKey);
+                var rows = filteredAdRows();
                 if (!rows.length) {
-                    adTableBody.innerHTML = '<tr><td colspan="17" class="resource-empty">Chua co du lieu tai khoan quang cao.</td></tr>';
+                    adTableBody.innerHTML = '<tr><td colspan="17" class="resource-empty">Chưa có dữ liệu tài khoản quảng cáo phù hợp.</td></tr>';
                     return;
                 }
                 adTableBody.innerHTML = rows.map(function (row) {
+                    var actionCell = state.isSuperadmin
+                        ? '<button class="danger-btn" type="button" data-ad-edit="' + toCell(row.id) + '">Sửa</button> <button class="danger-btn" type="button" data-ad-del="' + toCell(row.id) + '">Xóa</button>'
+                        : '<span>-</span>';
+                    var linkCell = row.accessLink ? '<a href="' + toCell(row.accessLink) + '" target="_blank" rel="noopener noreferrer">Mở link</a>' : '-';
                     return '<tr>' +
                         '<td>' + toCell(row.idAccount) + '</td>' +
                         '<td>' + toCell(row.accountName) + '</td>' +
@@ -270,29 +457,107 @@
                         '<td>' + toCell(row.addDate) + '</td>' +
                         '<td>' + toCell(row.status) + '</td>' +
                         '<td>' + toCell(row.manager) + '</td>' +
-                        '<td><a href="' + toCell(row.accessLink) + '" target="_blank" rel="noopener noreferrer">Mo link</a></td>' +
+                        '<td>' + linkCell + '</td>' +
                         '<td>' + toCell(row.grantDate) + '</td>' +
                         '<td class="note-cell">' + toCell(row.note) + '</td>' +
-                        '<td><button class="danger-btn" type="button" data-ad-del="' + toCell(row.id) + '">Xoa</button></td>' +
+                        '<td>' + actionCell + '</td>' +
                     '</tr>';
                 }).join('');
 
-                adTableBody.querySelectorAll('[data-ad-del]').forEach(function (btn) {
-                    btn.addEventListener('click', function () {
-                        var id = this.getAttribute('data-ad-del');
-                        var next = safeRead(adKey).filter(function (r) { return String(r.id) !== String(id); });
-                        safeWrite(adKey, next);
-                        renderAd();
+                if (state.isSuperadmin) {
+                    adTableBody.querySelectorAll('[data-ad-edit]').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            var id = this.getAttribute('data-ad-edit');
+                            var row = state.adRows.find(function (r) { return String(r.id) === String(id); });
+                            if (!row) { return; }
+                            state.adEditingId = String(id);
+                            fillAdForm(row);
+                            if (adSubmitBtn) { adSubmitBtn.textContent = 'Cập nhật tài khoản quảng cáo'; }
+                        });
                     });
+
+                    adTableBody.querySelectorAll('[data-ad-del]').forEach(function (btn) {
+                        btn.addEventListener('click', function () {
+                            var id = this.getAttribute('data-ad-del');
+                            state.adRows = state.adRows.filter(function (r) { return String(r.id) !== String(id); });
+                            if (String(state.adEditingId) === String(id)) {
+                                resetAdEditing();
+                                if (adForm) { adForm.reset(); }
+                            }
+                            saveRemote();
+                        });
+                    });
+                }
+            };
+
+            var renderAll = function () {
+                renderVia();
+                renderAd();
+            };
+
+            var initFirebase = function () {
+                try {
+                    if (typeof firebase === 'undefined') { return null; }
+                    if (!firebase.apps.length && window.MA_FIREBASE_CONFIG && window.MA_FIREBASE_CONFIG.apiKey) {
+                        firebase.initializeApp(window.MA_FIREBASE_CONFIG);
+                    }
+                    return firebase.firestore();
+                } catch (e) {
+                    return null;
+                }
+            };
+
+            var saveRemote = function () {
+                if (!state.isSuperadmin || !db) { return; }
+                var session = safeParse(localStorage.getItem(SESSION_KEY), null);
+                var userId = String((session && session.userId) || '');
+                db.collection(DOC_COLLECTION).doc(DOC_ID).set({
+                    viaRows: state.viaRows,
+                    adRows: state.adRows,
+                    updatedAt: Date.now(),
+                    updatedBy: userId
+                }, { merge: true }).then(function () {
+                    setStatus('Đã cập nhật dữ liệu quản trị tài nguyên theo thời gian thực.', 'good');
+                }).catch(function () {
+                    setStatus('Không thể lưu dữ liệu lên hệ thống. Vui lòng thử lại.', 'bad');
+                });
+            };
+
+            var subscribeRemote = function () {
+                if (!db) {
+                    setStatus('Chưa kết nối được Firebase. Dữ liệu thời gian thực tạm thời không khả dụng.', 'bad');
+                    return;
+                }
+                if (unsub) { unsub(); unsub = null; }
+
+                unsub = db.collection(DOC_COLLECTION).doc(DOC_ID).onSnapshot(function (snap) {
+                    if (!snap.exists) {
+                        state.viaRows = [];
+                        state.adRows = [];
+                        renderAll();
+                        setStatus('Chưa có dữ liệu quản trị tài nguyên. Superadmin có thể bắt đầu nhập mới.', '');
+                        return;
+                    }
+                    var data = snap.data() || {};
+                    state.viaRows = Array.isArray(data.viaRows) ? data.viaRows : [];
+                    state.adRows = Array.isArray(data.adRows) ? data.adRows : [];
+                    renderAll();
+                    if (!state.isSuperadmin) {
+                        setStatus('Dữ liệu quản trị tài nguyên đã được cập nhật thời gian thực. Nhân viên chỉ được xem.', 'good');
+                    } else {
+                        setStatus('Dữ liệu quản trị tài nguyên đã đồng bộ thời gian thực.', 'good');
+                    }
+                }, function () {
+                    setStatus('Mất kết nối dữ liệu thời gian thực. Vui lòng kiểm tra mạng.', 'bad');
                 });
             };
 
             if (viaForm) {
                 viaForm.addEventListener('submit', function (e) {
                     e.preventDefault();
-                    var rows = safeRead(viaKey);
-                    rows.unshift({
-                        id: Date.now() + '_' + Math.random().toString(36).slice(2),
+                    if (!state.isSuperadmin) { return; }
+                    var viaPayload = {
+                        id: state.viaEditingId || (Date.now() + '_' + Math.random().toString(36).slice(2)),
                         idVia: document.getElementById('viaId').value.trim(),
                         uidFacebook: document.getElementById('viaUid').value.trim(),
                         oldPassword: document.getElementById('viaOldPass').value.trim(),
@@ -303,19 +568,34 @@
                         status: document.getElementById('viaStatus').value,
                         source: document.getElementById('viaSource').value.trim(),
                         note: document.getElementById('viaNote').value.trim()
-                    });
-                    safeWrite(viaKey, rows);
+                    };
+
+                    if (state.viaEditingId) {
+                        state.viaRows = state.viaRows.map(function (row) {
+                            return String(row.id) === String(state.viaEditingId) ? viaPayload : row;
+                        });
+                    } else {
+                        state.viaRows.unshift(viaPayload);
+                    }
+
                     viaForm.reset();
-                    renderVia();
+                    resetViaEditing();
+                    saveRemote();
+                });
+
+                viaForm.addEventListener('reset', function () {
+                    window.setTimeout(function () {
+                        resetViaEditing();
+                    }, 0);
                 });
             }
 
             if (adForm) {
                 adForm.addEventListener('submit', function (e) {
                     e.preventDefault();
-                    var rows = safeRead(adKey);
-                    rows.unshift({
-                        id: Date.now() + '_' + Math.random().toString(36).slice(2),
+                    if (!state.isSuperadmin) { return; }
+                    var adPayload = {
+                        id: state.adEditingId || (Date.now() + '_' + Math.random().toString(36).slice(2)),
                         idAccount: document.getElementById('adId').value.trim(),
                         accountName: document.getElementById('adName').value.trim(),
                         bmId: document.getElementById('adBmId').value.trim(),
@@ -332,16 +612,85 @@
                         accessLink: document.getElementById('adLink').value.trim(),
                         grantDate: document.getElementById('adGrantDate').value,
                         note: document.getElementById('adNote').value.trim()
-                    });
-                    safeWrite(adKey, rows);
+                    };
+
+                    if (state.adEditingId) {
+                        state.adRows = state.adRows.map(function (row) {
+                            return String(row.id) === String(state.adEditingId) ? adPayload : row;
+                        });
+                    } else {
+                        state.adRows.unshift(adPayload);
+                    }
+
                     adForm.reset();
+                    resetAdEditing();
+                    saveRemote();
+                });
+
+                adForm.addEventListener('reset', function () {
+                    window.setTimeout(function () {
+                        resetAdEditing();
+                    }, 0);
+                });
+            }
+
+            if (viaApplyFilter) {
+                viaApplyFilter.addEventListener('click', function () {
+                    viaFilter.from = viaFilterFrom ? viaFilterFrom.value : '';
+                    viaFilter.to = viaFilterTo ? viaFilterTo.value : '';
+                    renderVia();
+                });
+            }
+
+            if (viaClearFilter) {
+                viaClearFilter.addEventListener('click', function () {
+                    viaFilter = { from: '', to: '' };
+                    if (viaFilterFrom) { viaFilterFrom.value = ''; }
+                    if (viaFilterTo) { viaFilterTo.value = ''; }
+                    renderVia();
+                });
+            }
+
+            if (adApplyFilter) {
+                adApplyFilter.addEventListener('click', function () {
+                    adFilter.from = adFilterFrom ? adFilterFrom.value : '';
+                    adFilter.to = adFilterTo ? adFilterTo.value : '';
                     renderAd();
                 });
             }
 
-            renderVia();
-            renderAd();
+            if (adClearFilter) {
+                adClearFilter.addEventListener('click', function () {
+                    adFilter = { from: '', to: '' };
+                    if (adFilterFrom) { adFilterFrom.value = ''; }
+                    if (adFilterTo) { adFilterTo.value = ''; }
+                    renderAd();
+                });
+            }
+
+            tabButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var target = this.getAttribute('data-tab');
+                    document.querySelectorAll('.resource-section').forEach(function (sec) {
+                        sec.classList.toggle('active', sec.id === target);
+                    });
+                    tabButtons.forEach(function (b) { b.classList.toggle('active', b === btn); });
+                });
+            });
+
+            applyRoleUi();
+            db = initFirebase();
+            subscribeRemote();
+
+            window.addEventListener('storage', function (event) {
+                var key = event && event.key ? event.key : '';
+                if (key === SESSION_KEY || key === OWNER_KEY || key === ACCOUNTS_KEY) {
+                    applyRoleUi();
+                    renderAll();
+                }
+            });
         }());
     </script>
 </body>
 </html>
+
