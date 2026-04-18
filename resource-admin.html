@@ -69,10 +69,10 @@
     <main class="resource-page">
         <div class="resource-head">
             <h1 class="resource-title">Quản trị tài nguyên</h1>
-            <div class="resource-role-badge" id="resourceRoleBadge">Đang kiểm tra quyền...<//div>
+            <div class="resource-role-badge" id="resourceRoleBadge">Đang kiểm tra quyền...</div>
         </div>
         <p class="resource-sub">Quản lý sheet thông tin via và sheet quản lý tài khoản quảng cáo theo thời gian thực</p>
-        <p id="resourceStatus" class="resource-status">Đang khởi tạo dữ liệu...<//p>
+        <p id="resourceStatus" class="resource-status">Đang khởi tạo dữ liệu...</p>
 
         <div class="resource-tabs">
             <button class="resource-tab-btn active" type="button" data-tab="viaSection">Sheet thông tin via</button>
@@ -107,7 +107,7 @@
                 <div class="field full"><label class="resource-label" for="viaNote">Ghi chú</label><textarea id="viaNote" class="resource-textarea"></textarea></div>
                 <div class="resource-actions">
                     <button class="resource-btn primary" type="submit" id="viaSubmitBtn">Thêm via</button>
-                    <button class="resource-btn gray" type="reset">L�m m?i form</button>
+                    <button class="resource-btn gray" type="reset">Làm mới form</button>
                 </div>
             </form>
             <div class="resource-table-wrap">
@@ -119,12 +119,12 @@
                             <th>Mật khẩu cũ</th>
                             <th>Mật khẩu hiện tại</th>
                             <th>2FA</th>
-                            <th>Ng�y check</th>
+                            <th>Ngày check</th>
                             <th>Người thực hiện</th>
-                            <th>T�nh tr?ng</th>
+                            <th>Tình trạng</th>
                             <th>Nguồn mua</th>
-                            <th>Ghi ch�</th>
-                            <th>Thao t�c</th>
+                            <th>Ghi chú</th>
+                            <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="viaTableBody"></tbody>
@@ -144,7 +144,7 @@
                 <div class="field"><label class="resource-label" for="adId">ID Account</label><input id="adId" class="resource-input" type="text" required></div>
                 <div class="field"><label class="resource-label" for="adName">Tên tài khoản</label><input id="adName" class="resource-input" type="text"></div>
                 <div class="field"><label class="resource-label" for="adBmId">ID BM (Business Manager)</label><input id="adBmId" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adPlatform">N?n t?ng</label>
+                <div class="field"><label class="resource-label" for="adPlatform">Nền tảng</label>
                     <select id="adPlatform" class="resource-select">
                         <option value="Facebook">Facebook</option>
                         <option value="TikTok">TikTok</option>
@@ -158,7 +158,7 @@
                 <div class="field"><label class="resource-label" for="adCardLast4">4 số cuối thẻ</label><input id="adCardLast4" class="resource-input" type="text"></div>
                 <div class="field"><label class="resource-label" for="adCardOwner">Chủ thẻ</label><input id="adCardOwner" class="resource-input" type="text"></div>
                 <div class="field"><label class="resource-label" for="adAddDate">Ngày add</label><input id="adAddDate" class="resource-input" type="date"></div>
-                <div class="field"><label class="resource-label" for="adStatus">Tr?ng th�i</label>
+                <div class="field"><label class="resource-label" for="adStatus">Trạng thái</label>
                     <select id="adStatus" class="resource-select">
                         <option value="Active">Active</option>
                         <option value="Disabled">Disabled</option>
@@ -172,7 +172,7 @@
                 <div class="field full"><label class="resource-label" for="adNote">Ghi chú</label><textarea id="adNote" class="resource-textarea"></textarea></div>
                 <div class="resource-actions">
                     <button class="resource-btn primary" type="submit" id="adSubmitBtn">Thêm tài khoản quảng cáo</button>
-                    <button class="resource-btn gray" type="reset">L�m m?i form</button>
+                    <button class="resource-btn gray" type="reset">Làm mới form</button>
                 </div>
             </form>
             <div class="resource-table-wrap">
@@ -180,22 +180,22 @@
                     <thead>
                         <tr>
                             <th>ID Account</th>
-                            <th>T�n t�i kho?n</th>
+                            <th>Tên tài khoản</th>
                             <th>ID BM</th>
                             <th>Nền tảng</th>
                             <th>Quốc gia</th>
                             <th>Tiền tệ</th>
-                            <th>Ngu?ng thanh to�n</th>
-                            <th>Phuong th?c thanh to�n</th>
+                            <th>Ngưỡng thanh toán</th>
+                            <th>Phương thức thanh toán</th>
                             <th>4 số cuối thẻ</th>
                             <th>Chủ thẻ</th>
-                            <th>Ng�y add</th>
-                            <th>Tr?ng th�i</th>
-                            <th>Ngu?i qu?n l�</th>
+                            <th>Ngày add</th>
+                            <th>Trạng thái</th>
+                            <th>Người quản lý</th>
                             <th>Link truy cập</th>
-                            <th>Ng�y c?p quy?n</th>
-                            <th>Ghi ch�</th>
-                            <th>Thao t�c</th>
+                            <th>Ngày cấp quyền</th>
+                            <th>Ghi chú</th>
+                            <th>Thao tác</th>
                         </tr>
                     </thead>
                     <tbody id="adTableBody"></tbody>
@@ -270,7 +270,7 @@
             var resolveRole = function () {
                 var badge = document.querySelector('.auth-badge');
                 var badgeText = String((badge && badge.textContent) || '').toLowerCase();
-                if (badgeText.indexOf('qu?n tr? cao nh?t') !== -1 || badgeText.indexOf('quan tri cao nhat') !== -1) {
+                if (badgeText.indexOf('quản trị cao nhất') !== -1 || badgeText.indexOf('quan tri cao nhat') !== -1) {
                     return true;
                 }
 
@@ -294,7 +294,7 @@
             var applyRoleUi = function () {
                 state.isSuperadmin = resolveRole();
                 if (roleBadge) {
-                    roleBadge.textContent = state.isSuperadmin ? 'Quy?n hi?n t?i: Superadmin (du?c ch?nh s?a)' : 'Quy?n hi?n t?i: Nh�n vi�n (ch? xem)';
+                    roleBadge.textContent = state.isSuperadmin ? 'Quyền hiện tại: Superadmin (được chỉnh sửa)' : 'Quyền hiện tại: Nhân viên (chỉ xem)';
                 }
 
                 var editable = Array.prototype.slice.call(document.querySelectorAll('#viaForm input, #viaForm select, #viaForm textarea, #viaForm button, #adForm input, #adForm select, #adForm textarea, #adForm button'));
@@ -304,7 +304,7 @@
                 });
 
                 if (!state.isSuperadmin) {
-                    setStatus('Nh�n vi�n ch? c� quy?n xem d? li?u qu?n tr? t�i nguy�n.', '');
+                    setStatus('Nhân viên chỉ có quyền xem dữ liệu quản trị tài nguyên.', '');
                 }
             };
 
@@ -336,14 +336,14 @@
             var resetViaEditing = function () {
                 state.viaEditingId = '';
                 if (viaSubmitBtn) {
-                    viaSubmitBtn.textContent = 'Th�m via';
+                    viaSubmitBtn.textContent = 'Thêm via';
                 }
             };
 
             var resetAdEditing = function () {
                 state.adEditingId = '';
                 if (adSubmitBtn) {
-                    adSubmitBtn.textContent = 'Th�m t�i kho?n qu?ng c�o';
+                    adSubmitBtn.textContent = 'Thêm tài khoản quảng cáo';
                 }
             };
 
@@ -383,12 +383,12 @@
                 if (!viaTableBody) { return; }
                 var rows = filteredViaRows();
                 if (!rows.length) {
-                    viaTableBody.innerHTML = '<tr><td colspan="11" class="resource-empty">Chua c� d? li?u via ph� h?p.</td></tr>';
+                    viaTableBody.innerHTML = '<tr><td colspan="11" class="resource-empty">Chưa có dữ liệu via phù hợp.</td></tr>';
                     return;
                 }
                 viaTableBody.innerHTML = rows.map(function (row) {
                     var actionCell = state.isSuperadmin
-                        ? '<button class="danger-btn" type="button" data-via-edit="' + toCell(row.id) + '">S?a</button> <button class="danger-btn" type="button" data-via-del="' + toCell(row.id) + '">X�a</button>'
+                        ? '<button class="danger-btn" type="button" data-via-edit="' + toCell(row.id) + '">Sửa</button> <button class="danger-btn" type="button" data-via-del="' + toCell(row.id) + '">Xóa</button>'
                         : '<span>-</span>';
                     return '<tr>' +
                         '<td>' + toCell(row.idVia) + '</td>' +
@@ -413,7 +413,7 @@
                             if (!row) { return; }
                             state.viaEditingId = String(id);
                             fillViaForm(row);
-                            if (viaSubmitBtn) { viaSubmitBtn.textContent = 'C?p nh?t via'; }
+                            if (viaSubmitBtn) { viaSubmitBtn.textContent = 'Cập nhật via'; }
                         });
                     });
 
@@ -435,14 +435,14 @@
                 if (!adTableBody) { return; }
                 var rows = filteredAdRows();
                 if (!rows.length) {
-                    adTableBody.innerHTML = '<tr><td colspan="17" class="resource-empty">Chua c� d? li?u t�i kho?n qu?ng c�o ph� h?p.</td></tr>';
+                    adTableBody.innerHTML = '<tr><td colspan="17" class="resource-empty">Chưa có dữ liệu tài khoản quảng cáo phù hợp.</td></tr>';
                     return;
                 }
                 adTableBody.innerHTML = rows.map(function (row) {
                     var actionCell = state.isSuperadmin
-                        ? '<button class="danger-btn" type="button" data-ad-edit="' + toCell(row.id) + '">S?a</button> <button class="danger-btn" type="button" data-ad-del="' + toCell(row.id) + '">X�a</button>'
+                        ? '<button class="danger-btn" type="button" data-ad-edit="' + toCell(row.id) + '">Sửa</button> <button class="danger-btn" type="button" data-ad-del="' + toCell(row.id) + '">Xóa</button>'
                         : '<span>-</span>';
-                    var linkCell = row.accessLink ? '<a href="' + toCell(row.accessLink) + '" target="_blank" rel="noopener noreferrer">M? link</a>' : '-';
+                    var linkCell = row.accessLink ? '<a href="' + toCell(row.accessLink) + '" target="_blank" rel="noopener noreferrer">Mở link</a>' : '-';
                     return '<tr>' +
                         '<td>' + toCell(row.idAccount) + '</td>' +
                         '<td>' + toCell(row.accountName) + '</td>' +
@@ -472,7 +472,7 @@
                             if (!row) { return; }
                             state.adEditingId = String(id);
                             fillAdForm(row);
-                            if (adSubmitBtn) { adSubmitBtn.textContent = 'C?p nh?t t�i kho?n qu?ng c�o'; }
+                            if (adSubmitBtn) { adSubmitBtn.textContent = 'Cập nhật tài khoản quảng cáo'; }
                         });
                     });
 
@@ -517,15 +517,15 @@
                     updatedAt: Date.now(),
                     updatedBy: userId
                 }, { merge: true }).then(function () {
-                    setStatus('�� c?p nh?t d? li?u qu?n tr? t�i nguy�n theo th?i gian th?c.', 'good');
+                    setStatus('Đã cập nhật dữ liệu quản trị tài nguyên theo thời gian thực.', 'good');
                 }).catch(function () {
-                    setStatus('Kh�ng th? luu d? li?u l�n h? th?ng. Vui l�ng th? l?i.', 'bad');
+                    setStatus('Không thể lưu dữ liệu lên hệ thống. Vui lòng thử lại.', 'bad');
                 });
             };
 
             var subscribeRemote = function () {
                 if (!db) {
-                    setStatus('Chua k?t n?i du?c Firebase. D? li?u th?i gian th?c t?m th?i kh�ng kh? d?ng.', 'bad');
+                    setStatus('Chưa kết nối được Firebase. Dữ liệu thời gian thực tạm thời không khả dụng.', 'bad');
                     return;
                 }
                 if (unsub) { unsub(); unsub = null; }
@@ -535,7 +535,7 @@
                         state.viaRows = [];
                         state.adRows = [];
                         renderAll();
-                        setStatus('Chua c� d? li?u qu?n tr? t�i nguy�n. Superadmin c� th? b?t d?u nh?p m?i.', '');
+                        setStatus('Chưa có dữ liệu quản trị tài nguyên. Superadmin có thể bắt đầu nhập mới.', '');
                         return;
                     }
                     var data = snap.data() || {};
@@ -543,12 +543,12 @@
                     state.adRows = Array.isArray(data.adRows) ? data.adRows : [];
                     renderAll();
                     if (!state.isSuperadmin) {
-                        setStatus('D? li?u qu?n tr? t�i nguy�n d� du?c c?p nh?t th?i gian th?c. Nh�n vi�n ch? du?c xem.', 'good');
+                        setStatus('Dữ liệu quản trị tài nguyên đã được cập nhật thời gian thực. Nhân viên chỉ được xem.', 'good');
                     } else {
-                        setStatus('D? li?u qu?n tr? t�i nguy�n d� d?ng b? th?i gian th?c.', 'good');
+                        setStatus('Dữ liệu quản trị tài nguyên đã đồng bộ thời gian thực.', 'good');
                     }
                 }, function () {
-                    setStatus('M?t k?t n?i d? li?u th?i gian th?c. Vui l�ng ki?m tra m?ng.', 'bad');
+                    setStatus('Mất kết nối dữ liệu thời gian thực. Vui lòng kiểm tra mạng.', 'bad');
                 });
             };
 
