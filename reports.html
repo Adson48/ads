@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Marketing Ads - B�o C�o Th�ng</title>
+    <title>Marketing Ads - Báo Cáo Tháng</title>
     <link rel="stylesheet" href="./assets/css/style.css?v=20260418-27">
     <style>
         body { background: #f4f6fb; }
@@ -458,37 +458,37 @@
 
     <div class="rp-page">
         <div class="rp-topbar">
-            <div class="rp-title">&#128202; <span>Báo Cáo</span> Tháng</div>
+            <div class="rp-title">📊 <span>Báo Cáo</span> Tháng</div>
             <div class="rp-controls">
-                <span class="rp-name-label">Nh�n vi�n:</span>
+                <span class="rp-name-label">Nhân viên:</span>
                 <select id="rpReporterPick" class="rp-select"></select>
                 <input id="rpReporterNew" class="rp-name-inp" type="text" placeholder="Th�m nh�n vi�n m?i..." maxlength="40">
-                <button class="rp-btn rp-btn-gen" id="rpBtnAddReporter" type="button">Th�m NV</button>
-                <button class="rp-btn rp-btn-rename" id="rpBtnRenameReporter" type="button">�?i t�n NV</button>
-                <button class="rp-btn rp-btn-clear" id="rpBtnDelReporter" type="button">X�a NV</button>
+                <button class="rp-btn rp-btn-gen" id="rpBtnAddReporter" type="button" class="rp-btn rp-btn-gen">Thêm NV</button>
+                <button class="rp-btn rp-btn-rename" id="rpBtnRenameReporter" type="button" class="rp-btn rp-btn-rename">Đổi tên NV</button>
+                <button class="rp-btn rp-btn-clear" id="rpBtnDelReporter" type="button" class="rp-btn rp-btn-clear">Xóa NV</button>
                 <select id="rpMonth" class="rp-select">
-                    <option value="1">Th�ng 1</option><option value="2">Th�ng 2</option>
-                    <option value="3">Th�ng 3</option><option value="4">Th�ng 4</option>
-                    <option value="5">Th�ng 5</option><option value="6">Th�ng 6</option>
-                    <option value="7">Th�ng 7</option><option value="8">Th�ng 8</option>
-                    <option value="9">Th�ng 9</option><option value="10">Th�ng 10</option>
-                    <option value="11">Th�ng 11</option><option value="12">Th�ng 12</option>
+                    <option value="1">Tháng 1</option><option value="2">Tháng 2</option>
+                    <option value="3">Tháng 3</option><option value="4">Tháng 4</option>
+                    <option value="5">Tháng 5</option><option value="6">Tháng 6</option>
+                    <option value="7">Tháng 7</option><option value="8">Tháng 8</option>
+                    <option value="9">Tháng 9</option><option value="10">Tháng 10</option>
+                    <option value="11">Tháng 11</option><option value="12">Tháng 12</option>
                 </select>
                 <input id="rpYear" class="rp-year" type="number" value="2026" min="2020" max="2099">
-                <button class="rp-btn rp-btn-gen"    id="rpBtnGen">T?o B?ng</button>
-                <button class="rp-btn rp-btn-save"   id="rpBtnSave">Luu Chia S?</button>
-                <button class="rp-btn rp-btn-export" id="rpBtnExport">Xu?t CSV</button>
-                <button class="rp-btn rp-btn-clear"  id="rpBtnClear">X�a Th�ng</button>
-                <span id="rpSaveStatus" class="rp-save-status">Chua luu chia s?</span>
+                <button class="rp-btn rp-btn-gen"    id="rpBtnGen">Tạo Bảng</button>
+                <button class="rp-btn rp-btn-save"   id="rpBtnSave">Lưu Chia Sẻ</button>
+                <button class="rp-btn rp-btn-export" id="rpBtnExport">Xuất CSV</button>
+                <button class="rp-btn rp-btn-clear"  id="rpBtnClear">Xóa Tháng</button>
+                <span id="rpSaveStatus" class="rp-save-status">Chưa lưu chia sẻ</span>
             </div>
         </div>
 
         <div class="rp-filterbar">
-            <label>B? l?c:</label>
-            <button class="rp-filter-chip active" data-filter="all">T?t c?</button>
-            <button class="rp-filter-chip" data-filter="has-data">C� d? li?u</button>
-            <button class="rp-filter-chip" data-filter="weekend">Cu?i tu?n</button>
-            <button class="rp-filter-chip" data-filter="weekday">Ng�y thu?ng</button>
+            <label>Bộ lọc:</label>
+            <button class="rp-filter-chip active" data-filter="all">Tất cả</button>
+            <button class="rp-filter-chip" data-filter="has-data">Có dữ liệu</button>
+            <button class="rp-filter-chip" data-filter="weekend">Cuối tuần</button>
+            <button class="rp-filter-chip" data-filter="weekday">Ngày thường</button>
             <div class="rp-filter-sep"></div>
             <label>T? ng�y:</label>
             <input id="rpFilterFrom" class="rp-filter-select" type="number" min="1" max="31" placeholder="1" style="width:62px;">
@@ -498,18 +498,18 @@
             <input id="rpFilterDateFrom" class="rp-filter-date" type="date">
             <label>�?n l?ch:</label>
             <input id="rpFilterDateTo" class="rp-filter-date" type="date">
-            <button class="rp-filter-chip rp-chip-primary" id="rpFilterApply">�p d?ng</button>
-            <button class="rp-filter-chip" id="rpFilterReset">�?t l?i</button>
+            <button class="rp-filter-chip rp-chip-primary" id="rpFilterApply">Áp dụng</button>
+            <button class="rp-filter-chip" id="rpFilterReset">Đặt lại</button>
         </div>
 
         <div id="rpTelegramAdminZone">
         <div class="rp-telebar">
             <span class="rp-tele-label">�?ng b? Telegram:</span>
-            <button class="rp-btn rp-btn-export" id="rpTgSyncNow" type="button">�?ng b? ngay</button>
+            <button class="rp-btn rp-btn-export" id="rpTgSyncNow" class="rp-btn rp-btn-export" type="button">Đồng bộ ngay</button>
             <label class="rp-tele-help" style="display:inline-flex;align-items:center;gap:.35rem;">
                 <input type="checkbox" id="rpTgAutoSync"> T? d?ng 45 gi�y/l?n
             </label>
-            <span id="rpTgStatus" class="rp-tele-status">Chua d?ng b?.</span>
+            <span id="rpTgStatus" class="rp-tele-status">Chưa đồng bộ.</span>
             <span class="rp-tele-help">H? tr? c? d?ng 1 d�ng v� xu?ng d�ng.</span>
         </div>
         <div class="rp-tele-config">
@@ -526,10 +526,10 @@
                 <input id="rpTgChatId" class="rp-tele-input" type="text" placeholder="VD: -1001234567890">
             </div>
             <div class="rp-tele-actions">
-                <button class="rp-btn rp-btn-gen" id="rpTgSaveConfig" type="button">Luu Telegram</button>
-                <button class="rp-btn rp-btn-clear" id="rpTgClearConfig" type="button">X�a c?u h�nh</button>
+                <button class="rp-btn rp-btn-gen" id="rpTgSaveConfig" class="rp-btn rp-btn-gen" type="button">Lưu Telegram</button>
+                <button class="rp-btn rp-btn-clear" id="rpTgClearConfig" class="rp-btn rp-btn-clear" type="button">Xóa cấu hình</button>
             </div>
-            <div class="rp-tele-summary" id="rpTgConfigSummary">Chua c� c?u h�nh Telegram.</div>
+            <div class="rp-tele-summary" id="rpTgConfigSummary">Chưa có cấu hình Telegram.</div>
         </div>
     </div>
     <div id="rpTelegramStaffNote" class="rp-tele-staff-note">Ph?n c?u h�nh Telegram ch? d�nh cho qu?n tr? cao nh?t. D? li?u b�o c�o d?ng b? s? t? hi?n th? cho to�n b? nh�n vi�n.</div>
@@ -549,25 +549,25 @@ Doanh thu: 45000000</pre>
     </div>
 
         <div class="rp-kpi-bar">
-            <div class="rp-kpi kpi-cost"><div class="rp-kpi-label">T?ng Chi Ph�</div><div class="rp-kpi-value" id="kpiCost">0 d</div></div>
-            <div class="rp-kpi kpi-rev"> <div class="rp-kpi-label">T?ng Doanh Thu</div><div class="rp-kpi-value good" id="kpiRev">0 d</div></div>
+            <div class="rp-kpi kpi-cost"><div class="rp-kpi-label">Tổng Chi Phí</div><div class="rp-kpi-value" id="kpiCost">0 d</div></div>
+            <div class="rp-kpi kpi-rev"> <div class="rp-kpi-label">Tổng Doanh Thu</div><div class="rp-kpi-value good" id="kpiRev">0 d</div></div>
             <div class="rp-kpi kpi-roas"><div class="rp-kpi-label">ROAS</div><div class="rp-kpi-value" id="kpiRoas">-</div></div>
-            <div class="rp-kpi kpi-mess"><div class="rp-kpi-label">T?ng MESS</div><div class="rp-kpi-value" id="kpiMess">0</div></div>
+            <div class="rp-kpi kpi-mess"><div class="rp-kpi-label">Tổng MESS</div><div class="rp-kpi-value" id="kpiMess">0</div></div>
             <div class="rp-kpi kpi-sdt"> <div class="rp-kpi-label">T?ng S�T</div><div class="rp-kpi-value" id="kpiSdt">0</div></div>
-            <div class="rp-kpi kpi-lich"><div class="rp-kpi-label">T?ng L?ch H?n</div><div class="rp-kpi-value" id="kpiLich">0</div></div>
-            <div class="rp-kpi kpi-hd">  <div class="rp-kpi-label">T?ng H?p �?ng</div><div class="rp-kpi-value" id="kpiHd">0</div></div>
-            <div class="rp-kpi kpi-coc"> <div class="rp-kpi-label">T?ng C?c</div><div class="rp-kpi-value good" id="kpiCoc">0 d</div></div>
+            <div class="rp-kpi kpi-lich"><div class="rp-kpi-label">Tổng Lịch Hẹn</div><div class="rp-kpi-value" id="kpiLich">0</div></div>
+            <div class="rp-kpi kpi-hd">  <div class="rp-kpi-label">Tổng Hợp Đồng</div><div class="rp-kpi-value" id="kpiHd">0</div></div>
+            <div class="rp-kpi kpi-coc"> <div class="rp-kpi-label">Tổng Cọc</div><div class="rp-kpi-value good" id="kpiCoc">0 d</div></div>
         </div>
 
         <div class="rp-table-tools">
             <div class="rp-table-tools-main">
-                <span class="rp-table-tools-title">T�y ch?nh b?ng</span>
+                <span class="rp-table-tools-title">Tùy chỉnh bảng</span>
                 <span class="rp-table-tools-hint">K�o m�p ph?i ti�u d? c?t d? d?i d? r?ng. Ch? d? r?ng gi�p nh?p s? d? hon.</span>
             </div>
             <div class="rp-table-tools-actions">
-                <button class="rp-table-chip" type="button" data-density="compact">Ch? d? g?n</button>
-                <button class="rp-table-chip" type="button" data-density="comfy">Ch? d? r?ng</button>
-                <button class="rp-table-chip" type="button" id="rpResetColWidths">Reset d? r?ng c?t</button>
+                <button class="rp-table-chip" type="button" data-density="compact">Chế độ gọn</button>
+                <button class="rp-table-chip" type="button" data-density="comfy">Chế độ rộng</button>
+                <button class="rp-table-chip" type="button" id="rpResetColWidths">Reset độ rộng cột</button>
             </div>
         </div>
         <div class="rp-table-wrap" id="rpTableWrap">
@@ -576,15 +576,15 @@ Doanh thu: 45000000</pre>
                     <thead>
                         <tr class="rh-banner"><td colspan="14" id="rpTableTitle">TH�NG 4/2026</td></tr>
                         <tr class="rh-cols">
-                            <th class="col-day">Ng�y</th>
-                            <th class="col-e">Chi Ph� (d)</th>
+                            <th class="col-day">Ngày</th>
+                            <th class="col-e">Chi Phí (đ)</th>
                             <th class="col-e">MESS</th>
                             <th class="col-e">SDT</th>
-                            <th class="col-e">�?T L?CH</th>
-                            <th class="col-e">HO�N H?Y</th>
-                            <th class="col-e">S? H�</th>
-                            <th class="col-f">T? L? K�</th>
-                            <th class="col-f">T? L? XIN S?</th>
+                            <th class="col-e">ĐẶT LỊCH</th>
+                            <th class="col-e">HOÀN HỦY</th>
+                            <th class="col-e">SỐ HỢP ĐỒNG</th>
+                            <th class="col-f">TỈ LỆ KÝ</th>
+                            <th class="col-f">TỈ LỆ XIN SỐ</th>
                             <th class="col-f">CP/MESS</th>
                             <th class="col-f">CP/SDT</th>
                             <th class="col-f">CP/LICH</th>
@@ -592,7 +592,7 @@ Doanh thu: 45000000</pre>
                             <th class="col-f">% CP/DT</th>
                         </tr>
                         <tr class="rh-total" id="rpTotalRow">
-                            <th class="tl">T?NG</th>
+                            <th class="tl">TỔNG</th>
                             <th class="tv" id="tCost">-</th>
                             <th class="tv" id="tMess">-</th><th class="tv" id="tSdt">-</th>
                             <th class="tv" id="tLich">-</th><th class="tv" id="tHoanHuy">-</th><th class="tv" id="tHd">-</th>
@@ -607,11 +607,11 @@ Doanh thu: 45000000</pre>
         </div>
     </div>
 
-    <div class="rp-toast" id="rpToast">�� luu!</div>
+    <div class="rp-toast" id="rpToast">Đã lưu!</div>
 
     <div class="rp-history-wrap">
-        <div class="rp-history-title"><span>&#128338;</span>&nbsp;L?ch s? ch?nh s?a <button id="rpHistClearAll" class="rp-hist-clear">X�a t?t c?</button></div>
-        <ul class="rp-history-list" id="rpHistoryList"><li class="rp-history-empty">Chua c� l?ch s? n�o.</li></ul>
+        <div class="rp-history-title"><span>🕐</span>&nbsp;Lịch sử chỉnh sửa <button id="rpHistClearAll" class="rp-hist-clear">Xóa tất cả</button></div>
+        <ul class="rp-history-list" id="rpHistoryList"><li class="rp-history-empty">Chưa có lịch sử nào.</li></ul>
     </div>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
@@ -1022,7 +1022,7 @@ Doanh thu: 45000000</pre>
         function renderHistory(){
             var list=document.getElementById('rpHistoryList');if(!list)return;
             var hist=[];try{hist=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}catch(e){}
-            if(!hist.length){list.innerHTML='<li class="rp-history-empty">Chua c� l?ch s? n�o.</li>';return;}
+            if(!hist.length){list.innerHTML='<li class="rp-history-empty">Chưa có lịch sử nào.</li>';return;}
             var mn=['','Th�ng 1','Th�ng 2','Th�ng 3','Th�ng 4','Th�ng 5','Th�ng 6','Th�ng 7','Th�ng 8','Th�ng 9','Th�ng 10','Th�ng 11','Th�ng 12'];
             list.innerHTML=hist.map(function(h,i){
                 var d=new Date(h.ts);var ts=d.toLocaleDateString('vi-VN')+' '+d.toLocaleTimeString('vi-VN',{hour:'2-digit',minute:'2-digit'});

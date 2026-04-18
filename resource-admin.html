@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
@@ -68,34 +68,34 @@
 
     <main class="resource-page">
         <div class="resource-head">
-            <h1 class="resource-title">Qu?n tr? t�i nguy�n</h1>
-            <div class="resource-role-badge" id="resourceRoleBadge">�ang ki?m tra quy?n...</div>
+            <h1 class="resource-title">Quản trị tài nguyên</h1>
+            <div class="resource-role-badge" id="resourceRoleBadge">Đang kiểm tra quyền...<//div>
         </div>
-        <p class="resource-sub">Qu?n l� sheet th�ng tin via v� sheet qu?n l� t�i kho?n qu?ng c�o theo th?i gian th?c</p>
-        <p id="resourceStatus" class="resource-status">�ang kh?i t?o d? li?u...</p>
+        <p class="resource-sub">Quản lý sheet thông tin via và sheet quản lý tài khoản quảng cáo theo thời gian thực</p>
+        <p id="resourceStatus" class="resource-status">Đang khởi tạo dữ liệu...<//p>
 
         <div class="resource-tabs">
-            <button class="resource-tab-btn active" type="button" data-tab="viaSection">Sheet th�ng tin via</button>
-            <button class="resource-tab-btn" type="button" data-tab="adSection">Sheet th�ng tin qu?n l� t�i kho?n qu?ng c�o</button>
+            <button class="resource-tab-btn active" type="button" data-tab="viaSection">Sheet thông tin via</button>
+            <button class="resource-tab-btn" type="button" data-tab="adSection">Sheet thông tin quản lý tài khoản quảng cáo</button>
         </div>
 
         <section id="viaSection" class="resource-section active resource-card">
             <div class="resource-filter-row">
-                <div class="field"><label class="resource-label" for="viaFilterFrom">L?c ng�y check t?</label><input id="viaFilterFrom" class="resource-input" type="date"></div>
-                <div class="field"><label class="resource-label" for="viaFilterTo">L?c ng�y check d?n</label><input id="viaFilterTo" class="resource-input" type="date"></div>
-                <div class="field actions"><button id="viaApplyFilter" class="resource-btn gray" type="button">L?c d? li?u</button></div>
-                <div class="field actions"><button id="viaClearFilter" class="resource-btn gray" type="button">X�a l?c</button></div>
+                <div class="field"><label class="resource-label" for="viaFilterFrom">Lọc ngày check từ</label><input id="viaFilterFrom" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="viaFilterTo">Lọc ngày check đến</label><input id="viaFilterTo" class="resource-input" type="date"></div>
+                <div class="field actions"><button id="viaApplyFilter" class="resource-btn gray" type="button">Lọc dữ liệu</button></div>
+                <div class="field actions"><button id="viaClearFilter" class="resource-btn gray" type="button">Xóa lọc</button></div>
             </div>
 
             <form id="viaForm" class="resource-form">
                 <div class="field"><label class="resource-label" for="viaId">ID VIA</label><input id="viaId" class="resource-input" type="text" required></div>
                 <div class="field"><label class="resource-label" for="viaUid">UID Facebook</label><input id="viaUid" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaOldPass">M?t kh?u cu</label><input id="viaOldPass" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaCurrentPass">M?t kh?u hi?n t?i</label><input id="viaCurrentPass" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="via2fa">2FA (m� ho?c key)</label><input id="via2fa" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaCheckDate">Ng�y check</label><input id="viaCheckDate" class="resource-input" type="date"></div>
-                <div class="field"><label class="resource-label" for="viaOperator">Ngu?i th?c hi?n</label><input id="viaOperator" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="viaStatus">T�nh tr?ng</label>
+                <div class="field"><label class="resource-label" for="viaOldPass">Mật khẩu cũ</label><input id="viaOldPass" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaCurrentPass">Mật khẩu hiện tại</label><input id="viaCurrentPass" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="via2fa">2FA (mã hoặc key)</label><input id="via2fa" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaCheckDate">Ngày check</label><input id="viaCheckDate" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="viaOperator">Người thực hiện</label><input id="viaOperator" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="viaStatus">Tình trạng</label>
                     <select id="viaStatus" class="resource-select">
                         <option value="Live">Live</option>
                         <option value="Die">Die</option>
@@ -103,10 +103,10 @@
                         <option value="Limit Ads">Limit Ads</option>
                     </select>
                 </div>
-                <div class="field"><label class="resource-label" for="viaSource">Ngu?n mua</label><input id="viaSource" class="resource-input" type="text"></div>
-                <div class="field full"><label class="resource-label" for="viaNote">Ghi ch�</label><textarea id="viaNote" class="resource-textarea"></textarea></div>
+                <div class="field"><label class="resource-label" for="viaSource">Nguồn mua</label><input id="viaSource" class="resource-input" type="text"></div>
+                <div class="field full"><label class="resource-label" for="viaNote">Ghi chú</label><textarea id="viaNote" class="resource-textarea"></textarea></div>
                 <div class="resource-actions">
-                    <button class="resource-btn primary" type="submit" id="viaSubmitBtn">Th�m via</button>
+                    <button class="resource-btn primary" type="submit" id="viaSubmitBtn">Thêm via</button>
                     <button class="resource-btn gray" type="reset">L�m m?i form</button>
                 </div>
             </form>
@@ -116,13 +116,13 @@
                         <tr>
                             <th>ID VIA</th>
                             <th>UID Facebook</th>
-                            <th>M?t kh?u cu</th>
-                            <th>M?t kh?u hi?n t?i</th>
+                            <th>Mật khẩu cũ</th>
+                            <th>Mật khẩu hiện tại</th>
                             <th>2FA</th>
                             <th>Ng�y check</th>
-                            <th>Ngu?i th?c hi?n</th>
+                            <th>Người thực hiện</th>
                             <th>T�nh tr?ng</th>
-                            <th>Ngu?n mua</th>
+                            <th>Nguồn mua</th>
                             <th>Ghi ch�</th>
                             <th>Thao t�c</th>
                         </tr>
@@ -134,15 +134,15 @@
 
         <section id="adSection" class="resource-section resource-card">
             <div class="resource-filter-row">
-                <div class="field"><label class="resource-label" for="adFilterFrom">L?c ng�y add t?</label><input id="adFilterFrom" class="resource-input" type="date"></div>
-                <div class="field"><label class="resource-label" for="adFilterTo">L?c ng�y add d?n</label><input id="adFilterTo" class="resource-input" type="date"></div>
-                <div class="field actions"><button id="adApplyFilter" class="resource-btn gray" type="button">L?c d? li?u</button></div>
-                <div class="field actions"><button id="adClearFilter" class="resource-btn gray" type="button">X�a l?c</button></div>
+                <div class="field"><label class="resource-label" for="adFilterFrom">Lọc ngày add từ</label><input id="adFilterFrom" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="adFilterTo">Lọc ngày add đến</label><input id="adFilterTo" class="resource-input" type="date"></div>
+                <div class="field actions"><button id="adApplyFilter" class="resource-btn gray" type="button">Lọc dữ liệu</button></div>
+                <div class="field actions"><button id="adClearFilter" class="resource-btn gray" type="button">Xóa lọc</button></div>
             </div>
 
             <form id="adForm" class="resource-form">
                 <div class="field"><label class="resource-label" for="adId">ID Account</label><input id="adId" class="resource-input" type="text" required></div>
-                <div class="field"><label class="resource-label" for="adName">T�n t�i kho?n</label><input id="adName" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adName">Tên tài khoản</label><input id="adName" class="resource-input" type="text"></div>
                 <div class="field"><label class="resource-label" for="adBmId">ID BM (Business Manager)</label><input id="adBmId" class="resource-input" type="text"></div>
                 <div class="field"><label class="resource-label" for="adPlatform">N?n t?ng</label>
                     <select id="adPlatform" class="resource-select">
@@ -151,13 +151,13 @@
                         <option value="Google">Google</option>
                     </select>
                 </div>
-                <div class="field"><label class="resource-label" for="adCountry">Qu?c gia</label><input id="adCountry" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adCurrency">Ti?n t?</label><input id="adCurrency" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adThreshold">Ngu?ng thanh to�n</label><input id="adThreshold" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adPayMethod">Phuong th?c thanh to�n</label><input id="adPayMethod" class="resource-input" type="text" placeholder="Visa / PayPal..."></div>
-                <div class="field"><label class="resource-label" for="adCardLast4">4 s? cu?i th?</label><input id="adCardLast4" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adCardOwner">Ch? th?</label><input id="adCardOwner" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adAddDate">Ng�y add</label><input id="adAddDate" class="resource-input" type="date"></div>
+                <div class="field"><label class="resource-label" for="adCountry">Quốc gia</label><input id="adCountry" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adCurrency">Tiền tệ</label><input id="adCurrency" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adThreshold">Ngưỡng thanh toán</label><input id="adThreshold" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adPayMethod">Phương thức thanh toán</label><input id="adPayMethod" class="resource-input" type="text" placeholder="Visa / PayPal..."></div>
+                <div class="field"><label class="resource-label" for="adCardLast4">4 số cuối thẻ</label><input id="adCardLast4" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adCardOwner">Chủ thẻ</label><input id="adCardOwner" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adAddDate">Ngày add</label><input id="adAddDate" class="resource-input" type="date"></div>
                 <div class="field"><label class="resource-label" for="adStatus">Tr?ng th�i</label>
                     <select id="adStatus" class="resource-select">
                         <option value="Active">Active</option>
@@ -166,12 +166,12 @@
                         <option value="Die">Die</option>
                     </select>
                 </div>
-                <div class="field"><label class="resource-label" for="adManager">Ngu?i qu?n l�</label><input id="adManager" class="resource-input" type="text"></div>
-                <div class="field"><label class="resource-label" for="adLink">Link truy c?p</label><input id="adLink" class="resource-input" type="url"></div>
-                <div class="field"><label class="resource-label" for="adGrantDate">Ng�y c?p quy?n</label><input id="adGrantDate" class="resource-input" type="date"></div>
-                <div class="field full"><label class="resource-label" for="adNote">Ghi ch�</label><textarea id="adNote" class="resource-textarea"></textarea></div>
+                <div class="field"><label class="resource-label" for="adManager">Người quản lý</label><input id="adManager" class="resource-input" type="text"></div>
+                <div class="field"><label class="resource-label" for="adLink">Link truy cập</label><input id="adLink" class="resource-input" type="url"></div>
+                <div class="field"><label class="resource-label" for="adGrantDate">Ngày cấp quyền</label><input id="adGrantDate" class="resource-input" type="date"></div>
+                <div class="field full"><label class="resource-label" for="adNote">Ghi chú</label><textarea id="adNote" class="resource-textarea"></textarea></div>
                 <div class="resource-actions">
-                    <button class="resource-btn primary" type="submit" id="adSubmitBtn">Th�m t�i kho?n qu?ng c�o</button>
+                    <button class="resource-btn primary" type="submit" id="adSubmitBtn">Thêm tài khoản quảng cáo</button>
                     <button class="resource-btn gray" type="reset">L�m m?i form</button>
                 </div>
             </form>
@@ -182,17 +182,17 @@
                             <th>ID Account</th>
                             <th>T�n t�i kho?n</th>
                             <th>ID BM</th>
-                            <th>N?n t?ng</th>
-                            <th>Qu?c gia</th>
-                            <th>Ti?n t?</th>
+                            <th>Nền tảng</th>
+                            <th>Quốc gia</th>
+                            <th>Tiền tệ</th>
                             <th>Ngu?ng thanh to�n</th>
                             <th>Phuong th?c thanh to�n</th>
-                            <th>4 s? cu?i th?</th>
-                            <th>Ch? th?</th>
+                            <th>4 số cuối thẻ</th>
+                            <th>Chủ thẻ</th>
                             <th>Ng�y add</th>
                             <th>Tr?ng th�i</th>
                             <th>Ngu?i qu?n l�</th>
-                            <th>Link truy c?p</th>
+                            <th>Link truy cập</th>
                             <th>Ng�y c?p quy?n</th>
                             <th>Ghi ch�</th>
                             <th>Thao t�c</th>
