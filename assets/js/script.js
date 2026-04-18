@@ -1019,6 +1019,7 @@ if (studioOutput && sidebarCategoryLinks.length) {
         const topAreaWeekSelect = document.getElementById('topAreaWeekSelect');
         const topAreaSheetUrlInput = document.getElementById('topAreaSheetUrl');
         const topAreaSheetApplyBtn = document.getElementById('topAreaSheetApply');
+        const topAreaSheetSyncBtn = document.getElementById('topAreaSheetSync');
         const topAreaSheetStatus = document.getElementById('topAreaSheetStatus');
         const districtSelects = [
             document.getElementById('districtSelect1'),
@@ -1302,6 +1303,9 @@ if (studioOutput && sidebarCategoryLinks.length) {
             }
             if (topAreaSheetApplyBtn) {
                 topAreaSheetApplyBtn.disabled = !isSuperadmin;
+            }
+            if (topAreaSheetSyncBtn) {
+                topAreaSheetSyncBtn.disabled = !isSuperadmin;
             }
             if (!skipStatusUpdate && topAreaSheetStatus && access.known && !isSuperadmin) {
                 const sharedResult = loadTopAreaSharedResult();
@@ -2661,6 +2665,22 @@ if (studioOutput && sidebarCategoryLinks.length) {
                 updateTopAreaFromSheet({ silent: false });
             });
         }
+        if (topAreaSheetSyncBtn) {
+            topAreaSheetSyncBtn.addEventListener('click', function() {
+                if (!canManageTopAreaSheet()) {
+                    applyTopAreaSheetAccessByRole();
+                    setTopAreaStatus('Chỉ superadmin mới có quyền đồng bộ Google Sheet.', 'bad');
+                    return;
+                }
+                const currentCfg = loadTopAreaSheetConfig();
+                const url = String((currentCfg && currentCfg.url) || '').trim();
+                if (!url) {
+                    setTopAreaStatus('Vui lòng liên kết Google Sheet trước khi bấm Đồng bộ.', 'bad');
+                    return;
+                }
+                updateTopAreaFromSheet({ silent: false });
+            });
+        }
         // Always try to apply cached shared result or fetch from sheet on init
         updateTopAreaFromSheet({ silent: true });
         if (insightDateFromInput) {
@@ -2922,9 +2942,6 @@ if (studioOutput && sidebarCategoryLinks.length) {
             }
         });
         setInterval(updateDashboardChart, chartRefreshMs);
-        setInterval(function() {
-            updateTopAreaFromSheet({ silent: true });
-        }, topAreaRefreshMs);
 
         bindHomeReportRealtime();
         bindTopAreaSheetConfigRealtime();
