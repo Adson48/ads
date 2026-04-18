@@ -16,6 +16,48 @@ export default async function handler(req, res) {
         return res.status(500).json({ error: 'missing-openai-api-key' });
     }
 
+    const buildFallbackReply = function(userMessage) {
+        const prompt = String(userMessage || '').trim();
+        return [
+            'Hiện OpenAI đang báo hết quota/tốc độ cao, nên hệ thống chuyển sang phản hồi tạm thời.',
+            '',
+            'Gợi ý nhanh để bạn dùng ngay:',
+            '1) Tiêu đề quảng cáo: "Mẹ bầu an tâm mỗi ngày với giải pháp dịu nhẹ, rõ nguồn gốc".',
+            '2) Hook mở bài: "Nếu bạn đang mang thai và lo lắng về dinh dưỡng mỗi ngày, nội dung này dành cho bạn".',
+            '3) CTA: "Để lại tin nhắn để nhận checklist chăm sóc theo tuần thai".',
+            '',
+            'Nội dung bạn vừa hỏi:',
+            prompt || '(trống)'
+        ].join('\n');
+    };
+
+    const requestChatCompletion = async function(model, messages, apiKey) {
+        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + apiKey
+            },
+            body: JSON.stringify({
+                model: model,
+                temperature: 0.7,
+                messages: messages
+            })
+        });
+
+        const data = await response.json().catch(function() { return {}; });
+        const reply = (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content)
+            ? String(data.choices[0].message.content).trim()
+            : '';
+
+        return {
+            ok: response.ok,
+            status: response.status,
+            data: data,
+            reply: reply
+        };
+    };
+
     try {
         const body = (req && req.body && typeof req.body === 'object') ? req.body : {};
         const message = String(body.message || '').trim();
@@ -43,41 +85,35 @@ export default async function handler(req, res) {
             messages.push({ role: 'user', content: message });
         }
 
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + apiKey
-            },
-            body: JSON.stringify({
-                model: 'gpt-4.1-mini',
-                temperature: 0.7,
-                messages: messages
-            })
-        });
+        const models = ['gpt-4.1-mini', 'gpt-4o-mini'];
+        let lastFailure = null;
 
-        const data = await response.json().catch(function() { return {}; });
+        for (let i = 0; i < models.length; i++) {
+            const result = await requestChatCompletion(models[i], messages, apiKey);
 
-        if (!response.ok) {
-            var apiError = (data && data.error && data.error.message) ? data.error.message : 'openai-request-failed';
-            if (response.status === 401) {
-                apiError = 'OpenAI API key không hợp lệ hoặc đã bị thu hồi.';
-            } else if (response.status === 429) {
-                apiError = 'Tài khoản OpenAI đang hết quota hoặc vượt giới hạn tốc độ. Vui lòng kiểm tra billing/quota.';
+            if (result.ok && result.reply) {
+                return res.status(200).json({ reply: result.reply, model: models[i] });
             }
 
-            return res.status(response.status || 502).json({ error: apiError });
+            if (result.status === 401) {
+                return res.status(401).json({ error: 'OpenAI API key không hợp lệ hoặc đã bị thu hồi.' });
+            }
+
+            lastFailure = result;
         }
 
-        const reply = (data && data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content)
-            ? String(data.choices[0].message.content).trim()
-            : '';
-
-        if (!reply) {
-            return res.status(502).json({ error: 'empty-openai-reply' });
+        if (lastFailure && lastFailure.status === 429) {
+            return res.status(200).json({
+                reply: buildFallbackReply(message),
+                fallback: true,
+                warning: 'OpenAI tạm thời không khả dụng do quota/rate limit.'
+            });
         }
 
-        return res.status(200).json({ reply: reply });
+        var apiError = (lastFailure && lastFailure.data && lastFailure.data.error && lastFailure.data.error.message)
+            ? lastFailure.data.error.message
+            : 'openai-request-failed';
+        return res.status((lastFailure && lastFailure.status) || 502).json({ error: apiError });
     } catch (error) {
         return res.status(500).json({ error: error && error.message ? error.message : 'internal-error' });
     }
