@@ -7,6 +7,127 @@
     <link rel="stylesheet" href="./assets/css/style.css?v=20260418-27">
     <style>
         .content-empty-page { max-width: 1240px; margin: 0 auto; padding: 90px 1rem 2rem; min-height: 60vh; }
+        .ai-panel {
+            background: linear-gradient(145deg, #fff, #fff8fb);
+            border: 1px solid rgba(199, 81, 124, 0.25);
+            border-radius: 18px;
+            box-shadow: 0 14px 28px rgba(116, 22, 55, 0.08);
+            padding: 1rem;
+        }
+        .ai-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .ai-title {
+            margin: 0;
+            font-size: 1.1rem;
+            color: #7f3052;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+        .ai-hint {
+            margin: 0.25rem 0 0;
+            color: #7d6a74;
+            font-size: 0.9rem;
+        }
+        .ai-endpoint {
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 0.5rem;
+            margin-bottom: 0.8rem;
+        }
+        .ai-input, .ai-textarea {
+            width: 100%;
+            border: 1px solid rgba(199, 81, 124, 0.35);
+            border-radius: 10px;
+            padding: 0.65rem 0.8rem;
+            font-size: 0.95rem;
+            outline: none;
+            background: #fff;
+        }
+        .ai-input:focus, .ai-textarea:focus {
+            border-color: #c7517c;
+            box-shadow: 0 0 0 3px rgba(199, 81, 124, 0.15);
+        }
+        .ai-btn {
+            border: none;
+            border-radius: 10px;
+            padding: 0.65rem 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            background: #c7517c;
+            color: #fff;
+        }
+        .ai-btn.secondary {
+            background: #f2d7e3;
+            color: #7f3052;
+        }
+        .ai-status {
+            margin: 0 0 0.9rem;
+            color: #7f3052;
+            font-size: 0.9rem;
+        }
+        .ai-chat {
+            border: 1px solid rgba(199, 81, 124, 0.18);
+            border-radius: 14px;
+            background: #fff;
+            min-height: 300px;
+            max-height: 440px;
+            overflow: auto;
+            padding: 0.75rem;
+            margin-bottom: 0.8rem;
+        }
+        .ai-msg {
+            margin-bottom: 0.7rem;
+            padding: 0.65rem 0.75rem;
+            border-radius: 10px;
+            line-height: 1.45;
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 0.95rem;
+        }
+        .ai-msg.user {
+            background: #fff2f8;
+            border: 1px solid rgba(199, 81, 124, 0.25);
+        }
+        .ai-msg.assistant {
+            background: #f7fbff;
+            border: 1px solid rgba(41, 116, 181, 0.2);
+        }
+        .ai-controls {
+            display: grid;
+            grid-template-columns: 1fr auto auto;
+            gap: 0.5rem;
+            align-items: start;
+        }
+        .ai-textarea {
+            min-height: 54px;
+            resize: vertical;
+        }
+        .ai-quick {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            margin-top: 0.75rem;
+        }
+        .ai-chip {
+            border: 1px solid rgba(127, 48, 82, 0.25);
+            background: #fff;
+            color: #7f3052;
+            border-radius: 999px;
+            padding: 0.35rem 0.7rem;
+            font-size: 0.82rem;
+            cursor: pointer;
+        }
+        @media (max-width: 768px) {
+            .ai-controls { grid-template-columns: 1fr; }
+            .ai-endpoint { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
@@ -15,16 +136,46 @@
             <div class="logo">Marketing Ads</div>
             <ul class="nav-links">
                 <li><a href="./index.html">Trang Ch?</a></li>
-                <li><a href="./reports.html">Báo Cáo</a></li>
-                <li><a href="./notifications.html">Thông Báo</a></li>
-                <li><a href="./ideas.html">Ý Tu?ng</a></li>
+                <li><a href="./reports.html">Bï¿½o Cï¿½o</a></li>
+                <li><a href="./notifications.html">Thï¿½ng Bï¿½o</a></li>
+                <li><a href="./ideas.html">ï¿½ Tu?ng</a></li>
                 <li><a href="./content.html">N?i Dung</a></li>
-                <li><a href="./resource-admin.html">Qu?n tr? tài nguyên</a></li>
+                <li><a href="./resource-admin.html">Qu?n tr? tï¿½i nguyï¿½n</a></li>
             </ul>
         </nav>
     </header>
 
-    <main class="content-empty-page"></main>
+    <main class="content-empty-page">
+        <section class="ai-panel">
+            <div class="ai-head">
+                <div>
+                    <h2 class="ai-title">Tro ly ChatGPT cho doi noi dung</h2>
+                    <p class="ai-hint">Website goi qua endpoint proxy cua ban. Khong dat OpenAI key truc tiep len frontend.</p>
+                </div>
+            </div>
+
+            <div class="ai-endpoint">
+                <input id="gptEndpointInput" class="ai-input" type="text" placeholder="https://your-proxy-domain.com/api/chat">
+                <button id="saveGptEndpointBtn" class="ai-btn secondary" type="button">Luu endpoint</button>
+            </div>
+            <p id="gptStatus" class="ai-status">Chua cau hinh endpoint.</p>
+
+            <div id="gptChat" class="ai-chat"></div>
+
+            <div class="ai-controls">
+                <textarea id="gptPromptInput" class="ai-textarea" placeholder="Nhap yeu cau: Viet 3 tieu de quang cao cho me bau..." aria-label="Prompt"></textarea>
+                <button id="sendGptBtn" class="ai-btn" type="button">Gui</button>
+                <button id="clearGptBtn" class="ai-btn secondary" type="button">Xoa hoi thoai</button>
+            </div>
+
+            <div class="ai-quick">
+                <button class="ai-chip" type="button" data-prompt="Viet 5 tieu de quang cao Facebook cho sua bau theo phong cach ngan gon.">Tieu de quang cao</button>
+                <button class="ai-chip" type="button" data-prompt="Viet 1 bai post 150 tu de tu van me bau lan dau, giong than thien.">Bai post ngan</button>
+                <button class="ai-chip" type="button" data-prompt="Cho 10 y tuong video ngan de tang tin nhan tu khach me bau.">Y tuong video</button>
+                <button class="ai-chip" type="button" data-prompt="Rut gon doan van sau thanh 3 cau de doc tren social media.">Rut gon noi dung</button>
+            </div>
+        </section>
+    </main>
 
     <footer>
         <p>&copy; 2024 Marketing Ads. T?t c? quy?n du?c b?o luu.</p>
@@ -34,6 +185,181 @@
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore-compat.js"></script>
     <script src="./assets/js/firebase-config.js?v=20260418-24"></script>
     <script src="./assets/js/script.js?v=20260418-31"></script>
+    <script>
+        (function() {
+            var ENDPOINT_KEY = 'ma_gpt_proxy_endpoint_v1';
+            var HISTORY_KEY = 'ma_gpt_chat_history_v1';
+            var endpointInput = document.getElementById('gptEndpointInput');
+            var saveEndpointBtn = document.getElementById('saveGptEndpointBtn');
+            var statusEl = document.getElementById('gptStatus');
+            var chatEl = document.getElementById('gptChat');
+            var promptInput = document.getElementById('gptPromptInput');
+            var sendBtn = document.getElementById('sendGptBtn');
+            var clearBtn = document.getElementById('clearGptBtn');
+
+            if (!endpointInput || !saveEndpointBtn || !statusEl || !chatEl || !promptInput || !sendBtn || !clearBtn) {
+                return;
+            }
+
+            var history = [];
+
+            var safeLoadHistory = function() {
+                try {
+                    var raw = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+                    if (!Array.isArray(raw)) { return []; }
+                    return raw.filter(function(item) {
+                        return item && (item.role === 'user' || item.role === 'assistant') && typeof item.content === 'string';
+                    }).slice(-24);
+                } catch (e) {
+                    return [];
+                }
+            };
+
+            var saveHistory = function() {
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(history.slice(-24)));
+            };
+
+            var getEndpoint = function() {
+                return String(localStorage.getItem(ENDPOINT_KEY) || '').trim();
+            };
+
+            var setStatus = function(message, type) {
+                statusEl.textContent = message;
+                statusEl.style.color = type === 'bad' ? '#b42318' : (type === 'good' ? '#166534' : '#7f3052');
+            };
+
+            var escapeHtml = function(text) {
+                return String(text || '')
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+            };
+
+            var renderHistory = function() {
+                if (!history.length) {
+                    chatEl.innerHTML = '<div class="ai-msg assistant">Xin chao. Hay cau hinh endpoint va gui yeu cau de bat dau.</div>';
+                    return;
+                }
+
+                chatEl.innerHTML = history.map(function(item) {
+                    var cls = item.role === 'user' ? 'user' : 'assistant';
+                    return '<div class="ai-msg ' + cls + '">' + escapeHtml(item.content) + '</div>';
+                }).join('');
+                chatEl.scrollTop = chatEl.scrollHeight;
+            };
+
+            var extractReply = function(data) {
+                if (!data) { return ''; }
+                if (typeof data.reply === 'string' && data.reply.trim()) { return data.reply.trim(); }
+                if (typeof data.output_text === 'string' && data.output_text.trim()) { return data.output_text.trim(); }
+                if (Array.isArray(data.output)) {
+                    var chunks = [];
+                    data.output.forEach(function(item) {
+                        if (item && Array.isArray(item.content)) {
+                            item.content.forEach(function(part) {
+                                if (part && typeof part.text === 'string') { chunks.push(part.text); }
+                            });
+                        }
+                    });
+                    if (chunks.length) { return chunks.join('\n').trim(); }
+                }
+                if (data.choices && data.choices[0] && data.choices[0].message && typeof data.choices[0].message.content === 'string') {
+                    return data.choices[0].message.content.trim();
+                }
+                return '';
+            };
+
+            var sendPrompt = async function() {
+                var endpoint = getEndpoint();
+                if (!endpoint) {
+                    setStatus('Vui long nhap endpoint proxy truoc khi gui.', 'bad');
+                    endpointInput.focus();
+                    return;
+                }
+
+                var prompt = String(promptInput.value || '').trim();
+                if (!prompt) {
+                    setStatus('Ban chua nhap noi dung can hoi.', 'bad');
+                    promptInput.focus();
+                    return;
+                }
+
+                history.push({ role: 'user', content: prompt });
+                renderHistory();
+                saveHistory();
+                promptInput.value = '';
+                sendBtn.disabled = true;
+                setStatus('Dang goi ChatGPT...', '');
+
+                try {
+                    var response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: prompt,
+                            messages: history.slice(-12)
+                        })
+                    });
+
+                    var data = await response.json().catch(function() { return {}; });
+                    var reply = extractReply(data);
+
+                    if (!response.ok || !reply) {
+                        throw new Error((data && (data.error || data.message)) ? (data.error || data.message) : 'KhÃ´ng nháº­n Ä‘Æ°á»£c pháº£n há»“i há»£p lá»‡ tá»« endpoint.');
+                    }
+
+                    history.push({ role: 'assistant', content: reply });
+                    renderHistory();
+                    saveHistory();
+                    setStatus('Da nhan phan hoi tu ChatGPT.', 'good');
+                } catch (err) {
+                    setStatus('Loi ket noi ChatGPT: ' + (err && err.message ? err.message : 'unknown'), 'bad');
+                } finally {
+                    sendBtn.disabled = false;
+                }
+            };
+
+            endpointInput.value = getEndpoint();
+            history = safeLoadHistory();
+            renderHistory();
+            setStatus(endpointInput.value ? 'Endpoint da san sang.' : 'Chua cau hinh endpoint.', endpointInput.value ? 'good' : '');
+
+            saveEndpointBtn.addEventListener('click', function() {
+                var endpoint = String(endpointInput.value || '').trim();
+                if (!endpoint) {
+                    localStorage.removeItem(ENDPOINT_KEY);
+                    setStatus('Da xoa endpoint.', '');
+                    return;
+                }
+                localStorage.setItem(ENDPOINT_KEY, endpoint);
+                setStatus('Da luu endpoint thanh cong.', 'good');
+            });
+
+            sendBtn.addEventListener('click', sendPrompt);
+            promptInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    sendPrompt();
+                }
+            });
+
+            clearBtn.addEventListener('click', function() {
+                history = [];
+                localStorage.removeItem(HISTORY_KEY);
+                renderHistory();
+                setStatus('Da xoa lich su hoi dap tren trinh duyet nay.', '');
+            });
+
+            document.querySelectorAll('.ai-chip[data-prompt]').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    var content = String(btn.getAttribute('data-prompt') || '').trim();
+                    if (!content) { return; }
+                    promptInput.value = content;
+                    promptInput.focus();
+                });
+            });
+        })();
+    </script>
 </body>
 </html>
 
