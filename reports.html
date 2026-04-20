@@ -653,14 +653,7 @@ Doanh thu: 45000000</pre>
         function getSessionUserId(){
             try{var ses=JSON.parse(localStorage.getItem(SESSION_KEY)||'null');return ses&&ses.userId?String(ses.userId):'';}catch(e){return '';}
         }
-        function getRoleFromLocalAccounts(uid){
-            if(!uid){return 'staff';}
-            try{
-                var list=JSON.parse(localStorage.getItem(ACCOUNT_LOCAL_KEY)||'[]');
-                var u=(Array.isArray(list)?list:[]).find(function(it){return it&&it.id===uid;});
-                return (u&&u.role==='superadmin')?'superadmin':'staff';
-            }catch(e){return 'staff';}
-        }
+        // Lấy role từ Firestore, không lấy từ localStorage nữa
         async function resolveCurrentUserRole(){
             var uid=getSessionUserId();
             if(!uid){return 'staff';}
@@ -671,7 +664,7 @@ Doanh thu: 45000000</pre>
                     if(snap.exists){return (snap.data()&&snap.data().role==='superadmin')?'superadmin':'staff';}
                 }catch(e){}
             }
-            return getRoleFromLocalAccounts(uid);
+            return 'staff';
         }
         function applyTelegramAccessByRole(){
             var zone=document.getElementById('rpTelegramAdminZone');
@@ -939,35 +932,63 @@ Doanh thu: 45000000</pre>
         function reporterId(name){
             return encodeURIComponent(normReporter(name).toLowerCase().replace(/\s+/g,'-')||'nhan-vien-mac-dinh');
         }
+        // Lấy danh sách nhân viên từ Firestore (doc tháng hiện tại)
+        async function loadReportersFromFirestore(m, y) {
+            var db = initReportDb();
+            if (!db) return ['Nhân viên 1'];
+            try {
+                var snap = await db.collection(REPORT_COLL).doc(monthId(m, y)).get();
+                if (!snap.exists) return ['Nhân viên 1'];
+                var data = snap.data() || {};
+                var emps = (data.employees && typeof data.employees === 'object') ? Object.values(data.employees).map(function(e){return e.name || ''}) : [];
+                emps = emps.map(normReporter).filter(Boolean);
+                if (!emps.length) emps = ['Nhân viên 1'];
+                return Array.from(new Set(emps));
+            } catch (e) {
+                return ['Nhân viên 1'];
+            }
+        }
+        // Hàm cũ giữ lại để không lỗi các chỗ gọi cũ, nhưng luôn trả về 1 nhân viên mặc định
         function loadReporters(){
-            var raw=[];
-            try{raw=JSON.parse(localStorage.getItem(EMP_KEY)||'[]');}catch(e){}
-            raw=(Array.isArray(raw)?raw:[]).map(normReporter).filter(Boolean);
-            if(!raw.length){raw=['Nhân viên 1'];}
-            return Array.from(new Set(raw));
+            return ['Nhân viên 1'];
         }
         function saveReporters(list){
             var clean=(Array.isArray(list)?list:[]).map(normReporter).filter(Boolean);
             if(!clean.length){clean=['Nhân viên 1'];}
             localStorage.setItem(EMP_KEY,JSON.stringify(Array.from(new Set(clean))));
         }
-        function renderReporterPick(selected){
-            var pick=document.getElementById('rpReporterPick');if(!pick)return;
-            var list=loadReporters();
-            pick.innerHTML=list.map(function(n){
-                var sel=(normReporter(selected)===n)?' selected':'';
-                return '<option value="'+n.replace(/"/g,'&quot;')+'"'+sel+'>'+n+'</option>';
+        // Render danh sách nhân viên từ Firestore
+        async function renderReporterPick(selected) {
+            var pick = document.getElementById('rpReporterPick'); if (!pick) return;
+            var mv = getMY();
+            var list = await loadReportersFromFirestore(mv.m, mv.y);
+            pick.innerHTML = list.map(function (n) {
+                var sel = (normReporter(selected) === n) ? ' selected' : '';
+                return '<option value="' + n.replace(/"/g, '&quot;') + '"' + sel + '>' + n + '</option>';
             }).join('');
-            if(!pick.value&&list.length){pick.value=list[0];}
+            if (!pick.value && list.length) { pick.value = list[0]; }
         }
-        function ensureReporterExists(name){
-            var n=normReporter(name);if(!n)return;
-            var list=loadReporters();
-            if(list.indexOf(n)===-1){
-                list.push(n);
-                saveReporters(list);
+        // Đảm bảo nhân viên tồn tại trong Firestore (nếu chưa có thì thêm vào doc tháng)
+        async function ensureReporterExists(name) {
+            var n = normReporter(name); if (!n) return;
+            var mv = getMY();
+            var db = initReportDb();
+            if (!db) return;
+            var docRef = db.collection(REPORT_COLL).doc(monthId(mv.m, mv.y));
+            try {
+                var snap = await docRef.get();
+                var data = snap.exists ? (snap.data() || {}) : { month: mv.m, year: mv.y, employees: {} };
+                var emps = (data.employees && typeof data.employees === 'object') ? data.employees : {};
+                var rid = reporterId(n);
+                if (!emps[rid]) {
+                    emps[rid] = { name: n, data: {} };
+                    await docRef.set(Object.assign({}, data, { employees: emps }), { merge: true });
+                }
+                await renderReporterPick(n);
+            } catch (e) {
+                // fallback: vẫn render picker với nhân viên mặc định
+                await renderReporterPick(n);
             }
-            renderReporterPick(n);
         }
         function buildTelegramUrl(botToken, method){
             if(typeof buildTelegramApiUrl==='function'){return buildTelegramApiUrl(botToken,method);}
