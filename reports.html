@@ -1082,7 +1082,7 @@ Doanh thu: 45000000</pre>
             // Nếu không có dữ liệu trong cache (Firestore), trả về object rỗng (không lấy từ localStorage nữa)
             return {};
         }
-        function saveAll(m,y){
+        async function saveAll(m,y){
             var emps=loadReporters();var days=dim(m,y);
             var store={month:m,year:y,employees:{}};
             emps.forEach(function(emp,ei){
@@ -1092,12 +1092,16 @@ Doanh thu: 45000000</pre>
                     var inp=row.querySelectorAll('td[data-emp-idx="'+ei+'"] .rpf');
                     data['d'+d]={cost:inp[0]?inp[0].value:'',mess:inp[1]?inp[1].value:'',sdt:inp[2]?inp[2].value:'',lich:inp[3]?inp[3].value:'',hh:inp[4]?inp[4].value:'',hd:inp[5]?inp[5].value:'',rev:inp[6]?inp[6].value:''};
                 }
-                // Không lưu localStorage nữa
                 store.employees[reporterId(emp)]={name:emp,data:data};
             });
             monthCache[cacheKey(m,y)]=store;
-            // Lưu ngay lập tức lên Firestore (auto save)
-            saveRemoteMonthStore(m,y,store);
+            setSaveStatus('Đang lưu chia sẻ...','saving');
+            try {
+                await saveRemoteMonthStore(m,y,store);
+                setSaveStatus('Đã lưu thành công','good');
+            } catch (e) {
+                setSaveStatus('Lỗi lưu Firestore!','bad');
+            }
         }
         function renameReporter(oldName,newName){
             var list=loadReporters();var oi=list.indexOf(normReporter(oldName));if(oi===-1)return null;
@@ -1127,12 +1131,12 @@ Doanh thu: 45000000</pre>
             var mv=getMY();
             return cacheKey(mv.m,mv.y);
         }
-        function scheduleLiveSharedSave(){
+        async function scheduleLiveSharedSave(){
             // Lưu ngay lập tức lên Firestore mỗi lần nhập
             hasPendingLocalEdits=true;
             setSaveStatus('Đang lưu chia sẻ...','saving');
             var mv=getMY();
-            saveAll(mv.m,mv.y);
+            await saveAll(mv.m,mv.y);
         }
         async function saveCurrentMonthImmediately(){
             var mv=getMY();
@@ -1337,10 +1341,19 @@ Doanh thu: 45000000</pre>
                         inp.className='rpf '+(cls||'rp-inp');
                         inp.value=val||'';
                         inp.dataset.empIdx=ei;
-                        inp.addEventListener('input',function(){
+                        inp.addEventListener('input',async function(){
                             sched();
-                            scheduleLiveSharedSave();
+                            await scheduleLiveSharedSave();
                         });
+                                // Cảnh báo nếu reload khi đang lưu
+                                window.addEventListener('beforeunload', function (e) {
+                                    var status = document.getElementById('rpSaveStatus');
+                                    if (status && status.classList.contains('saving')) {
+                                        e.preventDefault();
+                                        e.returnValue = 'Dữ liệu đang được lưu lên hệ thống. Vui lòng chờ lưu xong trước khi rời trang!';
+                                        return 'Dữ liệu đang được lưu lên hệ thống. Vui lòng chờ lưu xong trước khi rời trang!';
+                                    }
+                                });
                         return inp;
                     }
                     var lastInEmpGroup=ei===emps.length-1;
