@@ -1,0 +1,13 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /ads_campaigns/{docId} {
+      allow read: if true;
+      allow write: if false;
+    }
+    // Cho phép đọc tất cả các collection khác nếu cần
+    match /{document=**} {
+      allow read: if true;
+    }
+  }
+}

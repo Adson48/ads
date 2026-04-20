@@ -29,13 +29,14 @@
 
     // ---- INIT ----
     function init() {
-        loadAccounts();
-        setDefaultDates();
-        renderAccountSelect();
-        renderAccountChips();
-        setupEvents();
-        initFirebase();
-    }
+    loadAccounts();
+    setDefaultDates();
+    renderAccountSelect();
+    renderAccountChips();
+    renderTable(); // Thêm dòng này trước setupEvents()
+    setupEvents();
+    initFirebase();
+}
 
     // ---- FIREBASE ----
     function initFirebase() {
@@ -71,10 +72,13 @@
             var raw = localStorage.getItem(CFG.accountsKey);
             accounts = raw ? JSON.parse(raw) : [];
         } catch (e) { accounts = []; }
-        // Always ensure the default env account exists as fallback hint
+        // Nếu chưa có tài khoản nào, tự động mở panel thêm tài khoản
         if (accounts.length === 0) {
-            accounts = [{ id: 'act_724992993672214', name: 'Tài khoản chính' }];
-            saveAccounts();
+            var panel = document.getElementById('adsAccountPanel');
+            if (panel) {
+                panel.classList.add('open');
+                panel.style.display = 'block';
+            }
         }
     }
     function saveAccounts() {
@@ -142,6 +146,51 @@
 
     // ---- EVENTS ----
     function setupEvents() {
+                                // Đảm bảo panel có thể mở/đóng đúng, không lặp event
+                                var manageBtn = document.getElementById('adsManageAccountsBtn');
+                                if (manageBtn) {
+                                    manageBtn.onclick = function () {
+                                        var panel = document.getElementById('adsAccountPanel');
+                                        if (panel) {
+                                            panel.classList.add('open');
+                                            panel.style.display = 'block';
+                                        }
+                                    };
+                                }
+                                var closeBtn = document.getElementById('adsCloseAccountPanelBtn');
+                                if (closeBtn) {
+                                    closeBtn.onclick = function () {
+                                        var panel = document.getElementById('adsAccountPanel');
+                                        if (panel) {
+                                            panel.classList.remove('open');
+                                            panel.style.display = 'none';
+                                        }
+                                    };
+                                }
+                                // Bộ lọc nhanh ngày: chỉ gán event 1 lần, luôn enable
+                                var quickBtn = document.getElementById('adsDateQuickBtn');
+                                var quickPanel = document.getElementById('adsDateQuickPanel');
+                                if (quickBtn && quickPanel) {
+                                    quickBtn.disabled = false;
+                                    quickBtn.onclick = function (e) {
+                                        e.stopPropagation();
+                                        quickPanel.classList.toggle('open');
+                                    };
+                                    quickPanel.querySelectorAll('.ads-date-preset').forEach(function (btn) {
+                                        btn.disabled = false;
+                                        btn.onclick = function () {
+                                            var range = this.dataset.range;
+                                            applyDatePreset(range);
+                                            quickPanel.classList.remove('open');
+                                        };
+                                    });
+                                    document.addEventListener('click', function (e) {
+                                        if (!quickPanel.classList.contains('open')) return;
+                                        if (!quickPanel.contains(e.target) && e.target !== quickBtn) {
+                                            quickPanel.classList.remove('open');
+                                        }
+                                    });
+                                }
         var syncBtn = document.getElementById('adsSyncBtn');
         if (syncBtn) syncBtn.addEventListener('click', function () { syncNow(); });
 
@@ -192,27 +241,33 @@
         var manageBtn = document.getElementById('adsManageAccountsBtn');
         if (manageBtn) manageBtn.addEventListener('click', function () {
             var panel = document.getElementById('adsAccountPanel');
-            if (panel) panel.classList.toggle('open');
+            if (panel) {
+                panel.classList.add('open');
+                panel.style.display = 'block';
+            }
         });
 
         var addBtn = document.getElementById('adsAddAccountBtn');
-        if (addBtn) addBtn.addEventListener('click', function () {
-            var idEl   = document.getElementById('adsNewAccountId');
-            var nameEl = document.getElementById('adsNewAccountName');
-            var newId  = (idEl ? idEl.value.trim() : '');
-            var newName = (nameEl ? nameEl.value.trim() : '') || newId;
-            if (!newId) { alert('Vui lòng nhập Ad Account ID (dạng act_xxx)'); return; }
-            if (!newId.startsWith('act_')) newId = 'act_' + newId;
-            if (accounts.some(function (a) { return a.id === newId; })) {
-                alert('Tài khoản này đã tồn tại'); return;
-            }
-            accounts.push({ id: newId, name: newName });
-            saveAccounts();
-            if (idEl)   idEl.value   = '';
-            if (nameEl) nameEl.value = '';
-            renderAccountSelect();
-            renderAccountChips();
-        });
+        if (addBtn) {
+            addBtn.onclick = function () {
+                var idEl   = document.getElementById('adsNewAccountId');
+                var nameEl = document.getElementById('adsNewAccountName');
+                var newId  = (idEl ? idEl.value.trim() : '');
+                var newName = (nameEl ? nameEl.value.trim() : '') || newId;
+                if (!newId) { setPill('Vui lòng nhập Ad Account ID (dạng act_xxx)', 'err'); return; }
+                if (!newId.startsWith('act_')) newId = 'act_' + newId;
+                if (accounts.some(function (a) { return a.id === newId; })) {
+                    setPill('Tài khoản này đã tồn tại', 'err'); return;
+                }
+                accounts.push({ id: newId, name: newName });
+                saveAccounts();
+                if (idEl)   idEl.value   = '';
+                if (nameEl) nameEl.value = '';
+                renderAccountSelect();
+                renderAccountChips();
+                setPill('Đã thêm tài khoản mới!', 'ok');
+            };
+        }
 
         document.addEventListener('keydown', function (e) {
             if (e.ctrlKey && e.shiftKey && e.key === 'A') syncNow();
@@ -227,25 +282,31 @@
         var panel = document.getElementById('adsDateQuickPanel');
         if (!quickBtn || !panel) return;
 
-        quickBtn.addEventListener('click', function (e) {
+        // Xóa event cũ nếu có
+        quickBtn.onclick = null;
+        panel.querySelectorAll('.ads-date-preset').forEach(function (btn) { btn.onclick = null; });
+
+        quickBtn.onclick = function (e) {
             e.stopPropagation();
             panel.classList.toggle('open');
-        });
-
+        };
         panel.querySelectorAll('.ads-date-preset').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                applyDatePreset(this.dataset.range);
+            btn.onclick = function () {
+                var range = this.dataset.range;
+                applyDatePreset(range);
                 panel.classList.remove('open');
-            });
+            };
         });
-
         document.addEventListener('click', function (e) {
             if (!panel.classList.contains('open')) return;
             if (!panel.contains(e.target) && e.target !== quickBtn) {
                 panel.classList.remove('open');
             }
         });
-                // Đã tắt hoàn toàn auto-refresh realtime
+    }
+
+    // Hàm preset ngày nhanh
+    function applyDatePreset(range) {
         var fromEl = document.getElementById('adsDateFrom');
         var toEl = document.getElementById('adsDateTo');
         if (!fromEl || !toEl) return;
@@ -280,16 +341,19 @@
 
     // ---- COL RESIZE ----
     function setupColResize() {
+        // Xóa event cũ để tránh lặp event khi render lại
+        document.querySelectorAll('.col-resize-handle').forEach(function (handle) {
+            handle.onmousedown = null;
+        });
         document.querySelectorAll('.col-resize-handle').forEach(function (handle) {
             var startX, startWidth, col;
-            handle.addEventListener('mousedown', function (e) {
+            handle.onmousedown = function (e) {
                 e.preventDefault(); e.stopPropagation();
-                col = document.getElementById(handle.dataset.col);
+                col = handle.closest('th');
                 if (!col) return;
                 startX = e.pageX;
                 startWidth = col.offsetWidth;
                 handle.classList.add('dragging');
-
                 function onMove(ev) {
                     var newW = Math.max(60, startWidth + ev.pageX - startX);
                     col.style.width = newW + 'px';
@@ -301,8 +365,31 @@
                 }
                 document.addEventListener('mousemove', onMove);
                 document.addEventListener('mouseup', onUp);
-            });
+            };
         });
+            // Xóa event cũ nếu có
+            var quickBtn = document.getElementById('adsDateQuickBtn');
+            var panel = document.getElementById('adsDateQuickPanel');
+            if (!quickBtn || !panel) return;
+            quickBtn.onclick = null;
+            panel.querySelectorAll('.ads-date-preset').forEach(function (btn) { btn.onclick = null; });
+            quickBtn.onclick = function (e) {
+                e.stopPropagation();
+                panel.classList.toggle('open');
+            };
+            panel.querySelectorAll('.ads-date-preset').forEach(function (btn) {
+                btn.onclick = function () {
+                    var range = this.dataset.range;
+                    applyDatePreset(range);
+                    panel.classList.remove('open');
+                };
+            });
+            document.addEventListener('click', function (e) {
+                if (!panel.classList.contains('open')) return;
+                if (!panel.contains(e.target) && e.target !== quickBtn) {
+                    panel.classList.remove('open');
+                }
+            });
     }
 
     // ---- SYNC ----
@@ -435,9 +522,10 @@
 
         if (!filteredCampaigns.length) {
             tbody.innerHTML = '<tr><td colspan="21" class="ads-empty-cell">' +
-                (allCampaigns.length === 0 ? 'Chưa có dữ liệu. Nhấn "Cập Nhật" để tải.' : 'Không tìm thấy chiến dịch.') +
+                (allCampaigns.length === 0 ? 'Chưa có dữ liệu hoặc API không khả dụng. Bạn vẫn có thể thêm tài khoản, chọn bộ lọc, thử lại sau.' : 'Không tìm thấy chiến dịch.') +
                 '</td></tr>';
             if (countEl) countEl.textContent = '';
+            setupColResize();
             return;
         }
         if (countEl) countEl.textContent = filteredCampaigns.length + ' chiến dịch';
@@ -488,6 +576,8 @@
                 '<td style="color:#6b7280;font-size:.8rem;">' + created + '</td>' +
                 '</tr>';
         }).join('');
+        // Đảm bảo kéo cột luôn hoạt động sau mỗi lần render
+        setupColResize();
     }
 
     // ---- RENDER FOOTER TOTALS ----

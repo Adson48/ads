@@ -3104,17 +3104,20 @@ if (studioOutput && sidebarCategoryLinks.length) {
         };
 
         const updateDashboardChart = function() {
-            const now = new Date();
-            const month = now.getMonth() + 1;
-            const year = now.getFullYear();
-            const fallbackStore = buildLocalMonthStore(year, month);
-            const fallbackSeries = aggregateReportStore(fallbackStore, year, month);
-            applyChartSeries(fallbackSeries);
+            // Không dùng localStorage fallback nữa, chỉ cập nhật khi có dữ liệu Firestore
+            if (reportTableBody) reportTableBody.innerHTML = '';
+            if (typeof setTopAreaStatus === 'function') setTopAreaStatus('Không có dữ liệu báo cáo. Vui lòng kiểm tra kết nối mạng hoặc Firestore.', 'bad');
+            if (typeof chart !== 'undefined' && chart) {
+                chart.data.labels = [];
+                chart.data.datasets.forEach(ds => ds.data = []);
+                chart.update();
+            }
         };
 
         const bindHomeReportRealtime = function() {
             const db = initHomeReportDb();
             if (!db) {
+                console.warn('[ADS] Không khởi tạo được Firestore (initHomeReportDb trả về null). Kiểm tra cấu hình Firebase hoặc quyền truy cập.');
                 updateDashboardChart();
                 return;
             }
@@ -3130,14 +3133,55 @@ if (studioOutput && sidebarCategoryLinks.length) {
 
             homeReportUnsub = db.collection(reportCollection).doc(getMonthDocId(year, month)).onSnapshot(function(snapshot) {
                 if (!snapshot.exists) {
+                    console.warn('[ADS] Không tìm thấy dữ liệu báo cáo Firestore (ma_reports/' + getMonthDocId(year, month) + '). Kiểm tra Firestore rules hoặc dữ liệu backend.');
                     updateDashboardChart();
+                    // Xóa bảng báo cáo nếu không có dữ liệu
+                    if (reportTableBody) reportTableBody.innerHTML = '';
                     return;
                 }
 
                 const remoteStore = snapshot.data() || {};
                 const series = aggregateReportStore(remoteStore, year, month);
                 applyChartSeries(series);
-            }, function() {
+
+                // Đảm bảo đồng bộ realtime: clear localStorage báo cáo tháng này, chỉ render từ Firestore
+                const monthKeyPrefix = reportPrefix + '_' + year + '_' + month + '_';
+                Object.keys(localStorage).forEach(function(key) {
+                    if (key.startsWith(monthKeyPrefix)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+                if (reportTableBody) {
+                    reportTableBody.innerHTML = '';
+                    const employees = (remoteStore.employees && typeof remoteStore.employees === 'object') ? remoteStore.employees : {};
+                    Object.keys(employees).forEach(function(empId) {
+                        const emp = employees[empId] || {};
+                        const empName = emp.name || '';
+                        const data = (emp.data && typeof emp.data === 'object') ? emp.data : {};
+                        Object.keys(data).forEach(function(dayKey) {
+                            const row = data[dayKey] || {};
+                            if (
+                                row.date || row.mess || row.sdt || row.lich || row.cost || row.rev
+                            ) {
+                                const tr = document.createElement('tr');
+                                tr.className = 'data-row';
+                                tr.innerHTML = `
+                                    <td><input type="date" class="row-input" value="${row.date || ''}" placeholder="Chọn ngày"></td>
+                                    <td><input type="number" class="row-input" value="${row.mess || ''}" placeholder="Nhập số mess"></td>
+                                    <td><input type="number" class="row-input" value="${row.sdt || ''}" placeholder="Nhập số điện thoại"></td>
+                                    <td><input type="number" class="row-input" value="${row.lich || ''}" placeholder="Nhập lịch hẹn"></td>
+                                    <td><input type="number" class="row-input" value="${row.cost || ''}" placeholder="Tổng chi tiêu"></td>
+                                    <td><input type="number" class="row-input" value="${row.rev || ''}" placeholder="Tổng doanh thu"></td>
+                                    <td><span>${empName}</span></td>
+                                `;
+                                reportTableBody.appendChild(tr);
+                            }
+                        });
+                    });
+                    calculateSummary();
+                }
+            }, function(error) {
+                console.error('[ADS] Lỗi khi lắng nghe realtime Firestore:', error);
                 updateDashboardChart();
             });
         };

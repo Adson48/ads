@@ -1072,17 +1072,15 @@ Doanh thu: 45000000</pre>
         function skey(m,y,reporter){return SK+'_'+y+'_'+m+'_'+reporterId(reporter);}
         function legacyKey(m,y){return SK+'_'+y+'_'+m;}
         function load(m,y,reporter){
+            // Luôn ưu tiên lấy dữ liệu từ monthCache (Firestore)
             var store=getMonthStoreSync(m,y);
             var rid=reporterId(reporter);
             var inCache=store&&store.employees&&store.employees[rid]&&store.employees[rid].data;
-            if(inCache&&typeof inCache==='object'){return inCache;}
-            try{
-                var v=JSON.parse(localStorage.getItem(skey(m,y,reporter))||'null');
-                if(v&&typeof v==='object'){return v;}
-                // Backward compatibility with old single-table data
-                var old=JSON.parse(localStorage.getItem(legacyKey(m,y))||'null');
-                return (old&&typeof old==='object')?old:{};
-            }catch(e){return{};}
+            if(inCache&&typeof inCache==='object'){
+                return inCache;
+            }
+            // Nếu không có dữ liệu trong cache (Firestore), trả về object rỗng (không lấy từ localStorage nữa)
+            return {};
         }
         function saveAll(m,y){
             var emps=loadReporters();var days=dim(m,y);
@@ -1340,7 +1338,13 @@ Doanh thu: 45000000</pre>
                         inp.className='rpf '+(cls||'rp-inp');
                         inp.value=val||'';
                         inp.dataset.empIdx=ei;
-                        inp.addEventListener('input',function(){sched();scheduleLiveSharedSave();});
+                        inp.addEventListener('input',function(){
+                            sched();
+                            scheduleLiveSharedSave();
+                            if (isSuperadminUser) {
+                                saveCurrentMonthImmediately();
+                            }
+                        });
                         return inp;
                     }
                     var lastInEmpGroup=ei===emps.length-1;
