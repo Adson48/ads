@@ -1138,15 +1138,7 @@ Doanh thu: 45000000</pre>
             var mv=getMY();
             await saveAll(mv.m,mv.y);
         }
-        async function saveCurrentMonthImmediately(){
-            var mv=getMY();
-            var key=cacheKey(mv.m,mv.y);
-            hasPendingLocalEdits=true;
-            setSaveStatus('Đang lưu chia sẻ...','saving');
-            saveAll(mv.m,mv.y);
-            clearTimeout(saveTimers[key]);
-            return saveRemoteMonthStore(mv.m,mv.y,getMonthStoreSync(mv.m,mv.y));
-        }
+
 
         function recalcAll(){
             var emps=loadReporters();
@@ -1345,15 +1337,16 @@ Doanh thu: 45000000</pre>
                             sched();
                             await scheduleLiveSharedSave();
                         });
-                                // Cảnh báo nếu reload khi đang lưu
-                                window.addEventListener('beforeunload', function (e) {
-                                    var status = document.getElementById('rpSaveStatus');
-                                    if (status && status.classList.contains('saving')) {
-                                        e.preventDefault();
-                                        e.returnValue = 'Dữ liệu đang được lưu lên hệ thống. Vui lòng chờ lưu xong trước khi rời trang!';
-                                        return 'Dữ liệu đang được lưu lên hệ thống. Vui lòng chờ lưu xong trước khi rời trang!';
-                                    }
-                                });
+
+                        // Cảnh báo nếu reload khi đang lưu (chỉ đặt 1 lần khi load trang)
+                        window.addEventListener('beforeunload', function (e) {
+                            var status = document.getElementById('rpSaveStatus');
+                            if (status && status.classList.contains('saving')) {
+                                e.preventDefault();
+                                e.returnValue = 'Dữ liệu đang được lưu lên hệ thống. Vui lòng chờ lưu xong trước khi rời trang!';
+                                return 'Dữ liệu đang được lưu lên hệ thống. Vui lòng chờ lưu xong trước khi rời trang!';
+                            }
+                        });
                         return inp;
                     }
                     var lastInEmpGroup=ei===emps.length-1;
