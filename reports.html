@@ -1092,11 +1092,12 @@ Doanh thu: 45000000</pre>
                     var inp=row.querySelectorAll('td[data-emp-idx="'+ei+'"] .rpf');
                     data['d'+d]={cost:inp[0]?inp[0].value:'',mess:inp[1]?inp[1].value:'',sdt:inp[2]?inp[2].value:'',lich:inp[3]?inp[3].value:'',hh:inp[4]?inp[4].value:'',hd:inp[5]?inp[5].value:'',rev:inp[6]?inp[6].value:''};
                 }
-                localStorage.setItem(skey(m,y,emp),JSON.stringify(data));
+                // Không lưu localStorage nữa
                 store.employees[reporterId(emp)]={name:emp,data:data};
             });
             monthCache[cacheKey(m,y)]=store;
-            queueRemoteMonthSave(m,y);
+            // Lưu ngay lập tức lên Firestore (auto save)
+            saveRemoteMonthStore(m,y,store);
         }
         function renameReporter(oldName,newName){
             var list=loadReporters();var oi=list.indexOf(normReporter(oldName));if(oi===-1)return null;
@@ -1127,13 +1128,11 @@ Doanh thu: 45000000</pre>
             return cacheKey(mv.m,mv.y);
         }
         function scheduleLiveSharedSave(){
-            clearTimeout(liveSaveTimer);
+            // Lưu ngay lập tức lên Firestore mỗi lần nhập
             hasPendingLocalEdits=true;
             setSaveStatus('Đang lưu chia sẻ...','saving');
-            liveSaveTimer=setTimeout(function(){
-                var mv=getMY();
-                saveAll(mv.m,mv.y);
-            },850);
+            var mv=getMY();
+            saveAll(mv.m,mv.y);
         }
         async function saveCurrentMonthImmediately(){
             var mv=getMY();
