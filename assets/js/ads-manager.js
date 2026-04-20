@@ -67,22 +67,42 @@
     }
 
     // ---- ACCOUNTS ----
+    // Firestore-based account management
     function loadAccounts() {
-        try {
-            var raw = localStorage.getItem(CFG.accountsKey);
-            accounts = raw ? JSON.parse(raw) : [];
-        } catch (e) { accounts = []; }
-        // Nếu chưa có tài khoản nào, tự động mở panel thêm tài khoản
-        if (accounts.length === 0) {
-            var panel = document.getElementById('adsAccountPanel');
-            if (panel) {
-                panel.classList.add('open');
-                panel.style.display = 'block';
+        if (!db) { accounts = []; return; }
+        db.collection('ads_accounts').get().then(function (snap) {
+            accounts = [];
+            snap.forEach(function (doc) {
+                accounts.push(doc.data());
+            });
+            renderAccountSelect();
+            renderAccountChips();
+            // Nếu chưa có tài khoản nào, tự động mở panel thêm tài khoản
+            if (accounts.length === 0) {
+                var panel = document.getElementById('adsAccountPanel');
+                if (panel) {
+                    panel.classList.add('open');
+                    panel.style.display = 'block';
+                }
             }
-        }
+        });
+        // Listen realtime
+        if (window._adsAccountsUnsub) window._adsAccountsUnsub();
+        window._adsAccountsUnsub = db.collection('ads_accounts').onSnapshot(function (snap) {
+            accounts = [];
+            snap.forEach(function (doc) { accounts.push(doc.data()); });
+            renderAccountSelect();
+            renderAccountChips();
+        });
     }
-    function saveAccounts() {
-        localStorage.setItem(CFG.accountsKey, JSON.stringify(accounts));
+    async function saveAccounts() {
+        if (!db) return;
+        // Sync all accounts to Firestore (overwrite all)
+        var batch = db.batch();
+        accounts.forEach(function (a) {
+            batch.set(db.collection('ads_accounts').doc(a.id), a);
+        });
+        await batch.commit();
     }
     function renderAccountSelect() {
         var sel = document.getElementById('adsAccountSelect');
@@ -108,13 +128,13 @@
                 '</div>';
         }).join('');
         wrap.querySelectorAll('.chip-del').forEach(function (btn) {
-            btn.addEventListener('click', function (e) {
+            btn.addEventListener('click', async function (e) {
                 e.stopPropagation();
                 var idx = parseInt(this.dataset.idx);
-                accounts.splice(idx, 1);
-                saveAccounts();
-                renderAccountSelect();
-                renderAccountChips();
+                var acc = accounts[idx];
+                if (!db || !acc) return;
+                await db.collection('ads_accounts').doc(acc.id).delete();
+                // Firestore realtime sẽ tự cập nhật lại UI
             });
         });
         wrap.querySelectorAll('.ads-account-chip').forEach(function (chip) {
@@ -249,7 +269,7 @@
 
         var addBtn = document.getElementById('adsAddAccountBtn');
         if (addBtn) {
-            addBtn.onclick = function () {
+            addBtn.onclick = async function () {
                 var idEl   = document.getElementById('adsNewAccountId');
                 var nameEl = document.getElementById('adsNewAccountName');
                 var newId  = (idEl ? idEl.value.trim() : '');
@@ -259,13 +279,12 @@
                 if (accounts.some(function (a) { return a.id === newId; })) {
                     setPill('Tài khoản này đã tồn tại', 'err'); return;
                 }
-                accounts.push({ id: newId, name: newName });
-                saveAccounts();
+                if (!db) return;
+                await db.collection('ads_accounts').doc(newId).set({ id: newId, name: newName });
                 if (idEl)   idEl.value   = '';
                 if (nameEl) nameEl.value = '';
-                renderAccountSelect();
-                renderAccountChips();
                 setPill('Đã thêm tài khoản mới!', 'ok');
+                // Firestore realtime sẽ tự cập nhật lại UI
             };
         }
 

@@ -998,10 +998,7 @@ Doanh thu: 45000000</pre>
             el.className='rp-tele-status'+(type?' '+type:'');
         }
         function pushHistory(m,y,data){
-            var hist=[];try{hist=JSON.parse(localStorage.getItem(HIST_KEY)||'[]');}catch(e){}
-            var snap={ts:Date.now(),month:m,year:y,reporter:getReporter()||'Chưa nhập',data:JSON.stringify(data)};
-            hist.unshift(snap);if(hist.length>MAX_HIST)hist=hist.slice(0,MAX_HIST);
-            localStorage.setItem(HIST_KEY,JSON.stringify(hist));
+            // Không lưu lịch sử vào localStorage nữa
             renderHistory();
         }
         function renderHistory(){
