@@ -1340,9 +1340,6 @@ Doanh thu: 45000000</pre>
                         inp.addEventListener('input',function(){
                             sched();
                             scheduleLiveSharedSave();
-                            if (isSuperadminUser) {
-                                saveCurrentMonthImmediately();
-                            }
                         });
                         return inp;
                     }
