@@ -705,14 +705,8 @@ Doanh thu: 45000000</pre>
             });
         }
         function buildLocalMonthStore(m,y){
-            var employees={};
-            loadReporters().forEach(function(name){
-                var rid=reporterId(name);
-                var raw={};
-                try{raw=JSON.parse(localStorage.getItem(skey(m,y,name))||'{}')||{};}catch(e){raw={};}
-                employees[rid]={name:name,data:raw};
-            });
-            return {month:m,year:y,employees:employees};
+            // Không lấy gì từ localStorage nữa, chỉ trả về object rỗng
+            return {month:m,year:y,employees:{}};
         }
         function normalizeRemoteMonthStore(m,y,src){
             var out={month:m,year:y,employees:{}};
@@ -727,16 +721,7 @@ Doanh thu: 45000000</pre>
             return out;
         }
         function persistMonthStoreToLocal(m,y,store){
-            var emps=(store&&store.employees)||{};
-            var names=[];
-            Object.keys(emps).forEach(function(rid){
-                var item=emps[rid]||{};
-                var n=normReporter(item.name||'');
-                if(!n){return;}
-                names.push(n);
-                localStorage.setItem(skey(m,y,n),JSON.stringify((item.data&&typeof item.data==='object')?item.data:{}));
-            });
-            saveReporters(names);
+            // Không lưu gì vào localStorage nữa
         }
         function getMonthStoreSync(m,y){
             var key=cacheKey(m,y);
