@@ -1239,7 +1239,7 @@ Doanh thu: 45000000</pre>
 
         function getMY(){return{m:parseInt(document.getElementById('rpMonth').value),y:parseInt(document.getElementById('rpYear').value)};}
 
-        function buildMultiTable(m,y,emps){
+        async function buildMultiTable(m,y,emps){
             var days=dim(m,y);
             var mn=['','Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
             var table=document.getElementById('rpTable');
@@ -1407,15 +1407,17 @@ Doanh thu: 45000000</pre>
             setTimeout(recalcAll,15);
         }
 
-        function gen(){
+        async function gen(){
             var mv=getMY();
             startMonthRealtime(mv.m,mv.y);
             refreshFilterDateBounds();
-            buildMultiTable(mv.m,mv.y,loadReporters());
-            ensureMonthLoaded(mv.m,mv.y).then(function(changed){
+            var emps = await loadReportersFromFirestore(mv.m, mv.y);
+            await buildMultiTable(mv.m, mv.y, emps);
+            ensureMonthLoaded(mv.m, mv.y).then(async function(changed){
                 var cur=getMY();
                 if(!changed||cur.m!==mv.m||cur.y!==mv.y){return;}
-                buildMultiTable(mv.m,mv.y,loadReporters());
+                var emps2 = await loadReportersFromFirestore(mv.m, mv.y);
+                await buildMultiTable(mv.m, mv.y, emps2);
                 applyFilter();
             });
         }
@@ -1431,10 +1433,10 @@ Doanh thu: 45000000</pre>
             if(!isSuperadminUser){alert('Chỉ quản trị cao nhất mới được thêm nhân viên.');return;}
             var nv=getNewReporterInput();
             if(!nv){alert('Vui lòng nhập tên nhân viên mới.');return;}
-            ensureReporterExists(nv);
+            await ensureReporterExists(nv);
             var inp=document.getElementById('rpReporterNew');if(inp){inp.value='';}
-            renderReporterPick(nv);
-            gen();
+            await renderReporterPick(nv);
+            await gen();
             var ok=await saveCurrentMonthImmediately();
             if(!ok){toast('Thêm NV nhưng chưa đồng bộ shared. Thử lại.');return;}
             toast('Đã thêm nhân viên "'+nv+'" ở bảng mới hiển thị bên phải.');
