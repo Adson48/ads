@@ -781,13 +781,14 @@ Doanh thu: 45000000</pre>
             monthRealtimeKey='';
         }
         function startMonthRealtime(m,y){
+        async function startMonthRealtime(m,y){
             var db=initReportDb();
             if(!db){return;}
             var key=monthId(m,y);
             if(monthRealtimeKey===key&&monthRealtimeUnsub){return;}
             stopMonthRealtime();
             monthRealtimeKey=key;
-            monthRealtimeUnsub=db.collection(REPORT_COLL).doc(key).onSnapshot(function(snap){
+            monthRealtimeUnsub=db.collection(REPORT_COLL).doc(key).onSnapshot(async function(snap){
                 if(!snap.exists){return;}
                 var ck=cacheKey(m,y);
                 // Skip remote overwrite while local month data is pending upload.
@@ -800,7 +801,8 @@ Doanh thu: 45000000</pre>
                 if(before!==after){
                     var mv=getMY();
                     if(mv.m===m&&mv.y===y){
-                        buildMultiTable(m,y,loadReporters());
+                        var emps = await loadReportersFromFirestore(m, y);
+                        await buildMultiTable(m, y, emps);
                         applyFilter();
                     }
                 }
@@ -1086,7 +1088,8 @@ Doanh thu: 45000000</pre>
             return {};
         }
         async function saveAll(m,y){
-            var emps=loadReporters();var days=dim(m,y);
+        async function saveAll(m,y){
+            var emps = await loadReportersFromFirestore(m, y); var days=dim(m,y);
             var store={month:m,year:y,employees:{}};
             emps.forEach(function(emp,ei){
                 var data={};
@@ -1134,6 +1137,7 @@ Doanh thu: 45000000</pre>
             var mv=getMY();
             return cacheKey(mv.m,mv.y);
         }
+        async function scheduleLiveSharedSave(){
         async function scheduleLiveSharedSave(){
             // Lưu ngay lập tức lên Firestore mỗi lần nhập
             hasPendingLocalEdits=true;
@@ -1471,30 +1475,33 @@ Doanh thu: 45000000</pre>
             hasPendingLocalEdits=true;
             setSaveStatus('Đang lưu chia sẻ...','saving');
             var mv=getMY();saveAll(mv.m,mv.y);
-            var rp=getReporter();
-            pushHistory(mv.m,mv.y,JSON.parse(localStorage.getItem(skey(mv.m,mv.y,rp))||'{}'));
-            toast('Đã lưu tất cả nhân viên!');
-        });
-        document.getElementById('rpBtnClear').addEventListener('click',function(){
-            if(!confirm('Xóa dữ liệu tháng này của nhân viên "'+getReporter()+'"?'))return;
-            var mv=getMY(),rp=getReporter();
-            localStorage.removeItem(skey(mv.m,mv.y,rp));
-            gen();toast('Đã xóa dữ liệu của "'+rp+'"!');
-        });
-        document.getElementById('rpBtnExport').addEventListener('click',function(){
-            var mv=getMY(),rows=document.querySelectorAll('.rd[data-day]');
-            var csv='Ngày,Chi Phí,MESS,SĐT,ĐẶT LỊCH,HOÀN HỦY,SỐ HĐ,TỈ LỆ KÝ,TỈ LỆ XIN SỐ,CP/MESS,CP/SĐT,CP/LỊCH,DOANH THU,% CP/DT\n';
-            rows.forEach(function(row){
-                var day=row.querySelector('.cell-day').textContent;
-                var inp=row.querySelectorAll('.rpf');
-                var fc=row.querySelectorAll('.rp-fc');
-                var vals=[day];
-                Array.from(inp).forEach(function(i){vals.push(i.value);});
-                Array.from(fc).forEach(function(td){vals.push(td.textContent);});
-                csv+=vals.join(',')+'\n';
+        async function recalcAll(){
+            var mv = getMY();
+            var emps = await loadReportersFromFirestore(mv.m, mv.y);
+            var allCost=0,allRev=0,allMess=0,allSdt=0,allLich=0,allHd=0;
+            emps.forEach(function(emp,ei){
+                var rows=document.querySelectorAll('.rd[data-day]');
+                var sc=0,sm=0,ss=0,sl=0,shh=0,shd=0,sr=0;
+                rows.forEach(function(row){
+                    var inputs=row.querySelectorAll('td[data-emp-idx="'+ei+'"] .rpf');
+                    var fcs=row.querySelectorAll('td.rp-fc[data-emp-idx="'+ei+'"]');
+                    if(inputs.length<7)return;
+                    var cost=pf(inputs[0].value),mess=pf(inputs[1].value),sdt=pf(inputs[2].value);
+                    var lich=pf(inputs[3].value),hh=pf(inputs[4].value),hd=pf(inputs[5].value),rev=pf(inputs[6].value);
+                    var hasData=cost||mess||sdt||lich||hd||rev;
+                    sc+=cost;sm+=mess;ss+=sdt;sl+=lich;shh+=hh;shd+=hd;sr+=rev;
+                    rpct(fcs[0],hd,lich,hasData,true);rpct(fcs[1],sdt,mess,hasData,false);
+                    rcp(fcs[2],cost,mess,hasData);rcp(fcs[3],cost,sdt,hasData);rcp(fcs[4],cost,lich,hasData);
+                    rcpdt(fcs[5],cost,rev,hasData);
+                });
+                /* Top total row */
+                sth('tCost_'+ei,sc?sh(sc):'-');sth('tMess_'+ei,sm?fn(sm):'-');sth('tSdt_'+ei,ss?fn(ss):'-');
+                sth('tLich_'+ei,sl?fn(sl):'-');sth('tHoanHuy_'+ei,shh?fn(shh):'-');sth('tHd_'+ei,shd?fn(shd):'-');sth('tRev_'+ei,sr?sh(sr):'-');
+                rtpct('tTiLeKy_'+ei,shd,sl,true);rtpct('tTiLeXs_'+ei,ss,sm,false);
+                rtcp('tCpMess_'+ei,sc,sm);rtcp('tCpSdt_'+ei,sc,ss);rtcp('tCpLich_'+ei,sc,sl);rtcpdt('tCpDt_'+ei,sc,sr);
+                /* Bottom total row */
+                sth('btCost_'+ei,sc?sh(sc):'-');sth('btMess_'+ei,sm?fn(sm):'-');sth('btSdt_'+ei,ss?fn(ss):'-');sth('btLich_'+ei,sl?fn(sl):'-');sth('btHoanHuy_'+ei,shh?fn(shh):'-');sth('btHd_'+ei,shd?fn(shd):'-');sth('btRev_'+ei,sr?sh(sr):'-');sth('btTiLeKy_'+ei,shd,sl,true);sth('btTiLeXs_'+ei,ss,sm,false);sth('btCpMess_'+ei,sc,sm);sth('btCpSdt_'+ei,sc,ss);sth('btCpLich_'+ei,sc,sl);sth('btCpDt_'+ei,sc,sr);
             });
-            var ce=document.getElementById('rpCoc');csv+='COC,'+(ce?ce.value:'')+'\n';
-            var rp=getReporter().toLowerCase().replace(/\s+/g,'-');
             var a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='bao-cao-'+rp+'-'+mv.m+'-'+mv.y+'.csv';a.style.display='none';document.body.appendChild(a);a.click();document.body.removeChild(a);
         });
         document.getElementById('rpHistClearAll').addEventListener('click',function(){
